@@ -36,5 +36,7 @@
   for(const k of arrays)if(state[k].length!==info.counts[k])throw Error('CSVの件数が一致しません。');
   return state;
  }
- const api={encode,decode};if(typeof module!=='undefined'&&module.exports)module.exports=api;else root.CandyBackup=api;
+ // 拡張子ではなく内容で判定し、旧JSONも同じ復元処理へ渡します。
+ function read(text){text=text.replace(/^\uFEFF/,'').trim();return text.startsWith('{')?JSON.parse(text):decode(text);}
+ const api={encode,decode,read};if(typeof module!=='undefined'&&module.exports)module.exports=api;else root.CandyBackup=api;
 })(typeof globalThis!=='undefined'?globalThis:this);

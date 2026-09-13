@@ -40,11 +40,11 @@ const CandyCore = (() => {
     }
    }
   }
-  const events=raw.version===2?raw.events:[];if(!Array.isArray(events))throw Error('イベント');const eids=new Set();
+  const events=raw.version===2?raw.events:(raw.events??[]);if(!Array.isArray(events))throw Error('イベント');const eids=new Set();
   for(const e of events){if(!e||typeof e.id!=='string'||eids.has(e.id)||typeof e.name!=='string'||!dateOnly(e.start)||!dateOnly(e.end)||e.start>e.end||!['both','mew','delibird'].includes(e.target)||![1,1.25,1.5].includes(e.multiplier)||!Number.isInteger(e.boost)||e.boost<0||e.boost>7)throw Error('イベント設定');eids.add(e.id);}
   for(let i=0;i<events.length;i++)for(let j=i+1;j<events.length;j++){const a=events[i],b=events[j];if(a.start<=b.end&&b.start<=a.end&&(a.target==='both'||b.target==='both'||a.target===b.target))throw Error('イベント期間が重複しています');}
   if(raw.version===2&&(!raw.settings||typeof raw.settings.mew!=='boolean'||typeof raw.settings.delibird!=='boolean'))throw Error('表示設定');
-  return {version:2,pokemon:raw.pokemon.map((p,i)=>({...p,registrationOrder:Number.isFinite(p.registrationOrder)?p.registrationOrder:i,profile:p.profile?{...p.profile,skillLevel:Math.min(skillCap(p.species),p.profile.skillLevel)}:null})),team:raw.team,records:raw.records.map(r=>({...r,context:r.context||null})),events,settings:raw.settings||{mew:true,delibird:true}};
+  return {...raw,version:2,pokemon:raw.pokemon.map((p,i)=>({...p,registrationOrder:Number.isFinite(p.registrationOrder)?p.registrationOrder:i,profile:p.profile?{...p.profile,skillLevel:Math.min(skillCap(p.species),p.profile.skillLevel)}:null})),team:raw.team,records:raw.records.map(r=>({...r,context:r.context||null})),events,settings:raw.settings||{mew:true,delibird:true}};
  }
  const sum=rs=>rs.reduce((n,r)=>n+r.amount,0);
  return {gameDay,localInput,fromInput,dateOnly,addDays,range,inRange,mewAmounts,profileDefault,profileValid,skillCap,eventFor,migrate,sum};
