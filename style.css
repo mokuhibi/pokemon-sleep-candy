@@ -23,3 +23,5 @@ dialog{border:1px solid #dacda2;border-radius:14px;padding:18px;color:#725619;ba
 .total .quantity-number{font-size:1em}.total .quantity-unit{font-size:.48em}
 .hero .row strong{white-space:normal;text-align:right}.history-head>strong{min-width:0}
 @media(max-width:400px){.hero{padding:16px}.hero .row{gap:6px}.position-table{min-width:390px}}
+
+#mew-image-preview{display:block;width:100%;height:auto;margin-top:16px;border-radius:10px;-webkit-touch-callout:default;user-select:auto}#create-mew-image{width:100%}

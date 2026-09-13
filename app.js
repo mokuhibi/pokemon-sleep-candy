@@ -82,6 +82,7 @@ function filteredRecords(){const period=C.range($('period').value,$('summary-dat
 
 function calendar(parent,month,cell){parent.replaceChildren();if(!/^\d{4}-\d{2}$/.test(month))return;for(const d of ['月','火','水','木','金','土','日'])parent.append(el('span',d,'weekday'));const first=month+'-01',offset=(new Date(first).getUTCDay()+6)%7;for(let i=0;i<offset;i++)parent.append(el('span'));for(let day=first;day.startsWith(month);day=C.addDays(day,1)){const date=day;parent.append(cell(date));}}
 function renderSummary(){
+ $('mew-image-card').hidden=!enabled('mew');$('mew-image-preview').hidden=true;
  const rs=filteredRecords(),period=C.range($('period').value,$('summary-date').value||C.gameDay(new Date()));$('range-label').textContent=period?`${period[0]} 朝4時 〜 ${period[1]} 朝4時`:'全期間';totals($('summary-total'),rs,'選択期間のアメ');
  const actor=$('summary-actor').value;const calendarRs=state.records.filter(r=>visibleRecord(r)&&(r.method!=='delibird'||!actor||(actor==='unknown'?!r.context?.actorId:r.context?.actorId===actor)));
  const month=($('summary-date').value||C.gameDay(new Date())).slice(0,7);$('candy-month').textContent=month.replace('-','年')+'月';
@@ -201,3 +202,13 @@ window.addEventListener('storage',e=>{if(e.key===KEY){blocked=false;state=fresh(
 // 朝4時やイベント期間が切り替わった場合も、開いたままの記録画面を更新します。
 let lastDay=C.gameDay(new Date());setInterval(()=>{const day=C.gameDay(new Date());if(day!==lastDay){lastDay=day;renderRecord();renderSummary();renderHistory();}},30000);
 $('datetime').value=C.localInput();$('summary-date').value=C.gameDay(new Date());$('event-month').value=C.gameDay(new Date()).slice(0,7);load();selectEvent(null);renderCatalog();render();
+
+// 画像用の集計は履歴を読むだけで、保存データを変更しません。
+$('create-mew-image').onclick=()=>{
+ try{
+  const period=C.range($('period').value,$('summary-date').value||C.gameDay(new Date()));
+  const records=state.records.filter(r=>r.method==='mew'&&C.inRange(r,period));
+  const title=period?`${period[0]} 04:00 〜 ${period[1]} 04:00`:'全期間';
+  const preview=$('mew-image-preview');preview.src=MewImage.png(MewImage.aggregate(records),title);preview.hidden=false;
+ }catch(e){notice('画像を作成できませんでした：'+e.message);}
+};
