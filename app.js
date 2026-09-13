@@ -81,9 +81,11 @@ function renderActorFilters(){
 function filteredRecords(){const period=C.range($('period').value,$('summary-date').value||C.gameDay(new Date())),actor=enabled('delibird')?$('summary-actor').value:'';return state.records.filter(r=>visibleRecord(r)&&C.inRange(r,period)&&(r.method!=='delibird'||!actor||(actor==='unknown'?!r.context?.actorId:r.context?.actorId===actor)));}
 
 function calendar(parent,month,cell){parent.replaceChildren();if(!/^\d{4}-\d{2}$/.test(month))return;for(const d of ['月','火','水','木','金','土','日'])parent.append(el('span',d,'weekday'));const first=month+'-01',offset=(new Date(first).getUTCDay()+6)%7;for(let i=0;i<offset;i++)parent.append(el('span'));for(let day=first;day.startsWith(month);day=C.addDays(day,1)){const date=day;parent.append(cell(date));}}
+// 終了日は翌朝4時のため、見出しではその前日を表示します。
+function summaryTitle(period){if(!period)return '全期間のアメ';const short=s=>Number(s.slice(5,7))+'/'+Number(s.slice(8,10));const end=C.addDays(period[1],-1);return (period[0]===end?short(period[0]):short(period[0])+'〜'+short(end))+'のアメ';}
 function renderSummary(){
  $('mew-image-card').hidden=!enabled('mew');$('mew-image-preview').hidden=true;
- const rs=filteredRecords(),period=C.range($('period').value,$('summary-date').value||C.gameDay(new Date()));$('range-label').textContent=period?`${period[0]} 朝4時 〜 ${period[1]} 朝4時`:'全期間';totals($('summary-total'),rs,'選択期間のアメ');
+ const rs=filteredRecords(),period=C.range($('period').value,$('summary-date').value||C.gameDay(new Date()));$('range-label').textContent=period?`${period[0]} 朝4時 〜 ${period[1]} 朝4時`:'全期間';totals($('summary-total'),rs,summaryTitle(period));
  const actor=$('summary-actor').value;const calendarRs=state.records.filter(r=>visibleRecord(r)&&(r.method!=='delibird'||!actor||(actor==='unknown'?!r.context?.actorId:r.context?.actorId===actor)));
  const month=($('summary-date').value||C.gameDay(new Date())).slice(0,7);$('candy-month').textContent=month.replace('-','年')+'月';
  calendar($('candy-calendar'),month,date=>{const b=button('',()=>{$('summary-date').value=date;$('period').value='day';renderSummary();},'day');b.append(el('strong',Number(date.slice(-2)),'day-number'));const values=el('span',undefined,'candy-values');for(const method of Object.keys(methods)){if(!enabled(method))continue;const total=C.sum(calendarRs.filter(r=>r.method===method&&C.gameDay(r.datetime)===date));values.append(el('span',String(total),method));}b.append(values);b.setAttribute('aria-label',date+'のアメ');if(date===$('summary-date').value)b.classList.add('selected');return b;});
@@ -212,3 +214,6 @@ $('create-mew-image').onclick=()=>{
   const preview=$('mew-image-preview');preview.src=MewImage.png(MewImage.aggregate(records),title);preview.hidden=false;
  }catch(e){notice('画像を作成できませんでした：'+e.message);}
 };
+
+// 期間の種類は維持し、カレンダー・位置分析を含む集計全体を再描画します。
+$('summary-today').onclick=()=>{$('summary-date').value=C.gameDay(new Date());renderSummary();};
