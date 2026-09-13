@@ -11,3 +11,15 @@ label{min-width:0;max-width:100%}.filters>*{min-width:0}.card{overflow-wrap:anyw
 .section-head,.history-head{display:flex;align-items:center;justify-content:space-between;gap:10px}.section-head h2{margin:16px 0}.history-head{align-items:flex-start}.history-actions,.row-actions{display:flex;gap:5px;flex-shrink:0}.history-actions button{padding:7px 9px;font-size:12px;margin:0}.registered-row{display:flex;align-items:center;justify-content:space-between;gap:8px;border-bottom:1px solid var(--edge);padding:9px 0;min-width:0}.registered-row>strong{font-size:14px;overflow-wrap:anywhere}.row-actions button{font-size:11px;margin:0;padding:7px}.registered-row:last-child{border:0}
 dialog{border:1px solid #dacda2;border-radius:14px;padding:18px;color:#725619;background:#fffdf5;width:min(640px,calc(100vw - 24px));max-width:calc(100vw - 24px);max-height:calc(100dvh - 30px);overflow:auto}dialog::backdrop{background:#0006}dialog p{color:#a33836}#history-edit-form>.section-head{position:sticky;top:-18px;background:#fffdf5;z-index:1}.history-head strong{font-size:14px}#history-list .card{padding:14px}#history-list .card>p{margin:10px 0}.legend{display:flex;gap:8px;flex-wrap:wrap}
 @media(max-width:430px){.filters:has(input[type=date]),.filters:has(input[type=month]){grid-template-columns:minmax(0,1fr)}.calendar{gap:3px}.history-actions button{padding:7px}dialog{padding:14px}.registered-row>strong{font-size:13px}}
+
+/* 共通期間は狭い画面でも横並び。日付欄の幅を優先します。 */
+#summary .summary-filters{grid-template-columns:minmax(78px,.65fr) minmax(170px,1.35fr);gap:0 8px}
+.summary-filters>label:last-child{grid-column:1 / -1}
+.position-table{table-layout:fixed;min-width:420px}
+.position-table th:first-child{width:62px;padding:6px 3px;font-size:11px;overflow-wrap:anywhere}
+.position-table td,.position-table th{padding:7px 3px}
+.position-table caption{text-align:center;padding:6px;font-weight:700}
+.quantity{white-space:nowrap}.quantity-number{font-size:1.25em;font-weight:700;font-variant-numeric:tabular-nums}.quantity-unit{font-size:.85em;font-weight:400;margin-left:1px}
+.total .quantity-number{font-size:1em}.total .quantity-unit{font-size:.48em}
+.hero .row strong{white-space:normal;text-align:right}.history-head>strong{min-width:0}
+@media(max-width:400px){.hero{padding:16px}.hero .row{gap:6px}.position-table{min-width:390px}}
