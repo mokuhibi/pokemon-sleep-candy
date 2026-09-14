@@ -3,8 +3,8 @@
 const ShardUI=(()=>{
  const methodNames={skill:'スキル',lucky:'きょううん',research:'リサーチ',other:'その他'};
  const drafts=new Map();let researchDateTouched=false,researchSourceKey=null;
- const isTarget=p=>!!C.shardType(p.species)||(p.species==='ミュウ'&&p.mainSkill==='ゆめのかけらゲットS');
- const typeOf=p=>C.shardType(p.species)||(p.species==='ミュウ'&&p.mainSkill==='ゆめのかけらゲットS'?'fixed':null);
+ const isTarget=p=>!!C.shardType(p.species)||(p.species==='ミュウ'&&['ゆめのかけらゲットS','ゆびをふる'].includes(p.mainSkill||'ゆびをふる'));
+ const typeOf=p=>C.shardType(p.species)||(p.species==='ミュウ'&&['ゆめのかけらゲットS','ゆびをふる'].includes(p.mainSkill||'ゆびをふる')?'fixed':null);
  const skillName=type=>type==='lucky'?'きょううん(食材セレクトS)':'ゆめのかけらゲットS';
  const records=()=>state.shardRecords||[];
  const summaryRecords=()=>[...records(),...C.mewShardRecords(state.records).filter(()=>enabled('mew'))];
@@ -29,11 +29,12 @@ const ShardUI=(()=>{
   if(!researchDateTouched)$('shard-research-date').value=C.addDays(C.gameDay(new Date()),-1);
   loadResearch();
   const root=$('shard-skill-inputs');for(const input of root.querySelectorAll('input'))drafts.set(input.dataset.pokemon,input.value);
-  root.replaceChildren();const members=currentTeam().map((p,i)=>p&&p.species!=='ミュウ'&&isTarget(p)?{p,slot:i+1}:null).filter(Boolean);root.hidden=!members.length;
+  root.replaceChildren();const members=currentTeam().map((p,i)=>p&&speciesEnabled(p.species)&&isTarget(p)?{p,slot:i+1}:null).filter(Boolean);root.hidden=!members.length;
   if(!members.length)return;root.append(el('h2','ゆめのかけら'));
   for(const {p,slot} of members){
    const type=typeOf(p),level=p.profile?.skillLevel,card=el('div',undefined,'card');card.append(el('h3',`${position(slot)} · ${individual(p)}`),el('p',skillName(type)+(level?` · スキルLv.${level}`:'')));
-   const saveSkill=amount=>save({method:type==='lucky'?'lucky':'skill',skillType:type,skillName:skillName(type),...(level?{skillLevel:level}:{}),amount,pokemonId:p.id,pokemon:storedLabel(p),species:p.species,slot,pokemonSnapshot:clone(p)});
+   if(p.species==='ミュウ')card.append(el('p','登録スキル：'+(p.mainSkill||'ゆびをふる')));
+   const saveSkill=amount=>p.species==='ミュウ'?MewUI.saveShard(p,amount):save({method:type==='lucky'?'lucky':'skill',skillType:type,skillName:skillName(type),...(level?{skillLevel:level}:{}),amount,pokemonId:p.id,pokemon:storedLabel(p),species:p.species,slot,pokemonSnapshot:clone(p)});
    if(type==='random'){
     const form=el('form',undefined,'shard-skill-form'),l=el('label','獲得したゆめのかけら'),input=amountInput('shard-amount-'+slot,1);input.dataset.pokemon=p.id;input.value=drafts.get(p.id)||'';l.append(input);const b=el('button','記録');b.type='submit';form.append(l,b);
     form.onsubmit=e=>{e.preventDefault();try{if(saveSkill(number(input.id,1))){drafts.delete(p.id);const fresh=$('shard-amount-'+slot);if(fresh)fresh.value='';}}catch(err){notice(err.message);}};card.append(form);

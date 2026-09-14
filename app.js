@@ -55,7 +55,7 @@ function record(method,slot,amount){const date=recordDate();if(!Number.isFinite(
  if(method==='mew'){try{Object.assign(r,MewUI.recordFields(context));}catch(e){notice(e.message);return;}}
  commit({...state,records:[...state.records,r]},`${methods[method]}：${skillOnly?'スキルのみ（アメなし）':position(slot)+'・'+r.candy+' '+amount+'個'}を記録しました。`);
 }
-function totals(parent,records,title){records=records.filter(visibleRecord);parent.replaceChildren(el('small',title),qel('div',`${C.sum(records)}個`,'total'));for(const [method,name] of Object.entries(methods)){if(!enabled(method))continue;const rs=records.filter(r=>r.method===method);row(parent,name,method==='help'?`${C.sum(rs)}個`:`スキル${rs.length}回 · アメ${C.sum(rs)}個`,method);}}
+function totals(parent,records,title){records=records.filter(visibleRecord);parent.replaceChildren(el('small',title),qel('div',`${C.sum(records)}個`,'total'));for(const [method,name] of Object.entries(methods)){if(!enabled(method))continue;const rs=records.filter(r=>r.method===method);row(parent,name,method==='help'?`おてつだい回数${rs.length}回 · アメ${C.sum(rs)}個`:`スキル${rs.length}回 · アメ${C.sum(rs)}個`,method);}}
 
 function renderRecord(){
 

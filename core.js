@@ -54,10 +54,10 @@ const CandyCore = (() => {
   const occupied=raw.team.filter(x=>x!==null);if(occupied.some(id=>!ids.has(id))||new Set(occupied).size!==occupied.length)throw Error('編成');
   const rids=new Set();for(const r of raw.records){
    if(!r||typeof r.id!=='string'||rids.has(r.id)||!['help','mew','delibird'].includes(r.method)||typeof r.datetime!=='string'||!Number.isFinite(Date.parse(r.datetime)))throw Error('履歴');rids.add(r.id);
-   const noCandy=(r.method==='delibird'&&r.amount===0&&r.slot===6)||(r.method==='mew'&&r.amount===0&&r.slot===null&&r.firedSkill!==undefined);
+   const noCandy=(r.method==='delibird'&&r.amount===0&&r.slot===6)||(r.method==='mew'&&r.amount===0&&r.slot===null&&(r.firedSkill!==undefined||r.registeredMainSkill!==undefined));
    if(r.registeredMainSkill!==undefined&&!mewSkills.includes(r.registeredMainSkill))throw Error('記録時メインスキル');
    if(r.firedSkill!==undefined&&(r.method!=='mew'||!mewSkills.slice(1).includes(r.firedSkill)||!r.context||!Number.isSafeInteger(r.shardAmount)||r.shardAmount<0||r.shardAmount>1000000000||(r.firedSkill==='ゆめのかけらゲットS'?r.shardAmount===0:r.shardAmount!==0)))throw Error('ミュウ発動スキル');
-   if(noCandy){if(r.candy!==null||r.pokemonId!==null)throw Error('アメなし');}
+   if(noCandy){if((r.method==='mew'&&!r.context)||r.candy!==null||r.pokemonId!==null)throw Error('アメなし');}
    else if(!Object.hasOwn(map,r.species)||r.candy!==map[r.species]||typeof r.pokemonId!=='string'||typeof r.pokemon!=='string'||!(Number.isInteger(r.slot)&&r.slot>=1&&r.slot<=5||r.method!=='help'&&r.slot===null)||!(r.method==='help'?r.amount===2:r.method==='mew'?[1,2,3,4].includes(r.amount):r.amount===4))throw Error('アメ履歴');
    if(r.context!=null){const c=r.context;if(!Array.isArray(c.team)||c.team.length!==5)throw Error('記録時編成');
     for(const p of c.team)if(p!==null&&(!p||typeof p.id!=='string'||typeof p.nickname!=='string'||!Object.hasOwn(map,p.species)||(p.profile!=null&&!profileValid(p.profile,p.species,true))))throw Error('記録時個体');
