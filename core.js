@@ -16,8 +16,13 @@ const CandyCore = (() => {
  }
  const inRange=(r,period)=>!period||(gameDay(r.datetime)>=period[0]&&gameDay(r.datetime)<period[1]);
  const mewAmounts=level=>level<=5?[1]:[1,level-4];
+ // 保存用の種名は変更せず、旧サイズ名を表示時に読み替えます。
+ const speciesName=name=>typeof name==='string'?name.replace(/((?:バケッチャ|パンプジン)\()(こだま|ちゅうだま|おおだま|ギガだま)(\))/g,'$1$2しゅ$3'):name;
+ const shardType=species=>['ニャース','ペルシアン','リオル','ルカリオ','ピカチュウ(ホリデー)','イーブイ(ホリデー)','ホリデーピカチュウ','ホリデーイーブイ'].includes(species)?'fixed':['ヤミラミ','ゴクリン','マルノーム','ムンナ','ムシャーナ'].includes(species)?'random':['ヤミカラス','ドンカラス'].includes(species)?'lucky':null;
+ const shardAmounts=(type,level)=>{if(!Number.isInteger(level)||level<1||level>(type==='lucky'?7:8))return [];return type==='fixed'?[[240,340,480,670,920,1260,1800,2500][level-1]]:type==='lucky'?[0,[500,720,1030,1440,2000,2800,4000][level-1],[2500,3600,5150,7200,10000,14000,20000][level-1]]:[];};
+ function weeklyTotals(records,day){const start=range('week',day)[0];const days=Array.from({length:7},(_,i)=>({date:addDays(start,i),amount:0}));for(const r of records){const d=gameDay(r.datetime),item=days.find(x=>x.date===d);if(item)item.amount+=r.amount;}return days;}
  const profileDefault=species=>({level:1,nature:species==='ミュウ'?'きまぐれ':'',skillLevel:1,subskills:['','','','','']});
- const skillCap=species=>species==='デリバード'?7:8;
+ const skillCap=species=>species==='デリバード'||shardType(species)==='lucky'?7:8;
  const profileValid=(p,species,legacy=false)=>p&&Number.isInteger(p.level)&&p.level>=1&&p.level<=100&&typeof p.nature==='string'&&p.nature.length>0&&(species!=='ミュウ'||p.nature==='きまぐれ')&&Number.isInteger(p.skillLevel)&&p.skillLevel>=1&&p.skillLevel<=(legacy?8:skillCap(species))&&Array.isArray(p.subskills)&&p.subskills.length===5&&p.subskills.every(x=>typeof x==='string')&&new Set(p.subskills.filter(Boolean)).size===p.subskills.filter(Boolean).length;
  function eventFor(events,day,method){const e=events.find(e=>e.start<=day&&day<=e.end&&(e.target==='both'||e.target===method));return e?{id:e.id,name:e.name,multiplier:e.multiplier,boost:e.boost}:{id:null,name:'通常',multiplier:1,boost:0};}
  // リサーチEXPの加算条件は記録時のレベルで決まります。
@@ -26,8 +31,12 @@ const CandyCore = (() => {
   if(!Array.isArray(records))throw Error('ゆめのかけら履歴');const ids=new Set();
   const count=n=>Number.isSafeInteger(n)&&n>=0&&n<=1000000000;
   for(const r of records){
-   if(!r||typeof r.id!=='string'||ids.has(r.id)||typeof r.datetime!=='string'||!Number.isFinite(Date.parse(r.datetime))||!['skill','research','other'].includes(r.method)||!Number.isSafeInteger(r.amount)||r.amount<0)throw Error('ゆめのかけら履歴');ids.add(r.id);
-   if(r.method==='skill'&&(!count(r.amount)||r.amount===0||typeof r.pokemonId!=='string'||typeof r.pokemon!=='string'||typeof r.species!=='string'||!Number.isInteger(r.slot)||r.slot<1||r.slot>5))throw Error('ゆめのかけらスキル履歴');
+   if(!r||typeof r.id!=='string'||ids.has(r.id)||typeof r.datetime!=='string'||!Number.isFinite(Date.parse(r.datetime))||!['skill','lucky','research','other'].includes(r.method)||!Number.isSafeInteger(r.amount)||r.amount<0)throw Error('ゆめのかけら履歴');ids.add(r.id);
+   if(['skill','lucky'].includes(r.method)&&(!count(r.amount)||(r.method==='skill'&&r.amount===0)||typeof r.pokemonId!=='string'||typeof r.pokemon!=='string'||typeof r.species!=='string'||!Number.isInteger(r.slot)||r.slot<1||r.slot>5))throw Error('ゆめのかけらスキル履歴');
+   if(r.method==='lucky'&&(shardType(r.species)!=='lucky'||!shardAmounts('lucky',r.skillLevel).includes(r.amount)))throw Error('きょううん履歴');
+   if(r.skillLevel!==undefined&&(!Number.isInteger(r.skillLevel)||r.skillLevel<1||r.skillLevel>8))throw Error('記録時スキルレベル');
+   if(r.skillType==='fixed'&&(shardType(r.species)!=='fixed'||!shardAmounts('fixed',r.skillLevel).includes(r.amount)))throw Error('固定値スキル履歴');
+   if(r.targetDate!==undefined&&(!dateOnly(r.targetDate)||r.targetDate!==gameDay(r.datetime)))throw Error('リサーチ対象日');
    if(r.method==='research'&&(!count(r.baseAmount)||!count(r.researchExp)||!Number.isInteger(r.researchLevel)||r.researchLevel<1||r.researchLevel>70||r.amount!==shardTotal(r)))throw Error('リサーチ履歴');
    if(r.method==='other'&&(!count(r.amount)||typeof r.memo!=='string'))throw Error('その他のゆめのかけら履歴');
   }
@@ -60,6 +69,6 @@ const CandyCore = (() => {
   return {...raw,version:2,shardRecords,pokemon:raw.pokemon.map((p,i)=>({...p,registrationOrder:Number.isFinite(p.registrationOrder)?p.registrationOrder:i,profile:p.profile?{...p.profile,skillLevel:Math.min(skillCap(p.species),p.profile.skillLevel)}:null})),team:raw.team,records:raw.records.map(r=>({...r,context:r.context||null})),events,settings:raw.settings||{mew:true,delibird:true}};
  }
  const sum=rs=>rs.reduce((n,r)=>n+r.amount,0);
- return {gameDay,localInput,fromInput,dateOnly,addDays,range,inRange,mewAmounts,profileDefault,profileValid,skillCap,eventFor,migrate,sum,shardTotal,validateShards};
+ return {gameDay,localInput,fromInput,dateOnly,addDays,range,inRange,mewAmounts,profileDefault,profileValid,skillCap,eventFor,migrate,sum,shardTotal,validateShards,speciesName,shardType,shardAmounts,weeklyTotals};
 })();
 if(typeof module!=='undefined')module.exports=CandyCore;
