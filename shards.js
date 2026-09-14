@@ -3,9 +3,9 @@
 const ShardUI=(()=>{
  const methodNames={skill:'スキル',lucky:'きょううん',research:'リサーチ',other:'その他'};
  const drafts=new Map();let researchDateTouched=false,researchSourceKey=null;
- const isTarget=p=>!!C.shardType(p.species)||(p.species==='ミュウ'&&['ゆめのかけらゲットS','ゆびをふる'].includes(p.mainSkill||'ゆびをふる'));
- const typeOf=p=>C.shardType(p.species)||(p.species==='ミュウ'&&['ゆめのかけらゲットS','ゆびをふる'].includes(p.mainSkill||'ゆびをふる')?'fixed':null);
- const skillName=type=>type==='lucky'?'きょううん(食材セレクトS)':'ゆめのかけらゲットS';
+ const isTarget=p=>!!SK.shardMode(p);
+ const typeOf=p=>SK.shardMode(p);
+ const skillName=type=>SK.name(type==='lucky'?'super_luck':'dream_shard_s');
  const records=()=>state.shardRecords||[];
  const summaryRecords=()=>[...records(),...C.mewShardRecords(state.records).filter(()=>enabled('mew'))];
  const individual=p=>label(p);
@@ -33,8 +33,8 @@ const ShardUI=(()=>{
   if(!members.length)return;root.append(el('h2','ゆめのかけら'));
   for(const {p,slot} of members){
    const type=typeOf(p),level=p.profile?.skillLevel,card=el('div',undefined,'card');card.append(el('h3',`${position(slot)} · ${individual(p)}`),el('p',skillName(type)+(level?` · スキルLv.${level}`:'')));
-   if(p.species==='ミュウ')card.append(el('p','登録スキル：'+(p.mainSkill||'ゆびをふる')));
-   const saveSkill=amount=>p.species==='ミュウ'?MewUI.saveShard(p,amount):save({method:type==='lucky'?'lucky':'skill',skillType:type,skillName:skillName(type),...(level?{skillLevel:level}:{}),amount,pokemonId:p.id,pokemon:storedLabel(p),species:p.species,slot,pokemonSnapshot:clone(p)});
+   if(p.species==='ミュウ')card.append(el('p','登録スキル：'+SK.name(SK.forPokemon(p))));
+   const saveSkill=amount=>p.species==='ミュウ'?MewUI.saveShard(p,amount):save({method:type==='lucky'?'lucky':'skill',skillType:type,skillId:SK.id(SK.forPokemon(p)),skillName:SK.value(SK.forPokemon(p)),...(level?{skillLevel:level}:{}),amount,pokemonId:p.id,pokemon:storedLabel(p),species:p.species,slot,pokemonSnapshot:clone(p)});
    if(type==='random'){
     const form=el('form',undefined,'shard-skill-form'),l=el('label','獲得したゆめのかけら'),input=amountInput('shard-amount-'+slot,1);input.dataset.pokemon=p.id;input.value=drafts.get(p.id)||'';l.append(input);const b=el('button','記録');b.type='submit';form.append(l,b);
     form.onsubmit=e=>{e.preventDefault();try{if(saveSkill(number(input.id,1))){drafts.delete(p.id);const fresh=$('shard-amount-'+slot);if(fresh)fresh.value='';}}catch(err){notice(err.message);}};card.append(form);
@@ -43,7 +43,7 @@ const ShardUI=(()=>{
    root.append(card);
   }
  }
- function addSkillSetting(card,p){const type=typeOf(p);if(type)card.append(el('small',skillName(type)+(p.profile?` · Lv.${p.profile.skillLevel}`:''),'shard-setting'));}
+ function addSkillSetting(card,p){card.append(el('small',SK.name(SK.forPokemon(p))+(p.profile?` · Lv.${p.profile.skillLevel}`:''),'shard-setting'));}
  function renderSummary(){
   const day=$('shard-date').value||C.gameDay(new Date()),period=C.range($('shard-period').value,day),rs=summaryRecords().filter(r=>C.inRange(r,period));
   $('shard-range').textContent=period?`${C.displayDate(period[0])} 朝4時 〜 ${C.displayDate(period[1])} 朝4時`:'全期間';
@@ -52,7 +52,7 @@ const ShardUI=(()=>{
   WeeklyChart.render($('shard-weekly-chart'),summaryRecords(),day);
   const list=$('shard-pokemon-totals');list.replaceChildren();const groups=new Map();
   for(const r of rs.filter(r=>['skill','lucky'].includes(r.method))){if(!groups.has(r.pokemonId))groups.set(r.pokemonId,[]);groups.get(r.pokemonId).push(r);}
-  for(const [id,xs] of groups){const latest=[...xs].sort((a,b)=>Date.parse(b.datetime)-Date.parse(a.datetime))[0],current=state.pokemon.find(p=>p.id===id),p=current||latest.pokemonSnapshot;const card=el('div',undefined,'shard-individual');const name=p?individual(p):label(historicalPokemon(latest));card.append(el('h4',name+(current?'':'（登録解除済み）')));row(card,'スキル',xs.length+'回');row(card,'ゆめのかけら',C.sum(xs)+'個');list.append(card);}
+  for(const [id,xs] of groups){const latest=[...xs].sort((a,b)=>Date.parse(b.datetime)-Date.parse(a.datetime))[0],current=state.pokemon.find(p=>p.id===id),p=current||latest.pokemonSnapshot;const card=el('div',undefined,'shard-individual');const name=p?individual(p):label(historicalPokemon(latest));card.append(el('h4',name+(current?'':'（登録解除済み）')));row(card,'スキル',xs.length+'回');const skillGroups=new Map();for(const record of xs){const key=SK.id(record.skillId||record.skillName||(record.method==='lucky'?'super_luck':'dream_shard_s'));skillGroups.set(key,(skillGroups.get(key)||0)+1);}for(const [key,count] of skillGroups)row(card,SK.name(key),count+'回');row(card,'ゆめのかけら',C.sum(xs)+'個');list.append(card);}
   if(!groups.size)list.append(el('p','この期間のスキル記録はありません。'));
  }
  function appendHistory(root,period){
@@ -60,7 +60,7 @@ const ShardUI=(()=>{
    const card=el('div',undefined,'card shards'),head=el('div',undefined,'history-head'),actions=el('div',undefined,'history-actions');card.dataset.datetime=r.datetime;
    actions.append(button('訂正',()=>ShardEditor.open(r)),button('削除',()=>{if(confirm('このゆめのかけら記録を削除しますか？'))commit({...state,shardRecords:records().filter(x=>x.id!==r.id)},'ゆめのかけら記録を削除しました。');},'danger'));
    head.append(qel('strong',`ゆめのかけら · ${r.amount}個`),actions);card.append(head,el('p',(r.targetDate?'対象日 '+C.displayDate(r.targetDate):DateUI.datetime(r.datetime))+' · '+methodNames[r.method]));
-   if(['skill','lucky'].includes(r.method))card.append(el('p',`${position(r.slot)} · ${r.pokemonSnapshot?individual(r.pokemonSnapshot):label(historicalPokemon(r))}${r.skillLevel?'\nスキルLv.'+r.skillLevel:''}${r.method==='lucky'?'\nきょううん(食材セレクトS)'+(r.amount===0?' · スキルのみ':''):'\nゆめのかけらゲットS'}`));
+   if(['skill','lucky'].includes(r.method))card.append(el('p',`${position(r.slot)} · ${r.pokemonSnapshot?individual(r.pokemonSnapshot):label(historicalPokemon(r))}${r.skillLevel?'\nスキルLv.'+r.skillLevel:''}${r.method==='lucky'?'\n'+SK.name(r.skillId||r.skillName||'super_luck')+(r.amount===0?' · スキルのみ':''):'\n'+SK.name(r.skillId||r.skillName||'dream_shard_s')}`));
    if(r.method==='research'){card.append(qel('p',`リサーチ ${r.baseAmount}個`),el('p',`リサーチEXP ${r.researchExp}\nリサーチレベル ${r.researchLevel}`));}
    if(r.method==='other'&&r.memo)card.append(el('p',r.memo));root.append(card);
   }
