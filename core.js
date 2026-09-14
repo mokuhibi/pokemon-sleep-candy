@@ -21,6 +21,11 @@ const CandyCore = (() => {
  const shardType=species=>['ニャース','ペルシアン','リオル','ルカリオ','ピカチュウ(ホリデー)','イーブイ(ホリデー)','ホリデーピカチュウ','ホリデーイーブイ'].includes(species)?'fixed':['ヤミラミ','ゴクリン','マルノーム','ムンナ','ムシャーナ'].includes(species)?'random':['ヤミカラス','ドンカラス'].includes(species)?'lucky':null;
  const shardAmounts=(type,level)=>{if(!Number.isInteger(level)||level<1||level>(type==='lucky'?7:8))return [];return type==='fixed'?[[240,340,480,670,920,1260,1800,2500][level-1]]:type==='lucky'?[0,[500,720,1030,1440,2000,2800,4000][level-1],[2500,3600,5150,7200,10000,14000,20000][level-1]]:[];};
  function weeklyTotals(records,day){const start=range('week',day)[0];const days=Array.from({length:7},(_,i)=>({date:addDays(start,i),amount:0}));for(const r of records){const d=gameDay(r.datetime),item=days.find(x=>x.date===d);if(item)item.amount+=r.amount;}return days;}
+ const mewSkills=['ゆびをふる','エナジーチャージS','エナジーチャージM','ゆめのかけらゲットS','食材ゲットS','げんきエールS','げんきチャージS','げんきオールS','料理チャンスS','料理パワーアップS','おてつだいサポートS','きのみバースト'];
+ const weekday=day=>dateOnly(day)?'（'+['日','月','火','水','木','金','土'][new Date(day).getUTCDay()]+'）':'';
+ const displayDate=day=>day+weekday(day);
+ // ミュウの同一発動から、集計専用のかけら行を作ります。保存・履歴表示は元の1件だけです。
+ const mewShardRecords=records=>records.filter(r=>r.method==='mew'&&r.firedSkill==='ゆめのかけらゲットS').map(r=>{const p=r.context?.actor||r.context?.team?.[r.context?.actorSlot-1];return {id:r.id,datetime:r.datetime,method:'skill',amount:r.shardAmount,pokemonId:p?.id||r.context?.actorId||'unknown-mew',pokemon:p?.nickname||'ミュウ',species:'ミュウ',slot:r.context?.actorSlot??null,pokemonSnapshot:p,skillName:r.firedSkill,skillLevel:r.context?.effectiveLevel,source:'mew'};});
  const profileDefault=species=>({level:1,nature:species==='ミュウ'?'きまぐれ':'',skillLevel:1,subskills:['','','','','']});
  const skillCap=species=>species==='デリバード'||shardType(species)==='lucky'?7:8;
  const profileValid=(p,species,legacy=false)=>p&&Number.isInteger(p.level)&&p.level>=1&&p.level<=100&&typeof p.nature==='string'&&p.nature.length>0&&(species!=='ミュウ'||p.nature==='きまぐれ')&&Number.isInteger(p.skillLevel)&&p.skillLevel>=1&&p.skillLevel<=(legacy?8:skillCap(species))&&Array.isArray(p.subskills)&&p.subskills.length===5&&p.subskills.every(x=>typeof x==='string')&&new Set(p.subskills.filter(Boolean)).size===p.subskills.filter(Boolean).length;
@@ -33,9 +38,9 @@ const CandyCore = (() => {
   for(const r of records){
    if(!r||typeof r.id!=='string'||ids.has(r.id)||typeof r.datetime!=='string'||!Number.isFinite(Date.parse(r.datetime))||!['skill','lucky','research','other'].includes(r.method)||!Number.isSafeInteger(r.amount)||r.amount<0)throw Error('ゆめのかけら履歴');ids.add(r.id);
    if(['skill','lucky'].includes(r.method)&&(!count(r.amount)||(r.method==='skill'&&r.amount===0)||typeof r.pokemonId!=='string'||typeof r.pokemon!=='string'||typeof r.species!=='string'||!Number.isInteger(r.slot)||r.slot<1||r.slot>5))throw Error('ゆめのかけらスキル履歴');
-   if(r.method==='lucky'&&(shardType(r.species)!=='lucky'||!shardAmounts('lucky',r.skillLevel).includes(r.amount)))throw Error('きょううん履歴');
+   if(r.method==='lucky'&&(shardType(r.species)!=='lucky'||(!r.amountCorrected&&!shardAmounts('lucky',r.skillLevel).includes(r.amount))))throw Error('きょううん履歴');
    if(r.skillLevel!==undefined&&(!Number.isInteger(r.skillLevel)||r.skillLevel<1||r.skillLevel>8))throw Error('記録時スキルレベル');
-   if(r.skillType==='fixed'&&(shardType(r.species)!=='fixed'||!shardAmounts('fixed',r.skillLevel).includes(r.amount)))throw Error('固定値スキル履歴');
+   if(r.skillType==='fixed'&&(shardType(r.species)!=='fixed'||(!r.amountCorrected&&!shardAmounts('fixed',r.skillLevel).includes(r.amount))))throw Error('固定値スキル履歴');
    if(r.targetDate!==undefined&&(!dateOnly(r.targetDate)||r.targetDate!==gameDay(r.datetime)))throw Error('リサーチ対象日');
    if(r.method==='research'&&(!count(r.baseAmount)||!count(r.researchExp)||!Number.isInteger(r.researchLevel)||r.researchLevel<1||r.researchLevel>70||r.amount!==shardTotal(r)))throw Error('リサーチ履歴');
    if(r.method==='other'&&(!count(r.amount)||typeof r.memo!=='string'))throw Error('その他のゆめのかけら履歴');
@@ -45,11 +50,13 @@ const CandyCore = (() => {
   if(!raw||![1,2].includes(raw.version)||!Array.isArray(raw.pokemon)||!Array.isArray(raw.records)||!Array.isArray(raw.team)||raw.team.length!==5)throw Error('保存形式');
   const shardRecords=raw.shardRecords??[];validateShards(shardRecords);
   const ids=new Set();
-  for(const p of raw.pokemon){if(!p||(p.shardSkill!==undefined&&typeof p.shardSkill!=='boolean')||typeof p.id!=='string'||ids.has(p.id)||!Object.hasOwn(map,p.species)||typeof p.nickname!=='string'||(p.profile!=null&&!profileValid(p.profile,p.species,true)))throw Error('個体情報');ids.add(p.id);}
+  for(const p of raw.pokemon){if(!p||(p.shardSkill!==undefined&&typeof p.shardSkill!=='boolean')||(p.mainSkill!==undefined&&(p.species!=='ミュウ'||!mewSkills.includes(p.mainSkill)))||typeof p.id!=='string'||ids.has(p.id)||!Object.hasOwn(map,p.species)||typeof p.nickname!=='string'||(p.profile!=null&&!profileValid(p.profile,p.species,true)))throw Error('個体情報');ids.add(p.id);}
   const occupied=raw.team.filter(x=>x!==null);if(occupied.some(id=>!ids.has(id))||new Set(occupied).size!==occupied.length)throw Error('編成');
   const rids=new Set();for(const r of raw.records){
    if(!r||typeof r.id!=='string'||rids.has(r.id)||!['help','mew','delibird'].includes(r.method)||typeof r.datetime!=='string'||!Number.isFinite(Date.parse(r.datetime)))throw Error('履歴');rids.add(r.id);
-   const noCandy=r.method==='delibird'&&r.amount===0&&r.slot===6;
+   const noCandy=(r.method==='delibird'&&r.amount===0&&r.slot===6)||(r.method==='mew'&&r.amount===0&&r.slot===null&&r.firedSkill!==undefined);
+   if(r.registeredMainSkill!==undefined&&!mewSkills.includes(r.registeredMainSkill))throw Error('記録時メインスキル');
+   if(r.firedSkill!==undefined&&(r.method!=='mew'||!mewSkills.slice(1).includes(r.firedSkill)||!r.context||!Number.isSafeInteger(r.shardAmount)||r.shardAmount<0||r.shardAmount>1000000000||(r.firedSkill==='ゆめのかけらゲットS'?r.shardAmount===0:r.shardAmount!==0)))throw Error('ミュウ発動スキル');
    if(noCandy){if(r.candy!==null||r.pokemonId!==null)throw Error('アメなし');}
    else if(!Object.hasOwn(map,r.species)||r.candy!==map[r.species]||typeof r.pokemonId!=='string'||typeof r.pokemon!=='string'||!(Number.isInteger(r.slot)&&r.slot>=1&&r.slot<=5||r.method!=='help'&&r.slot===null)||!(r.method==='help'?r.amount===2:r.method==='mew'?[1,2,3,4].includes(r.amount):r.amount===4))throw Error('アメ履歴');
    if(r.context!=null){const c=r.context;if(!Array.isArray(c.team)||c.team.length!==5)throw Error('記録時編成');
@@ -58,7 +65,7 @@ const CandyCore = (() => {
      const actor=c.actor || c.team[c.actorSlot-1];
      const outside=r.method==='mew'&&c.actorSlot===null&&c.rulesVersion===3;
      if(!actor||actor.id!==c.actorId||actor.species!==(r.method==='mew'?'ミュウ':'デリバード')||!profileValid(actor.profile,actor.species,c.rulesVersion!==3)||(!outside&&(!Number.isInteger(c.actorSlot)||c.actorSlot<1||c.actorSlot>5||c.team[c.actorSlot-1]?.id!==actor.id))||!c.event||![1,1.25,1.5].includes(c.event.multiplier)||!Number.isInteger(c.event.boost)||c.event.boost<0||c.event.boost>7||c.effectiveLevel!==Math.min(c.rulesVersion===3?skillCap(actor.species):8,actor.profile.skillLevel+c.event.boost))throw Error('スキル個体');
-     if(r.method==='mew'&&!mewAmounts(c.effectiveLevel).includes(r.amount))throw Error('スキル個数');
+     if(r.method==='mew'&&!noCandy&&!mewAmounts(c.effectiveLevel).includes(r.amount))throw Error('スキル個数');
     }
    }
   }
@@ -69,6 +76,6 @@ const CandyCore = (() => {
   return {...raw,version:2,shardRecords,pokemon:raw.pokemon.map((p,i)=>({...p,registrationOrder:Number.isFinite(p.registrationOrder)?p.registrationOrder:i,profile:p.profile?{...p.profile,skillLevel:Math.min(skillCap(p.species),p.profile.skillLevel)}:null})),team:raw.team,records:raw.records.map(r=>({...r,context:r.context||null})),events,settings:raw.settings||{mew:true,delibird:true}};
  }
  const sum=rs=>rs.reduce((n,r)=>n+r.amount,0);
- return {gameDay,localInput,fromInput,dateOnly,addDays,range,inRange,mewAmounts,profileDefault,profileValid,skillCap,eventFor,migrate,sum,shardTotal,validateShards,speciesName,shardType,shardAmounts,weeklyTotals};
+ return {gameDay,localInput,fromInput,dateOnly,addDays,range,inRange,mewAmounts,profileDefault,profileValid,skillCap,eventFor,migrate,sum,shardTotal,validateShards,speciesName,shardType,shardAmounts,weeklyTotals,mewSkills,weekday,displayDate,mewShardRecords};
 })();
 if(typeof module!=='undefined')module.exports=CandyCore;

@@ -54,3 +54,10 @@ dialog{border:1px solid #dacda2;border-radius:14px;padding:18px;color:#725619;ba
 .record-date-card .check input{width:18px;height:18px;flex:none}
 .pokemon-nickname{font-size:.82em;font-weight:inherit}
 #shard-research-form .research-fields{grid-template-columns:repeat(2,minmax(0,1fr))}
+
+/* 曜日は入力値には混ぜず、日付選択欄のすぐ下に添えます。 */
+.date-field{display:block;min-width:0;width:100%}.date-weekday{display:block;font-size:12px;margin-top:3px}
+.record-date-card>.date-field{flex:1;min-width:0;width:0}.record-date-card>.date-field #datetime{width:100%}
+.mew-position-table{min-width:0;font-size:10px}.mew-position-table th:first-child{width:28px;font-size:10px;padding:4px 1px}.mew-position-table td,.mew-position-table th{padding:6px 1px;overflow-wrap:anywhere}
+.mew-position-table th:last-child{width:40px;font-size:10px}.mew-position-table .quantity-number{font-size:12px}
+#mew-skill-only{margin-bottom:12px}#edit-mew-fields{border-top:1px solid var(--edge);margin-top:12px}
