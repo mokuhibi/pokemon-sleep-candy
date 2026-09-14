@@ -20,10 +20,23 @@ const CandyCore = (() => {
  const skillCap=species=>species==='デリバード'?7:8;
  const profileValid=(p,species,legacy=false)=>p&&Number.isInteger(p.level)&&p.level>=1&&p.level<=100&&typeof p.nature==='string'&&p.nature.length>0&&(species!=='ミュウ'||p.nature==='きまぐれ')&&Number.isInteger(p.skillLevel)&&p.skillLevel>=1&&p.skillLevel<=(legacy?8:skillCap(species))&&Array.isArray(p.subskills)&&p.subskills.length===5&&p.subskills.every(x=>typeof x==='string')&&new Set(p.subskills.filter(Boolean)).size===p.subskills.filter(Boolean).length;
  function eventFor(events,day,method){const e=events.find(e=>e.start<=day&&day<=e.end&&(e.target==='both'||e.target===method));return e?{id:e.id,name:e.name,multiplier:e.multiplier,boost:e.boost}:{id:null,name:'通常',multiplier:1,boost:0};}
+ // リサーチEXPの加算条件は記録時のレベルで決まります。
+ const shardTotal=r=>r.method==='research'?r.baseAmount+(r.researchLevel===70?r.researchExp:0):r.amount;
+ function validateShards(records){
+  if(!Array.isArray(records))throw Error('ゆめのかけら履歴');const ids=new Set();
+  const count=n=>Number.isSafeInteger(n)&&n>=0&&n<=1000000000;
+  for(const r of records){
+   if(!r||typeof r.id!=='string'||ids.has(r.id)||typeof r.datetime!=='string'||!Number.isFinite(Date.parse(r.datetime))||!['skill','research','other'].includes(r.method)||!Number.isSafeInteger(r.amount)||r.amount<0)throw Error('ゆめのかけら履歴');ids.add(r.id);
+   if(r.method==='skill'&&(!count(r.amount)||r.amount===0||typeof r.pokemonId!=='string'||typeof r.pokemon!=='string'||typeof r.species!=='string'||!Number.isInteger(r.slot)||r.slot<1||r.slot>5))throw Error('ゆめのかけらスキル履歴');
+   if(r.method==='research'&&(!count(r.baseAmount)||!count(r.researchExp)||!Number.isInteger(r.researchLevel)||r.researchLevel<1||r.researchLevel>70||r.amount!==shardTotal(r)))throw Error('リサーチ履歴');
+   if(r.method==='other'&&(!count(r.amount)||typeof r.memo!=='string'))throw Error('その他のゆめのかけら履歴');
+  }
+ }
  function migrate(raw,map){
   if(!raw||![1,2].includes(raw.version)||!Array.isArray(raw.pokemon)||!Array.isArray(raw.records)||!Array.isArray(raw.team)||raw.team.length!==5)throw Error('保存形式');
+  const shardRecords=raw.shardRecords??[];validateShards(shardRecords);
   const ids=new Set();
-  for(const p of raw.pokemon){if(!p||typeof p.id!=='string'||ids.has(p.id)||!Object.hasOwn(map,p.species)||typeof p.nickname!=='string'||(p.profile!=null&&!profileValid(p.profile,p.species,true)))throw Error('個体情報');ids.add(p.id);}
+  for(const p of raw.pokemon){if(!p||(p.shardSkill!==undefined&&typeof p.shardSkill!=='boolean')||typeof p.id!=='string'||ids.has(p.id)||!Object.hasOwn(map,p.species)||typeof p.nickname!=='string'||(p.profile!=null&&!profileValid(p.profile,p.species,true)))throw Error('個体情報');ids.add(p.id);}
   const occupied=raw.team.filter(x=>x!==null);if(occupied.some(id=>!ids.has(id))||new Set(occupied).size!==occupied.length)throw Error('編成');
   const rids=new Set();for(const r of raw.records){
    if(!r||typeof r.id!=='string'||rids.has(r.id)||!['help','mew','delibird'].includes(r.method)||typeof r.datetime!=='string'||!Number.isFinite(Date.parse(r.datetime)))throw Error('履歴');rids.add(r.id);
@@ -44,9 +57,9 @@ const CandyCore = (() => {
   for(const e of events){if(!e||typeof e.id!=='string'||eids.has(e.id)||typeof e.name!=='string'||!dateOnly(e.start)||!dateOnly(e.end)||e.start>e.end||!['both','mew','delibird'].includes(e.target)||![1,1.25,1.5].includes(e.multiplier)||!Number.isInteger(e.boost)||e.boost<0||e.boost>7)throw Error('イベント設定');eids.add(e.id);}
   for(let i=0;i<events.length;i++)for(let j=i+1;j<events.length;j++){const a=events[i],b=events[j];if(a.start<=b.end&&b.start<=a.end&&(a.target==='both'||b.target==='both'||a.target===b.target))throw Error('イベント期間が重複しています');}
   if(raw.version===2&&(!raw.settings||typeof raw.settings.mew!=='boolean'||typeof raw.settings.delibird!=='boolean'))throw Error('表示設定');
-  return {...raw,version:2,pokemon:raw.pokemon.map((p,i)=>({...p,registrationOrder:Number.isFinite(p.registrationOrder)?p.registrationOrder:i,profile:p.profile?{...p.profile,skillLevel:Math.min(skillCap(p.species),p.profile.skillLevel)}:null})),team:raw.team,records:raw.records.map(r=>({...r,context:r.context||null})),events,settings:raw.settings||{mew:true,delibird:true}};
+  return {...raw,version:2,shardRecords,pokemon:raw.pokemon.map((p,i)=>({...p,registrationOrder:Number.isFinite(p.registrationOrder)?p.registrationOrder:i,profile:p.profile?{...p.profile,skillLevel:Math.min(skillCap(p.species),p.profile.skillLevel)}:null})),team:raw.team,records:raw.records.map(r=>({...r,context:r.context||null})),events,settings:raw.settings||{mew:true,delibird:true}};
  }
  const sum=rs=>rs.reduce((n,r)=>n+r.amount,0);
- return {gameDay,localInput,fromInput,dateOnly,addDays,range,inRange,mewAmounts,profileDefault,profileValid,skillCap,eventFor,migrate,sum};
+ return {gameDay,localInput,fromInput,dateOnly,addDays,range,inRange,mewAmounts,profileDefault,profileValid,skillCap,eventFor,migrate,sum,shardTotal,validateShards};
 })();
 if(typeof module!=='undefined')module.exports=CandyCore;
