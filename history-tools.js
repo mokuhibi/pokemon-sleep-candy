@@ -27,7 +27,14 @@ const MewUI=(()=>{
 
 const DateUI=(()=>{
  const datetime=value=>{const s=C.localInput(value);return C.displayDate(s.slice(0,10))+' '+s.slice(11);};
- function update(){for(const input of document.querySelectorAll('input[type=date],input[type=datetime-local]')){let wrapper=input.parentElement;if(!wrapper.classList.contains('date-field')){wrapper=document.createElement('span');wrapper.className='date-field';input.before(wrapper);wrapper.append(input);const day=document.createElement('small');day.className='date-weekday';wrapper.append(day);}wrapper.querySelector('.date-weekday').textContent=C.weekday(input.value.slice(0,10));}}
+ function update(){for(const input of document.querySelectorAll('input[type=date],input[type=datetime-local]')){let wrapper=input.parentElement;if(!wrapper.classList.contains('date-field')){wrapper=document.createElement('span');wrapper.className='date-field';input.before(wrapper);wrapper.append(input);const day=document.createElement('small');day.className='date-weekday';wrapper.append(day);}const day=wrapper.querySelector('.date-weekday');
+   if(input.id==='datetime'){
+    // 保存用の入力値はそのままに、記録画面だけ日時をひと続きで表示します。
+    wrapper.classList.add('record-datetime-field');day.setAttribute('aria-hidden','true');
+    const date=input.value.slice(0,10),time=input.value.slice(11,16);
+    day.textContent=date?date.replaceAll('-','/')+C.weekday(date).replace('（','(').replace('）',')')+' '+time:'日時を選択';
+    if(!input.dataset.pickerBound){input.addEventListener('click',()=>{try{input.showPicker?.();}catch{ /* 非対応環境では標準入力を使用 */ }});input.dataset.pickerBound='true';}
+   }else day.textContent=C.weekday(input.value.slice(0,10));}}
  function init(){document.addEventListener('input',update);document.addEventListener('change',update);document.addEventListener('click',()=>queueMicrotask(update));}
  return {datetime,update,init};
 })();
