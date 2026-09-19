@@ -17,7 +17,7 @@
   const c=canvas.getContext('2d');if(!c)throw Error('画像描画に対応していません。');
   const ink='#75364f',muted='#996b7e',line='#e8cbd7';
   c.fillStyle='#fff9fc';c.fillRect(0,0,1200,1510);
-  function text(value,x,y,size=26,color=ink,align='left',bold=false){c.fillStyle=color;c.font=`${bold?'700':'400'} ${size}px -apple-system, BlinkMacSystemFont, "Hiragino Kaku Gothic ProN", sans-serif`;c.textAlign=align;c.fillText(String(value),x,y);}
+  function text(value,x,y,size=26,color=ink,align='left',bold=false){c.fillStyle=color;c.font=`${bold?'700':'400'} ${size}px -apple-system, BlinkMacSystemFont, "Hiragino Kaku Gothic ProN", sans-serif`;c.textAlign=align;c.fillText(typeof value==='number'?value.toLocaleString('ja-JP'):String(value).replace(/(\d+)(?=回)/g,n=>Number(n).toLocaleString('ja-JP')),x,y);}
   function heading(value,y){text(value,60,y,32,ink,'left',true);}
   function cell(value,x,y,w,h,header=false){c.fillStyle=header?'#f6e3ec':'#ffffff';c.fillRect(x,y,w,h);c.strokeStyle=line;c.lineWidth=2;c.strokeRect(x,y,w,h);text(value,x+w/2,y+h/2+9,25,ink,'center',header);}
   // 上部は期間と記録回数のみ。

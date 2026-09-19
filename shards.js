@@ -2,7 +2,7 @@
 // ゆめのかけら専用の履歴を追加し、アメ履歴には手を加えません。
 const ShardUI=(()=>{
  const methodNames={skill:'スキル',lucky:'きょううん',research:'リサーチ',other:'その他'};
- const drafts=new Map();let researchDateTouched=false,researchSourceKey=null;
+ const drafts=new Map();let researchDateTouched=false,researchSourceKey=null,researchEditingId=null;
  const isTarget=p=>!!SK.shardMode(p);
  const typeOf=p=>SK.shardMode(p);
  const skillName=type=>SK.name(type==='lucky'?'super_luck':'dream_shard_s');
@@ -21,7 +21,9 @@ const ShardUI=(()=>{
   const matches=records().filter(r=>r.method==='research'&&(r.targetDate||C.gameDay(r.datetime))===day);
   const r=[...matches].sort((a,b)=>Date.parse(a.updatedAt||a.recordedAt||a.datetime)-Date.parse(b.updatedAt||b.recordedAt||b.datetime)).at(-1),key=JSON.stringify([day,r||null]);
   if(!force&&key===researchSourceKey)return;researchSourceKey=key;
-  $('shard-research-level').value=r?.researchLevel??'';
+  const previous=records().filter(x=>x.method==='research'&&(x.targetDate||C.gameDay(x.datetime))===C.addDays(day,-1)).sort((a,b)=>Date.parse(a.updatedAt||a.recordedAt||a.datetime)-Date.parse(b.updatedAt||b.recordedAt||b.datetime)).at(-1);
+  researchEditingId=r?.id||null;$('research-panel').open=!r;$('research-save').textContent=r?'訂正を保存':'リサーチを記録';
+  $('shard-research-level').value=r?.researchLevel??previous?.researchLevel??'';
   $('shard-research-exp').value=r?.researchExp??'';
   $('shard-research-base').value=r?.baseAmount??'';
  }
@@ -61,7 +63,7 @@ const ShardUI=(()=>{
    actions.append(button('訂正',()=>ShardEditor.open(r)),button('削除',()=>{if(confirm('このゆめのかけら記録を削除しますか？'))commit({...state,shardRecords:records().filter(x=>x.id!==r.id)},'ゆめのかけら記録を削除しました。');},'danger'));
    head.append(qel('strong',`ゆめのかけら · ${r.amount}個`),actions);card.append(head,el('p',(r.targetDate?'対象日 '+C.displayDate(r.targetDate):DateUI.datetime(r.datetime))+' · '+methodNames[r.method]));
    if(['skill','lucky'].includes(r.method))card.append(el('p',`${position(r.slot)} · ${r.pokemonSnapshot?individual(r.pokemonSnapshot):label(historicalPokemon(r))}${r.skillLevel?'\nスキルLv.'+r.skillLevel:''}${r.method==='lucky'?'\n'+SK.name(r.skillId||r.skillName||'super_luck')+(r.amount===0?' · スキルのみ':''):'\n'+SK.name(r.skillId||r.skillName||'dream_shard_s')}`));
-   if(r.method==='research'){card.append(qel('p',`リサーチ ${r.baseAmount}個`),el('p',`リサーチEXP ${r.researchExp}\nリサーチレベル ${r.researchLevel}`));}
+   if(r.method==='research'){card.append(qel('p',`リサーチ ${r.baseAmount}個`),el('p',`リサーチEXP ${r.researchExp.toLocaleString('ja-JP')}\nリサーチレベル ${r.researchLevel}`));}
    if(r.method==='other'&&r.memo)card.append(el('p',r.memo));root.append(card);
   }
   // アメ・ゆめのかけらを日時順に混在させ、既存の訂正・削除ボタンは保持。
@@ -71,7 +73,7 @@ const ShardUI=(()=>{
   $('shard-research-date').value=C.addDays(C.gameDay(new Date()),-1);$('shard-research-date').oninput=()=>{researchDateTouched=true;loadResearch(true);};
   $('shard-date').value=C.gameDay(new Date());for(const id of ['shard-period','shard-date'])$(id).onchange=renderSummary;
   $('shard-today').onclick=()=>{$('shard-date').value=C.gameDay(new Date());renderSummary();};
-  $('shard-research-form').onsubmit=e=>{e.preventDefault();try{const targetDate=$('shard-research-date').value;if(!C.dateOnly(targetDate))throw Error('対象日を入力してください。');const r={method:'research',targetDate,baseAmount:number('shard-research-base'),researchExp:number('shard-research-exp'),researchLevel:number('shard-research-level',1,70)};r.amount=C.shardTotal(r);if(save(r))loadResearch(true);}catch(err){notice(err.message);}};
+  $('shard-research-form').onsubmit=e=>{e.preventDefault();try{const targetDate=$('shard-research-date').value;if(!C.dateOnly(targetDate))throw Error('対象日を入力してください。');const r={method:'research',targetDate,baseAmount:number('shard-research-base'),researchExp:number('shard-research-exp'),researchLevel:number('shard-research-level',1,70)};r.amount=C.shardTotal(r);const existing=records().find(x=>x.id===researchEditingId);const ok=existing?commit({...state,shardRecords:records().map(x=>x.id===existing.id?{...x,...r,updatedAt:new Date().toISOString()}:x)},'睡眠リサーチを訂正しました。'):save(r);if(ok)loadResearch(true);}catch(err){notice(err.message);}};
   $('shard-other-form').onsubmit=e=>{e.preventDefault();try{if(save({method:'other',amount:number('shard-other-amount'),memo:$('shard-other-memo').value.trim()}))$('shard-other-form').reset();}catch(err){notice(err.message);}};
  }
  return {isTarget,init,renderInputs,addSkillSetting,renderSummary,appendHistory};
