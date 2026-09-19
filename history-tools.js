@@ -3,25 +3,28 @@
 const MewUI=(()=>{
  const shardSkill=MainSkillMaster.value('dream_shard_s');
  function skillOptions(select,unknown=false){select.replaceChildren();if(unknown)select.add(new Option('未記録',''));for(const skill of C.mewSkills.slice(1))select.add(new Option(SK.name(skill),skill));}
- function init(){skillOptions($('edit-fired-skill'),true);$('edit-fired-skill').onchange=refreshEditor;}
+ function init(){for(const skill of C.mewSkills)$('edit-registered-skill').add(new Option(SK.name(skill),skill));skillOptions($('edit-fired-skill'),true);$('edit-fired-skill').onchange=refreshEditor;}
  function editProfile(p){SkillUI.editProfile(p);}
  function renderMewRecord(section,context){
   const p=actorOf(context);section.append(el('p',label(p)),el('p','登録スキル：'+SK.name(SK.forPokemon(p))));
   const b=button('アメなしでスキルを記録',()=>record('mew',null,0));b.id='mew-skill-only';section.append(b);
  }
  // アメ欄では、選んでいない「ゆびをふる」の結果やかけら数を推測しません。
- function recordFields(context){const main=SK.value(SK.forPokemon(actorOf(context)));return SK.id(main)==='metronome'||main===shardSkill?{registeredMainSkill:main,mainSkillId:SK.id(main)}:{registeredMainSkill:main,mainSkillId:SK.id(main),firedSkill:main,shardAmount:0};}
+ function recordFields(context){const main=SK.value(SK.forPokemon(actorOf(context)));return SK.id(main)==='metronome'||main===shardSkill?{recordedSkillLevel:actorOf(context).profile.skillLevel,registeredMainSkill:main,mainSkillId:SK.id(main)}:{recordedSkillLevel:actorOf(context).profile.skillLevel,registeredMainSkill:main,mainSkillId:SK.id(main),firedSkill:main,shardAmount:0};}
  function saveShard(p,amount){
   const date=recordDate(),context=skillContext('mew');if(!Number.isFinite(date.getTime())||!context||context.actorId!==p.id||!context.actorSlot){notice('ミュウの編成と個体情報を確認してください。');return false;}
   const main=SK.value(SK.forPokemon(p));if(!['dream_shard_s','metronome'].includes(SK.id(main))){notice('登録スキルを確認してください。');return false;}
-  const r={id:uid(),datetime:date.toISOString(),method:'mew',amount:0,slot:null,pokemonId:null,pokemon:'スキルのみ',species:null,nickname:'',candy:null,context,registeredMainSkill:main,mainSkillId:SK.id(main),firedSkill:shardSkill,shardAmount:amount};
+  const r={id:uid(),datetime:date.toISOString(),method:'mew',amount:0,slot:null,pokemonId:null,pokemon:'スキルのみ',species:null,nickname:'',candy:null,context,recordedSkillLevel:p.profile.skillLevel,registeredMainSkill:main,mainSkillId:SK.id(main),firedSkill:shardSkill,shardAmount:amount};
   if($('auto-now').checked)$('datetime').value=C.localInput(date);
   return commit({...state,records:[...state.records,r]},'ミュウ：ゆめのかけら'+amount+'個を記録しました。');
  }
- function appendHistory(card,r){const actor=actorOf(r.context);if(actor)card.append(el('p',label(actor)));card.append(el('p','登録スキル：'+SK.name(r.mainSkillId||r.registeredMainSkill||SK.forPokemon(actor))));card.append(el('p','発動：'+(r.firedSkill?SK.name(r.firedSkill):'未記録')));if(SK.id(r.firedSkill)==='dream_shard_s')card.append(qel('p','ゆめのかけら：'+r.shardAmount+'個'));}
- function openEditor(r){$('edit-fired-skill').value=r.firedSkill||'';$('edit-mew-shards').value=r.shardAmount||C.shardAmounts('fixed',r.context?.effectiveLevel||1)[0];}
- function refreshEditor(){const mew=$('edit-method').value==='mew',shards=mew&&$('edit-fired-skill').value===shardSkill;$('edit-mew-fields').hidden=!mew;$('edit-mew-shards-label').hidden=!shards;$('edit-mew-shards').required=shards;}
- function applyEdit(r){if(r.method!=='mew'){delete r.firedSkill;delete r.shardAmount;if(r.method==='delibird'){const p=actorOf(r.context);if(p){r.mainSkillId=SK.id(SK.forPokemon(p));r.registeredMainSkill=SK.value(SK.forPokemon(p));}}else{delete r.registeredMainSkill;delete r.mainSkillId;}return;}const skill=$('edit-fired-skill').value;if(!skill){if(r.amount===0&&!C.mewSkills.includes(r.registeredMainSkill))throw Error('アメなしの記録では発動スキルを選択してください。');delete r.firedSkill;delete r.shardAmount;return;}r.firedSkill=skill;r.shardAmount=skill===shardSkill?Number($('edit-mew-shards').value):0;}
+ function appendHistory(card,r){const actor=actorOf(r.context);const level=r.recordedSkillLevel??actor?.profile?.skillLevel;if(level)card.append(el('p','記録時のスキルLv：'+level));if(actor)card.append(el('p',label(actor)));card.append(el('p','登録スキル：'+SK.name(r.mainSkillId||r.registeredMainSkill||SK.forPokemon(actor))));card.append(el('p','発動：'+(r.firedSkill?SK.name(r.firedSkill):'未記録')));if(SK.id(r.firedSkill)==='dream_shard_s')card.append(qel('p','ゆめのかけら：'+r.shardAmount+'個'));}
+ function openEditor(r){$('edit-mew-level').value=r.recordedSkillLevel??actorOf(r.context)?.profile?.skillLevel??'';const main=SK.value(r.mainSkillId||r.registeredMainSkill||SK.forPokemon(actorOf(r.context)));const select=$('edit-registered-skill');if(![...select.options].some(o=>o.value===main))select.add(new Option(SK.name(main),main));select.value=main;optionList($('edit-mew-target'),editPool.map(p=>({id:p.id,text:label(p)})),r.pokemonId);$('edit-fired-skill').value=r.firedSkill||'';$('edit-mew-shards').value=r.shardAmount||C.shardAmounts('fixed',r.context?.effectiveLevel||1)[0];}
+ function refreshEditor(){const mew=$('edit-method').value==='mew',shards=mew&&$('edit-fired-skill').value===shardSkill;$('edit-mew-fields').hidden=!mew;$('edit-mew-level').required=mew;$('edit-mew-target-label').hidden=!mew||$('edit-slot').value==='none';$('edit-mew-shards-label').hidden=!shards;$('edit-mew-shards').required=shards;}
+ function applyEdit(r){if(r.method!=='mew'){delete r.firedSkill;delete r.shardAmount;if(r.method==='delibird'){const p=actorOf(r.context);if(p){r.mainSkillId=SK.id(SK.forPokemon(p));r.registeredMainSkill=SK.value(SK.forPokemon(p));}}else{delete r.registeredMainSkill;delete r.mainSkillId;}return;}const level=Number($('edit-mew-level').value);if(!Number.isInteger(level)||level<1||level>8)throw Error('記録時のスキルLvは1〜8で入力してください。');r.recordedSkillLevel=level;
+ // 訂正するのは履歴内のコピーだけ。現在の登録個体には触れません。
+ if(r.context){const actor=actorOf(r.context);if(actor?.profile){actor.profile.skillLevel=level;const same=r.context.team.find(p=>p?.id===actor.id);if(same?.profile)same.profile.skillLevel=level;r.context.effectiveLevel=Math.min(8,level+r.context.event.boost);}}
+ r.registeredMainSkill=$('edit-registered-skill').value;r.mainSkillId=SK.id(r.registeredMainSkill);const skill=$('edit-fired-skill').value;if(!skill){if(r.amount===0&&!C.mewSkills.includes(r.registeredMainSkill))throw Error('アメなしの記録では発動スキルを選択してください。');delete r.firedSkill;delete r.shardAmount;return;}r.firedSkill=skill;r.shardAmount=skill===shardSkill?Number($('edit-mew-shards').value):0;}
  return {init,editProfile,renderRecord:renderMewRecord,recordFields,saveShard,appendHistory,openEditor,refreshEditor,applyEdit};
 })();
 

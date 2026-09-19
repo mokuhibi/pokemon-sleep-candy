@@ -56,6 +56,7 @@ const CandyCore = (() => {
   const rids=new Set();for(const r of raw.records){
    if(!r||typeof r.id!=='string'||rids.has(r.id)||!['help','mew','delibird'].includes(r.method)||typeof r.datetime!=='string'||!Number.isFinite(Date.parse(r.datetime)))throw Error('履歴');rids.add(r.id);
    const noCandy=(r.method==='delibird'&&r.amount===0&&r.slot===6)||(r.method==='mew'&&r.amount===0&&r.slot===null&&(r.firedSkill!==undefined||r.registeredMainSkill!==undefined));
+   if(r.recordedSkillLevel!==undefined&&(!Number.isInteger(r.recordedSkillLevel)||r.recordedSkillLevel<1||r.recordedSkillLevel>8))throw Error('記録時スキルLv');
    if(r.registeredMainSkill!==undefined&&(typeof r.registeredMainSkill!=='string'||!r.registeredMainSkill.trim()))throw Error('記録時メインスキル');
    if(r.firedSkill!==undefined&&(r.method!=='mew'||!mewSkills.slice(1).includes(r.firedSkill)||!r.context||!Number.isSafeInteger(r.shardAmount)||r.shardAmount<0||r.shardAmount>1000000000||(SK.id(r.firedSkill)==='dream_shard_s'?r.shardAmount===0:r.shardAmount!==0)))throw Error('ミュウ発動スキル');
    if(noCandy){if((r.method==='mew'&&!r.context)||r.candy!==null||r.pokemonId!==null)throw Error('アメなし');}
@@ -66,7 +67,7 @@ const CandyCore = (() => {
      const actor=c.actor || c.team[c.actorSlot-1];
      const outside=r.method==='mew'&&c.actorSlot===null&&c.rulesVersion===3;
      if(!actor||actor.id!==c.actorId||actor.species!==(r.method==='mew'?'ミュウ':'デリバード')||!profileValid(actor.profile,actor.species,c.rulesVersion!==3)||(!outside&&(!Number.isInteger(c.actorSlot)||c.actorSlot<1||c.actorSlot>5||c.team[c.actorSlot-1]?.id!==actor.id))||!c.event||![1,1.25,1.5].includes(c.event.multiplier)||!Number.isInteger(c.event.boost)||c.event.boost<0||c.event.boost>7||c.effectiveLevel!==Math.min(c.rulesVersion===3?skillCap(actor.species):8,actor.profile.skillLevel+c.event.boost))throw Error('スキル個体');
-     if(r.method==='mew'&&!noCandy&&!mewAmounts(c.effectiveLevel).includes(r.amount))throw Error('スキル個数');
+     // ミュウのアメ数は手動選択。旧記録の2・3個も上の検証で受け入れます。
     }
    }
   }
