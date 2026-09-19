@@ -61,3 +61,9 @@ dialog{border:1px solid #dacda2;border-radius:14px;padding:18px;color:#725619;ba
 .mew-position-table{min-width:0;font-size:10px}.mew-position-table th:first-child{width:28px;font-size:10px;padding:4px 1px}.mew-position-table td,.mew-position-table th{padding:6px 1px;overflow-wrap:anywhere}
 .mew-position-table th:last-child{width:40px;font-size:10px}.mew-position-table .quantity-number{font-size:12px}
 #mew-skill-only{margin-bottom:12px}#edit-mew-fields{border-top:1px solid var(--edge);margin-top:12px}
+
+/* 記録画面だけ、日時・曜日・今すぐ記録を同じ行に並べます。 */
+.record-date-card>.date-field{display:flex;align-items:center;gap:3px;flex-wrap:nowrap}
+.record-date-card>.date-field #datetime{flex:1;min-width:0;width:0}
+.record-date-card .date-weekday{flex:none;white-space:nowrap;margin:0}
+@media(max-width:400px){.record-date-card{padding:10px 7px;gap:4px}.record-date-card .check{font-size:11px;gap:2px}.record-date-card .check input{width:16px;height:16px}}
