@@ -35,17 +35,17 @@ const ShardUI=(()=>{
   if(!members.length)return;root.append(el('h2','ゆめのかけら'));
   for(const {p,slot} of members){
    const type=typeOf(p),level=p.profile?.skillLevel,card=el('div',undefined,'card');card.append(el('h3',`${position(slot)} · ${individual(p)}`),el('p',skillName(type)+(level?` · スキルLv.${level}`:'')));
-   if(p.species==='ミュウ')card.append(el('p','登録スキル：'+SK.name(SK.forPokemon(p))));
+   if(p.species==='ミュウ')card.append(el('p',mainSkillText(p)));
    const saveSkill=amount=>p.species==='ミュウ'?MewUI.saveShard(p,amount):save({method:type==='lucky'?'lucky':'skill',skillType:type,skillId:SK.id(SK.forPokemon(p)),skillName:SK.value(SK.forPokemon(p)),...(level?{skillLevel:level}:{}),amount,pokemonId:p.id,pokemon:storedLabel(p),species:p.species,slot,pokemonSnapshot:clone(p)});
    if(type==='random'){
     const form=el('form',undefined,'shard-skill-form'),l=el('label','獲得したゆめのかけら'),input=amountInput('shard-amount-'+slot,1);input.dataset.pokemon=p.id;input.value=drafts.get(p.id)||'';l.append(input);const b=el('button','記録');b.type='submit';form.append(l,b);
     form.onsubmit=e=>{e.preventDefault();try{if(saveSkill(number(input.id,1))){drafts.delete(p.id);const fresh=$('shard-amount-'+slot);if(fresh)fresh.value='';}}catch(err){notice(err.message);}};card.append(form);
-   }else if(!level){card.append(button('スキルレベルを設定',()=>{showTab('settings');$('profile-select').value=p.id;editProfile();}));}
+   }else if(!level){card.append(button('スキルレベルを設定',()=>{openIndividualEditor(p);}));}
    else{const actions=el('div',undefined,'shard-amount-buttons');for(const amount of C.shardAmounts(type,level)){const b=button('',()=>saveSkill(amount));if(amount===0)b.textContent='スキルのみ';else quantityText(b,amount+'個');actions.append(b);}card.append(actions);}
    root.append(card);
   }
  }
- function addSkillSetting(card,p){card.append(el('small',SK.name(SK.forPokemon(p))+(p.profile?` · Lv.${p.profile.skillLevel}`:''),'shard-setting'));}
+ function addSkillSetting(card,p){card.append(el('small',mainSkillText(p)+(p.profile?` · Lv.${p.profile.skillLevel}`:''),'shard-setting'));}
  function renderSummary(){
   const day=$('shard-date').value||C.gameDay(new Date()),period=C.range($('shard-period').value,day),rs=summaryRecords().filter(r=>C.inRange(r,period));
   $('shard-range').textContent=period?`${C.displayDate(period[0])} 朝4時 〜 ${C.displayDate(period[1])} 朝4時`:'全期間';

@@ -6,7 +6,7 @@ const MewUI=(()=>{
  function init(){for(const skill of C.mewSkills)$('edit-registered-skill').add(new Option(SK.name(skill),skill));skillOptions($('edit-fired-skill'),true);$('edit-fired-skill').onchange=refreshEditor;}
  function editProfile(p){SkillUI.editProfile(p);}
  function renderMewRecord(section,context){
-  const p=actorOf(context);section.append(el('p',label(p)),el('p','登録スキル：'+SK.name(SK.forPokemon(p))));
+  const p=actorOf(context);section.append(el('p',label(p)),el('p',mainSkillText(p)));
  }
  // アメ欄では、選んでいない「ゆびをふる」の結果やかけら数を推測しません。
  function recordFields(context){const main=SK.value(SK.forPokemon(actorOf(context)));return SK.id(main)==='metronome'||main===shardSkill?{recordedSkillLevel:actorOf(context).profile.skillLevel,registeredMainSkill:main,mainSkillId:SK.id(main)}:{recordedSkillLevel:actorOf(context).profile.skillLevel,registeredMainSkill:main,mainSkillId:SK.id(main),firedSkill:main,shardAmount:0};}
