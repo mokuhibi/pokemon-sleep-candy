@@ -114,3 +114,22 @@ dialog{border:1px solid #dacda2;border-radius:14px;padding:18px;color:#725619;ba
 .heading-total{font-size:13px;white-space:nowrap;font-weight:600;margin-left:auto}
 .heading-total .quantity-number{font-size:16px}
 .copy-skill-card{background:#fffbea}
+
+/* 記録タブ専用。日時の下書きは「決定」まで保存しません。 */
+.record-datetime-field:has(.record-picker-trigger)>.date-weekday{display:none}
+.record-picker-trigger{width:100%;height:100%;border:0;padding:0 5px;text-align:left;font-size:clamp(12px,3.65vw,16px);white-space:nowrap;background:transparent}
+.record-picker{width:min(440px,calc(100% - 24px));max-height:calc(100dvh - 24px);padding:20px;border:1px solid var(--edge);border-radius:22px;background:#fffefa;color:inherit;overflow:auto}
+.record-picker::backdrop{background:rgba(70,51,18,.3)}
+.record-picker h2{margin:0 0 16px}
+.record-picker-head{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:14px}
+.record-picker-head strong{font-size:21px}.record-picker-head button{width:46px;height:46px;padding:0}
+.record-picker-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:3px;text-align:center}
+.record-picker-grid>span{padding:5px 0;font-size:13px}
+.record-picker-grid button{min-height:42px;padding:8px 0;border-color:transparent;background:transparent;font-size:17px}
+.record-picker-grid button[aria-pressed=true]{background:#f2dfa0;border-color:#b99537;font-weight:700;border-radius:50%}
+.record-picker-selected{margin:12px 0 0;text-align:center;font-weight:700}
+.record-picker-time{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:12px;align-items:center}
+.record-picker-time label{margin:12px 0 0}.record-picker-time>span{font-size:28px;padding-top:25px}
+.record-picker-time select{height:68px;font-size:30px;font-weight:700;text-align:center;background:#fbf8ee;padding:8px}
+.record-picker-actions{display:flex;gap:12px}.record-picker-actions button{flex:1;min-height:52px;font-size:17px;font-weight:700}.record-picker-actions button[type=submit]{background:#f2dfa0;border-color:#c8a545}
+@media(max-height:650px){.record-picker{padding:14px}.record-picker-grid button{min-height:34px;padding:4px}.record-picker h2{margin-bottom:8px}.record-picker-time select{height:56px}}

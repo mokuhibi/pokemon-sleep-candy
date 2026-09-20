@@ -261,3 +261,5 @@ $('summary-today').onclick=()=>{$('summary-date').value=C.gameDay(new Date());re
 
 // 既存の初期化が済んだ後、共通の期間選択UIに置き換えます。
 PeriodPicker.init();
+
+RecordPicker.init();
