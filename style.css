@@ -102,3 +102,6 @@ dialog{border:1px solid #dacda2;border-radius:14px;padding:18px;color:#725619;ba
 .period-picker-choices{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:5px}
 .period-picker-choices button{padding:11px 4px}
 .period-picker-choices [aria-pressed=true]{background:#f2dfa0;border-color:#a18023;font-weight:700}
+
+.tabs .tab-line{white-space:nowrap}
+.shard-skill-total>strong{white-space:pre-line;text-align:right;line-height:1.6}

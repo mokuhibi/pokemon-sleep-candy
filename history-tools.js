@@ -3,7 +3,7 @@
 const MewUI=(()=>{
  const shardSkill=MainSkillMaster.value('dream_shard_s');
  function skillOptions(select,unknown=false){select.replaceChildren();if(unknown)select.add(new Option('未記録',''));for(const skill of C.mewSkills.slice(1))select.add(new Option(SK.name(skill),skill));}
- function init(){for(const skill of C.mewSkills)$('edit-registered-skill').add(new Option(SK.name(skill),skill));skillOptions($('edit-fired-skill'),true);$('edit-fired-skill').onchange=refreshEditor;}
+ function init(){for(const skill of C.mewSkills)$('edit-registered-skill').add(new Option(mainSkillText({species:'ミュウ'},skill),skill));skillOptions($('edit-fired-skill'),true);$('edit-fired-skill').onchange=refreshEditor;}
  function editProfile(p){SkillUI.editProfile(p);}
  function renderMewRecord(section,context){
   const p=actorOf(context);section.append(el('p',label(p)),el('p',mainSkillText(p)));
@@ -17,8 +17,8 @@ const MewUI=(()=>{
   if($('auto-now').checked)$('datetime').value=C.localInput(date);
   return commit({...state,records:[...state.records,r]},'ミュウ：ゆめのかけら'+amount+'個を記録しました。');
  }
- function appendHistory(card,r){const actor=actorOf(r.context);const level=r.recordedSkillLevel??actor?.profile?.skillLevel;if(level)card.append(el('p','記録時のスキルLv：'+level));if(actor)card.append(el('p',label(actor)));card.append(el('p','セット中のメインスキル：'+SK.name(r.mainSkillId||r.registeredMainSkill||SK.forPokemon(actor))));if(SK.id(r.firedSkill)==='dream_shard_s')card.append(qel('p','ゆめのかけら：'+r.shardAmount+'個'));}
- function openEditor(r){$('edit-mew-level').value=r.recordedSkillLevel??actorOf(r.context)?.profile?.skillLevel??'';const main=SK.value(r.mainSkillId||r.registeredMainSkill||SK.forPokemon(actorOf(r.context)));const select=$('edit-registered-skill');if(![...select.options].some(o=>o.value===main))select.add(new Option(SK.name(main),main));select.value=main;optionList($('edit-mew-target'),editPool.map(p=>({id:p.id,text:label(p)})),r.pokemonId);$('edit-fired-skill').value=r.firedSkill||'';$('edit-mew-shards').value=r.shardAmount||C.shardAmounts('fixed',r.context?.effectiveLevel||1)[0];}
+ function appendHistory(card,r){const actor=actorOf(r.context);const level=r.recordedSkillLevel??actor?.profile?.skillLevel;if(level)card.append(el('p','記録時のスキルLv：'+level));if(actor)card.append(el('p',label(actor)));card.append(el('p',mainSkillText({species:'ミュウ'},r.mainSkillId||r.registeredMainSkill||SK.forPokemon(actor))));if(SK.id(r.firedSkill)==='dream_shard_s')card.append(qel('p','ゆめのかけら：'+r.shardAmount+'個'));}
+ function openEditor(r){$('edit-mew-level').value=r.recordedSkillLevel??actorOf(r.context)?.profile?.skillLevel??'';const main=SK.value(r.mainSkillId||r.registeredMainSkill||SK.forPokemon(actorOf(r.context)));const select=$('edit-registered-skill');if(![...select.options].some(o=>o.value===main))select.add(new Option(mainSkillText({species:'ミュウ'},main),main));select.value=main;optionList($('edit-mew-target'),editPool.map(p=>({id:p.id,text:label(p)})),r.pokemonId);$('edit-fired-skill').value=r.firedSkill||'';$('edit-mew-shards').value=r.shardAmount||C.shardAmounts('fixed',r.context?.effectiveLevel||1)[0];}
  function refreshEditor(){const mew=$('edit-method').value==='mew',shards=mew&&$('edit-fired-skill').value===shardSkill;$('edit-mew-fields').hidden=!mew;$('edit-mew-level').required=mew;$('edit-mew-target-label').hidden=!mew||$('edit-slot').value==='none';$('edit-mew-shards-label').hidden=!shards;$('edit-mew-shards').required=shards;}
  function applyEdit(r){if(r.method!=='mew'){delete r.firedSkill;delete r.shardAmount;if(r.method==='delibird'){const p=actorOf(r.context);if(p){r.mainSkillId=SK.id(SK.forPokemon(p));r.registeredMainSkill=SK.value(SK.forPokemon(p));}}else{delete r.registeredMainSkill;delete r.mainSkillId;}return;}const level=Number($('edit-mew-level').value);if(!Number.isInteger(level)||level<1||level>8)throw Error('記録時のスキルLvは1〜8で入力してください。');r.recordedSkillLevel=level;
  // 訂正するのは履歴内のコピーだけ。現在の登録個体には触れません。
@@ -60,10 +60,10 @@ const SkillUI=(()=>{
  function options(select,species,selected){
   const list=species==='ミュウ'?SK.mewEntries():SK.entries;select.replaceChildren();
   if(!species){select.add(new Option('ポケモンを選んでください',''));select.disabled=true;return;}
-  select.disabled=false;for(const s of list)select.add(new Option(s.name,s.id));
+  select.disabled=false;for(const s of list)select.add(new Option(mainSkillText({species},s.id),s.id));
   const key=SK.id(selected||SK.defaultId(species));
   // マスター外の旧データも失わず表示・再保存できるようにします。
-  if(key&&![...select.options].some(o=>o.value===key))select.add(new Option(SK.name(key)+'（保存済み）',key));
+  if(key&&![...select.options].some(o=>o.value===key))select.add(new Option(mainSkillText({species},key)+'（保存済み）',key));
   select.value=key;
  }
  function registration(species){options($('register-main-skill'),species,SK.defaultId(species));}
@@ -71,6 +71,6 @@ const SkillUI=(()=>{
  function refreshDetails(p){const selected={...p,...SK.fields($('profile-main-skill').value)},show=!!p.profile||special(p)||!!SK.shardMode(selected);$('profile-details').hidden=!show;for(const input of $('profile-details').querySelectorAll('input,select'))input.disabled=!show;$('profile-nature').disabled=!show||p.species==='ミュウ';$('profile-skill').max=SK.shardMode(selected)==='lucky'?7:C.skillCap(p.species);}
  function savedFields(p,key){if(p.mainSkill&&SK.id(SK.forPokemon(p))===SK.id(key))return {mainSkill:p.mainSkill,mainSkillId:SK.id(key)};return SK.fields(key);}
  function recordSkill(r){const actor=actorOf(r.context);return SK.id(r.firedSkill||r.skillId||r.skillName||r.mainSkillId||r.registeredMainSkill||SK.forPokemon(actor));}
- function candyCounts(parent,records){const groups=new Map();for(const r of records){const key=recordSkill(r);if(key)groups.set(key,(groups.get(key)||0)+1);}for(const [key,count] of groups)row(parent,SK.name(key),count+'回');}
+ function candyCounts(parent,records){const groups=new Map();for(const r of records){const key=recordSkill(r);if(key)groups.set(key,(groups.get(key)||0)+1);}for(const [key,count] of groups)row(parent,mainSkillText({species:records[0]?.method==='mew'?'ミュウ':''},key),count+'回');}
  return {registration,editProfile,refreshDetails,savedFields,recordSkill,candyCounts};
 })();
