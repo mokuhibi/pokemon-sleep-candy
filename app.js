@@ -1,6 +1,6 @@
 'use strict';
 const C=CandyCore, SK=MainSkillMaster, KEY='pokesleep-candy-v1', $=id=>document.getElementById(id);
-const methods={help:'おてつだい',mew:'ミュウ',delibird:'デリバード',skill:'スキル'},names=Object.keys(candyMap);
+const methods={help:'アメ拾い',mew:'ミュウ',delibird:'デリバード',skill:'スキル'},names=Object.keys(candyMap);
 const uid=()=>crypto.randomUUID?crypto.randomUUID():Date.now()+'-'+Math.random().toString(36).slice(2);
 const clone=x=>JSON.parse(JSON.stringify(x)), el=(tag,text,cls)=>{const n=document.createElement(tag);if(text!==undefined)nameText(n,text);if(cls)n.className=cls;return n;};
 // 表示名だけを変更し、保存用の名前・内部IDは従来どおり保持します。
@@ -62,7 +62,7 @@ function record(method,slot,amount){const date=recordDate();if(!Number.isFinite(
  if(method==='mew'){try{Object.assign(r,MewUI.recordFields(context));}catch(e){notice(e.message);return;}}
  commit({...state,records:[...state.records,r]},`${methods[method]}：${skillOnly?'スキルのみ（アメなし）':position(slot)+'・'+r.candy+' '+amount+'個'}を記録しました。`);
 }
-function totals(parent,records,title){records=records.filter(visibleRecord);parent.replaceChildren(el('small',title),qel('div',`${C.sum(records)}個`,'total'));for(const [method,name] of Object.entries(methods)){if(!enabled(method))continue;const rs=records.filter(r=>r.method===method);if(method==='skill'&&!rs.length)continue;row(parent,name,method==='help'?`${parent.id==='today-total'?'回数':'おてつだい回数'}${rs.length}回 · アメ${C.sum(rs)}個`:`スキル${rs.length}回 · アメ${C.sum(rs)}個`,method);}}
+function totals(parent,records,title){records=records.filter(visibleRecord);parent.replaceChildren(el('small',title),qel('div',`${C.sum(records)}個`,'total'));for(const [method,name] of Object.entries(methods)){if(!enabled(method))continue;const rs=records.filter(r=>r.method===method);if(method==='skill'&&!rs.length)continue;row(parent,name,method==='help'?`${parent.id==='today-total'?'回数':'アメ拾い回数'}${rs.length}回 · アメ${C.sum(rs)}個`:`スキル${rs.length}回 · アメ${C.sum(rs)}個`,method);}}
 
 function renderRecord(){
 
