@@ -133,3 +133,12 @@ dialog{border:1px solid #dacda2;border-radius:14px;padding:18px;color:#725619;ba
 .record-picker-time select{height:68px;font-size:30px;font-weight:700;text-align:center;background:#fbf8ee;padding:8px}
 .record-picker-actions{display:flex;gap:12px}.record-picker-actions button{flex:1;min-height:52px;font-size:17px;font-weight:700}.record-picker-actions button[type=submit]{background:#f2dfa0;border-color:#c8a545}
 @media(max-height:650px){.record-picker{padding:14px}.record-picker-grid button{min-height:34px;padding:4px}.record-picker h2{margin-bottom:8px}.record-picker-time select{height:56px}}
+
+/* 合計カード内：数字と単位の強弱を保ち、3列の右端を揃えます。 */
+.total-breakdown{width:100%;min-width:0;border-collapse:collapse;font-size:13px;margin-top:10px}
+.total-breakdown th,.total-breakdown td{border:0;border-bottom:1px solid var(--edge);padding:10px 0 10px 8px;background:transparent;text-align:right;white-space:nowrap}
+.total-breakdown th:first-child{padding-left:0;text-align:left;font-weight:400;white-space:normal}
+.total-breakdown thead th{font-size:11px;font-weight:400;padding-top:0;padding-bottom:6px}
+.total-breakdown tbody tr:last-child>*{border-bottom:0}
+.total-breakdown td{font-variant-numeric:tabular-nums}
+@media(max-width:360px){.total-breakdown{font-size:12px}.total-breakdown th,.total-breakdown td{padding-left:5px}}

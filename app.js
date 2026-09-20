@@ -62,7 +62,11 @@ function record(method,slot,amount){const date=recordDate();if(!Number.isFinite(
  if(method==='mew'){try{Object.assign(r,MewUI.recordFields(context));}catch(e){notice(e.message);return;}}
  commit({...state,records:[...state.records,r]},`${methods[method]}：${skillOnly?'スキルのみ（アメなし）':position(slot)+'・'+r.candy+' '+amount+'個'}を記録しました。`);
 }
-function totals(parent,records,title){records=records.filter(visibleRecord);parent.replaceChildren(el('small',title),qel('div',`${C.sum(records)}個`,'total'));for(const [method,name] of Object.entries(methods)){if(!enabled(method))continue;const rs=records.filter(r=>r.method===method);if(method==='skill'&&!rs.length)continue;row(parent,name,method==='help'?`${parent.id==='today-total'?'回数':'アメ拾い回数'}${rs.length}回 · アメ${C.sum(rs)}個`:`スキル${rs.length}回 · アメ${C.sum(rs)}個`,method);}}
+// 合計カードだけで使う表示用の表。集計済みの値を列に分けます。
+function totalBreakdown(parent,amountLabel){const table=el('table',undefined,'total-breakdown'),head=el('thead'),tr=el('tr'),body=el('tbody');for(const text of ['', '回数',amountLabel]){const th=el('th',text);th.scope='col';tr.append(th);}head.append(tr);table.append(head,body);parent.append(table);return body;}
+function totalBreakdownRow(body,name,count,amount,cls=''){const tr=el('tr',undefined,cls),nameCell=el('th',name);nameCell.scope='row';tr.append(nameCell,qel('td',count===null?'―':count+'回'),qel('td',amount+'個'));body.append(tr);}
+function totals(parent,records,title){records=records.filter(visibleRecord);parent.replaceChildren(el('small',title),qel('div',`${C.sum(records)}個`,'total'));const body=totalBreakdown(parent,'アメ');for(const [method,name] of Object.entries(methods)){if(!enabled(method))continue;const rs=records.filter(r=>r.method===method);if(method==='skill'&&!rs.length)continue;totalBreakdownRow(body,name,rs.length,C.sum(rs),method);}}
+
 
 function renderRecord(){
 

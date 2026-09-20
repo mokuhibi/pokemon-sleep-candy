@@ -51,7 +51,8 @@ const ShardUI=(()=>{
   const day=$('shard-date').value||C.gameDay(new Date()),period=C.range($('shard-period').value,day),rs=summaryRecords().filter(r=>C.inRange(r,period));
   $('shard-range').textContent=period?`${C.displayDate(period[0])} 04:00 〜 ${C.displayDate(period[1])} 04:00`:'全期間';
   const title=summaryTitle(period).replace(/のアメ$/,'のゆめのかけら'),root=$('shard-total');root.replaceChildren(el('small',title),qel('div',C.sum(rs)+'個','total'));
-  for(const [key,name] of [['skill','スキル'],['research','睡眠リサーチ'],['other','その他']]){const xs=rs.filter(r=>key==='skill'?['skill','lucky'].includes(r.method):r.method===key);if(xs.length){row(root,name,(key==='skill'?xs.length+'回\n':'')+C.sum(xs)+'個');if(key==='skill')root.lastElementChild.classList.add('shard-skill-total');}}
+  const body=totalBreakdown(root,'ゆめのかけら');
+  for(const [key,name] of [['skill','スキル'],['research','睡眠リサーチ'],['other','その他']]){const xs=rs.filter(r=>key==='skill'?['skill','lucky'].includes(r.method):r.method===key);if(xs.length){totalBreakdownRow(body,name,key==='skill'?xs.length:null,C.sum(xs));}}
   WeeklyChart.render($('shard-weekly-chart'),summaryRecords(),day);
   const list=$('shard-pokemon-totals');list.replaceChildren();const groups=new Map();
   const research=rs.filter(r=>r.method==='research');const researchCard=el('div',undefined,'shard-individual');researchCard.append(el('h4','睡眠リサーチ'),qel('p',C.sum(research)+'個'));list.append(researchCard);
