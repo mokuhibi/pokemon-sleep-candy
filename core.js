@@ -24,10 +24,14 @@ const CandyCore = (() => {
  function weeklyTotals(records,day){const start=range('week',day)[0];const days=Array.from({length:7},(_,i)=>({date:addDays(start,i),amount:0}));for(const r of records){const d=gameDay(r.datetime),item=days.find(x=>x.date===d);if(item)item.amount+=r.amount;}return days;}
  const mewSkills=SK.mewEntries().map(s=>s.legacyName);
  const weekday=day=>dateOnly(day)?'（'+['日','月','火','水','木','金','土'][new Date(day).getUTCDay()]+'）':'';
- const displayDate=day=>day+weekday(day);
+ const displayDate=day=>dateOnly(day)?day.replaceAll('-','/')+weekday(day).replace('（','(').replace('）',')'):day;
  // ミュウの同一発動から、集計専用のかけら行を作ります。保存・履歴表示は元の1件だけです。
  const mewShardRecords=records=>records.filter(r=>r.method==='mew'&&SK.id(r.firedSkill)==='dream_shard_s').map(r=>{const p=r.context?.actor||r.context?.team?.[r.context?.actorSlot-1];return {id:r.id,datetime:r.datetime,method:'skill',amount:r.shardAmount,pokemonId:p?.id||r.context?.actorId||'unknown-mew',pokemon:p?.nickname||'ミュウ',species:'ミュウ',slot:r.context?.actorSlot??null,pokemonSnapshot:p,skillName:r.firedSkill,skillLevel:r.context?.effectiveLevel,source:'mew'};});
  const profileDefault=species=>({level:1,nature:species==='ミュウ'?'きまぐれ':'',skillLevel:1,subskills:['','','','','']});
+ const recordProfile=p=>p.profile||{...profileDefault(p.species),nature:p.species==='ミュウ'?'きまぐれ':'未設定'};
+ // 獲得記録を持つ履歴は削除しません。
+ const mewActivationOnly=r=>r.method==='mew'&&r.amount===0&&r.slot===null&&r.candy===null&&r.species==null&&(r.shardAmount===undefined||r.shardAmount===0);
+ const cleanMewActivations=data=>({...data,records:data.records.filter(r=>!mewActivationOnly(r))});
  const skillCap=species=>species==='デリバード'||shardType(species)==='lucky'?7:8;
  const profileValid=(p,species,legacy=false)=>p&&Number.isInteger(p.level)&&p.level>=1&&p.level<=100&&typeof p.nature==='string'&&p.nature.length>0&&(species!=='ミュウ'||p.nature==='きまぐれ')&&Number.isInteger(p.skillLevel)&&p.skillLevel>=1&&p.skillLevel<=(legacy?8:skillCap(species))&&Array.isArray(p.subskills)&&p.subskills.length===5&&p.subskills.every(x=>typeof x==='string')&&new Set(p.subskills.filter(Boolean)).size===p.subskills.filter(Boolean).length;
  function eventFor(events,day,method){const e=events.find(e=>e.start<=day&&day<=e.end&&(e.target==='both'||e.target===method));return e?{id:e.id,name:e.name,multiplier:e.multiplier,boost:e.boost}:{id:null,name:'通常',multiplier:1,boost:0};}
@@ -78,6 +82,6 @@ const CandyCore = (() => {
   return {...raw,version:2,shardRecords,pokemon:raw.pokemon.map((p,i)=>({...p,registrationOrder:Number.isFinite(p.registrationOrder)?p.registrationOrder:i,profile:p.profile?{...p.profile,skillLevel:Math.min(skillCap(p.species),p.profile.skillLevel)}:null})),team:raw.team,records:raw.records.map(r=>({...r,context:r.context||null})),events,settings:raw.settings||{mew:true,delibird:true}};
  }
  const sum=rs=>rs.reduce((n,r)=>n+r.amount,0);
- return {gameDay,localInput,fromInput,dateOnly,addDays,range,inRange,mewAmounts,profileDefault,profileValid,skillCap,eventFor,migrate,sum,shardTotal,validateShards,speciesName,shardType,shardAmounts,weeklyTotals,mewSkills,weekday,displayDate,mewShardRecords};
+ return {recordProfile,mewActivationOnly,cleanMewActivations,gameDay,localInput,fromInput,dateOnly,addDays,range,inRange,mewAmounts,profileDefault,profileValid,skillCap,eventFor,migrate,sum,shardTotal,validateShards,speciesName,shardType,shardAmounts,weeklyTotals,mewSkills,weekday,displayDate,mewShardRecords};
 })();
 if(typeof module!=='undefined')module.exports=CandyCore;

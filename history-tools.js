@@ -9,15 +9,15 @@ const MewUI=(()=>{
   const p=actorOf(context);section.append(el('p',label(p)),el('p',mainSkillText(p)));
  }
  // アメ欄では、選んでいない「ゆびをふる」の結果やかけら数を推測しません。
- function recordFields(context){const main=SK.value(SK.forPokemon(actorOf(context)));return SK.id(main)==='metronome'||main===shardSkill?{recordedSkillLevel:actorOf(context).profile.skillLevel,registeredMainSkill:main,mainSkillId:SK.id(main)}:{recordedSkillLevel:actorOf(context).profile.skillLevel,registeredMainSkill:main,mainSkillId:SK.id(main),firedSkill:main,shardAmount:0};}
+ function recordFields(context){const main=SK.value(SK.forPokemon(actorOf(context)));return {recordedSkillLevel:actorOf(context).profile.skillLevel,registeredMainSkill:main,mainSkillId:SK.id(main)};}
  function saveShard(p,amount){
   const date=recordDate(),context=skillContext('mew');if(!Number.isFinite(date.getTime())||!context||context.actorId!==p.id||!context.actorSlot){notice('ミュウの編成と個体情報を確認してください。');return false;}
   const main=SK.value(SK.forPokemon(p));if(!['dream_shard_s','metronome'].includes(SK.id(main))){notice('登録スキルを確認してください。');return false;}
-  const r={id:uid(),datetime:date.toISOString(),method:'mew',amount:0,slot:null,pokemonId:null,pokemon:'スキルのみ',species:null,nickname:'',candy:null,context,recordedSkillLevel:p.profile.skillLevel,registeredMainSkill:main,mainSkillId:SK.id(main),firedSkill:shardSkill,shardAmount:amount};
+  const r={id:uid(),datetime:date.toISOString(),method:'mew',amount:0,slot:null,pokemonId:null,pokemon:'スキルのみ',species:null,nickname:'',candy:null,context,recordedSkillLevel:context.actor.profile.skillLevel,registeredMainSkill:main,mainSkillId:SK.id(main),firedSkill:shardSkill,shardAmount:amount};
   if($('auto-now').checked)$('datetime').value=C.localInput(date);
   return commit({...state,records:[...state.records,r]},'ミュウ：ゆめのかけら'+amount+'個を記録しました。');
  }
- function appendHistory(card,r){const actor=actorOf(r.context);const level=r.recordedSkillLevel??actor?.profile?.skillLevel;if(level)card.append(el('p','記録時のスキルLv：'+level));if(actor)card.append(el('p',label(actor)));card.append(el('p','登録スキル：'+SK.name(r.mainSkillId||r.registeredMainSkill||SK.forPokemon(actor))));card.append(el('p','発動：'+(r.firedSkill?SK.name(r.firedSkill):'未記録')));if(SK.id(r.firedSkill)==='dream_shard_s')card.append(qel('p','ゆめのかけら：'+r.shardAmount+'個'));}
+ function appendHistory(card,r){const actor=actorOf(r.context);const level=r.recordedSkillLevel??actor?.profile?.skillLevel;if(level)card.append(el('p','記録時のスキルLv：'+level));if(actor)card.append(el('p',label(actor)));card.append(el('p','セット中のメインスキル：'+SK.name(r.mainSkillId||r.registeredMainSkill||SK.forPokemon(actor))));if(SK.id(r.firedSkill)==='dream_shard_s')card.append(qel('p','ゆめのかけら：'+r.shardAmount+'個'));}
  function openEditor(r){$('edit-mew-level').value=r.recordedSkillLevel??actorOf(r.context)?.profile?.skillLevel??'';const main=SK.value(r.mainSkillId||r.registeredMainSkill||SK.forPokemon(actorOf(r.context)));const select=$('edit-registered-skill');if(![...select.options].some(o=>o.value===main))select.add(new Option(SK.name(main),main));select.value=main;optionList($('edit-mew-target'),editPool.map(p=>({id:p.id,text:label(p)})),r.pokemonId);$('edit-fired-skill').value=r.firedSkill||'';$('edit-mew-shards').value=r.shardAmount||C.shardAmounts('fixed',r.context?.effectiveLevel||1)[0];}
  function refreshEditor(){const mew=$('edit-method').value==='mew',shards=mew&&$('edit-fired-skill').value===shardSkill;$('edit-mew-fields').hidden=!mew;$('edit-mew-level').required=mew;$('edit-mew-target-label').hidden=!mew||$('edit-slot').value==='none';$('edit-mew-shards-label').hidden=!shards;$('edit-mew-shards').required=shards;}
  function applyEdit(r){if(r.method!=='mew'){delete r.firedSkill;delete r.shardAmount;if(r.method==='delibird'){const p=actorOf(r.context);if(p){r.mainSkillId=SK.id(SK.forPokemon(p));r.registeredMainSkill=SK.value(SK.forPokemon(p));}}else{delete r.registeredMainSkill;delete r.mainSkillId;}return;}const level=Number($('edit-mew-level').value);if(!Number.isInteger(level)||level<1||level>8)throw Error('記録時のスキルLvは1〜8で入力してください。');r.recordedSkillLevel=level;
@@ -30,13 +30,13 @@ const MewUI=(()=>{
 const DateUI=(()=>{
  const datetime=value=>{const s=C.localInput(value);return C.displayDate(s.slice(0,10))+' '+s.slice(11);};
  function update(){for(const input of document.querySelectorAll('input[type=date],input[type=datetime-local]')){let wrapper=input.parentElement;if(!wrapper.classList.contains('date-field')){wrapper=document.createElement('span');wrapper.className='date-field';input.before(wrapper);wrapper.append(input);const day=document.createElement('small');day.className='date-weekday';wrapper.append(day);}const day=wrapper.querySelector('.date-weekday');
-   if(input.id==='datetime'){
-    // 保存用の入力値はそのままに、記録画面だけ日時をひと続きで表示します。
-    wrapper.classList.add('record-datetime-field');day.setAttribute('aria-hidden','true');
+   {
+    // 保存値は変更せず、日付選択欄も共通の書式で表示します。
+    wrapper.classList.add('formatted-date-field');if(input.id==='datetime')wrapper.classList.add('record-datetime-field');day.setAttribute('aria-hidden','true');
     const date=input.value.slice(0,10),time=input.value.slice(11,16);
-    day.textContent=date?date.replaceAll('-','/')+C.weekday(date).replace('（','(').replace('）',')')+' '+time:'日時を選択';
+    day.textContent=date?C.displayDate(date)+(time?' '+time:''):(input.type==='date'?'日付を選択':'日時を選択');
     if(!input.dataset.pickerBound){input.addEventListener('click',()=>{try{input.showPicker?.();}catch{ /* 非対応環境では標準入力を使用 */ }});input.dataset.pickerBound='true';}
-   }else day.textContent=C.weekday(input.value.slice(0,10));}}
+   }}}
  function init(){document.addEventListener('input',update);document.addEventListener('change',update);document.addEventListener('click',()=>queueMicrotask(update));}
  return {datetime,update,init};
 })();
