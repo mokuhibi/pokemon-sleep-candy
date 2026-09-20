@@ -3,7 +3,7 @@
 const ShardUI=(()=>{
  const methodNames={skill:'スキル',lucky:'きょううん',research:'リサーチ',other:'その他'};
  const drafts=new Map();let researchDateTouched=false,researchSourceKey=null,researchEditingId=null;
- const isTarget=p=>p.species==='ミュウ'?['metronome','dream_shard_s'].includes(SK.id(SK.forPokemon(p))):!!SK.shardMode(p);
+ const isTarget=p=>!CopySkills.handlesShards(p)&&(p.species==='ミュウ'?['metronome','dream_shard_s'].includes(SK.id(SK.forPokemon(p))):!!SK.shardMode(p));
  const typeOf=p=>SK.shardMode(p);
  const skillName=type=>SK.name(type==='lucky'?'super_luck':'dream_shard_s');
  const records=()=>state.shardRecords||[];
@@ -32,9 +32,9 @@ const ShardUI=(()=>{
   loadResearch();
   const root=$('shard-skill-inputs');for(const input of root.querySelectorAll('input'))drafts.set(input.dataset.pokemon,input.value);
   root.replaceChildren();const members=currentTeam().map((p,i)=>p&&speciesEnabled(p.species)&&isTarget(p)?{p,slot:i+1}:null).filter(Boolean);root.hidden=!members.length;
-  if(!members.length)return;root.append(el('h2','ゆめのかけら'));
+  if(members.length||currentTeam().some(p=>p&&CopySkills.handlesShards(p)))root.append(el('h2','ゆめのかけら'));
   for(const {p,slot} of members){
-   const type=typeOf(p),level=C.recordProfile(p).skillLevel,card=el('div',undefined,'card');card.append(el('h3',`${position(slot)} · ${individual(p)}`),el('p',(p.species==='ミュウ'?mainSkillText(p):skillName(type))+(level?` · スキルLv.${level}`:'')));
+   const type=typeOf(p),level=C.recordProfile(p).skillLevel,card=el('div',undefined,'card'+(slot===1?' leader-slot':''));card.append(el('h3',`${position(slot)} · ${individual(p)}`),el('p',(p.species==='ミュウ'?mainSkillText(p):skillName(type))+(level?` · スキルLv.${level}`:'')));
    const saveSkill=amount=>p.species==='ミュウ'?MewUI.saveShard(p,amount):save({method:type==='lucky'?'lucky':'skill',skillType:type,skillId:SK.id(SK.forPokemon(p)),skillName:SK.value(SK.forPokemon(p)),...(level?{skillLevel:level}:{}),amount,pokemonId:p.id,pokemon:storedLabel(p),species:p.species,slot,pokemonSnapshot:clone(p)});
    if(p.species==='ミュウ'||type==='random'){
     const form=el('form',undefined,'shard-skill-form'),l=el('label','獲得したゆめのかけら'),input=amountInput('shard-amount-'+slot,1);input.dataset.pokemon=p.id;input.value=drafts.get(p.id)||'';l.append(input);const b=el('button','記録');b.type='submit';form.append(l,b);
@@ -43,6 +43,7 @@ const ShardUI=(()=>{
    else{const actions=el('div',undefined,'shard-amount-buttons');for(const amount of C.shardAmounts(type,level)){const b=button('',()=>saveSkill(amount));if(amount===0)b.textContent='スキルのみ';else quantityText(b,amount+'個');actions.append(b);}card.append(actions);}
    root.append(card);
   }
+  CopySkills.render(root,'shards');
  }
  function addSkillSetting(card,p){card.append(el('small',mainSkillText(p)+(p.profile?` · Lv.${p.profile.skillLevel}`:''),'shard-setting'));}
  function renderSummary(){
@@ -56,6 +57,7 @@ const ShardUI=(()=>{
   const research=rs.filter(r=>r.method==='research');const researchCard=el('div',undefined,'shard-individual');researchCard.append(el('h4','睡眠リサーチ'),qel('p',C.sum(research)+'個'));list.append(researchCard);
   for(const r of rs.filter(r=>['skill','lucky'].includes(r.method))){if(!groups.has(r.pokemonId))groups.set(r.pokemonId,[]);groups.get(r.pokemonId).push(r);}
   for(const [id,xs] of groups){const latest=[...xs].sort((a,b)=>Date.parse(b.datetime)-Date.parse(a.datetime))[0],current=state.pokemon.find(p=>p.id===id),p=current||latest.pokemonSnapshot;const card=el('div',undefined,'shard-individual');const name=p?individual(p):label(historicalPokemon(latest));card.append(el('h4',name+(current?'':'（登録解除済み）')));card.append(qel('p',xs.length+'回　'+C.sum(xs)+'個'));list.append(card);}
+  headingTotal('shard-pokemon-totals',C.sum(rs.filter(r=>r.method==='research'||['skill','lucky'].includes(r.method))));
   if(!groups.size)list.append(el('p','この期間のスキル記録はありません。'));
  }
  function appendHistory(root,period){
