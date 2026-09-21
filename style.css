@@ -142,3 +142,10 @@ dialog{border:1px solid #dacda2;border-radius:14px;padding:18px;color:#725619;ba
 .total-breakdown tbody tr:last-child>*{border-bottom:0}
 .total-breakdown td{font-variant-numeric:tabular-nums}
 @media(max-width:360px){.total-breakdown{font-size:12px}.total-breakdown th,.total-breakdown td{padding-left:5px}}
+
+.record-picker-trigger{font-size:16px;font-weight:700;letter-spacing:-.35px}
+.period-picker-compact .period-picker-date{font-size:clamp(12px,3.4vw,16px);letter-spacing:-.3px}
+.period-picker-compact .period-picker-bottom{justify-content:flex-end}
+#candy-list{max-height:240px;overflow-y:auto;-webkit-overflow-scrolling:touch}
+#candy-list>.row{height:48px;align-items:center;padding-top:8px;padding-bottom:8px}
+.record-picker .period-picker-choices{margin-bottom:16px}

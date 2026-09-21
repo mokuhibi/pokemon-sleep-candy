@@ -30,13 +30,15 @@ const PeriodPicker=(()=>{
   // 日付表示用ラッパーごと移動。値・ID・日付選択機能は維持します。
   label.append(date.parentElement.classList.contains('date-field')?date.parentElement:date);
   period.hidden=true;dialog.append(title,choices,label,close);root.append(period,dialog);old.remove();
+  const compact=config.period!=='history-period';if(compact){root.classList.add('period-picker-compact');range.hidden=true;}
   let validDay=date.value||C.gameDay(new Date());date.value=validDay;
-  const item={sync(){if(C.dateOnly(date.value))validDay=date.value;center.textContent=C.displayDate(validDay);range.textContent=rangeText(period.value,validDay);prev.hidden=next.hidden=period.value==='all';const unit={day:'日',week:'週',month:'月'}[period.value]||'';prev.setAttribute('aria-label','前の'+unit);next.setAttribute('aria-label','次の'+unit);for(const b of choices.children)b.setAttribute('aria-pressed',String(b.dataset.period===period.value));}};
+  const item={sync(){if(C.dateOnly(date.value))validDay=date.value;center.textContent=compact&&period.value!=='day'?rangeText(period.value,validDay):C.displayDate(validDay);range.textContent=rangeText(period.value,validDay);prev.hidden=next.hidden=period.value==='all';const unit={day:'日',week:'週',month:'月'}[period.value]||'';prev.setAttribute('aria-label','前の'+unit);next.setAttribute('aria-label','次の'+unit);for(const b of choices.children)b.setAttribute('aria-pressed',String(b.dataset.period===period.value));}};
   const refresh=()=>{if(!C.dateOnly(date.value))date.value=validDay;config.render();item.sync();DateUI.update();};
   for(const [key,text] of [['day','日'],['week','週'],['month','月'],['all','全期間']]){const b=make('button',text);b.type='button';b.dataset.period=key;b.onclick=()=>{period.value=key;refresh();};choices.append(b);}
   period.onchange=refresh;date.onchange=refresh;
   prev.onclick=()=>{date.value=shift(validDay,period.value,-1);refresh();};next.onclick=()=>{date.value=shift(validDay,period.value,1);refresh();};
   today.onclick=()=>{date.value=C.gameDay(new Date());refresh();};center.onclick=()=>{date.value=validDay;DateUI.update();dialog.showModal();};close.onclick=()=>dialog.close();
+  if(compact){label.hidden=true;dialog.hidden=true;const draftChoices=choices.cloneNode(true);let draftKind=period.value;const open=RecordPicker.init({input:date,dateOnly:true,choices:draftChoices,commit:()=>{period.value=draftKind;}});for(const b of draftChoices.children)b.onclick=()=>{draftKind=b.dataset.period;for(const c of draftChoices.children)c.setAttribute('aria-pressed',String(c===b));};center.onclick=()=>{draftKind=period.value;for(const b of draftChoices.children)b.setAttribute('aria-pressed',String(b.dataset.period===draftKind));open();};}
   instances.push(item);item.sync();
  }
  function init(){

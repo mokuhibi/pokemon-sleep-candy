@@ -1,10 +1,10 @@
 // 記録日時の入力UIだけを置き換えます。確定までは元の日時に触れません。
 const RecordPicker=(()=>{
- function init(){
-  const input=document.getElementById('datetime'),wrapper=input.parentElement;
+ function init(config={}){
+  const input=config.input||document.getElementById('datetime'),wrapper=input.parentElement;
   const make=(tag,text,cls)=>{const n=document.createElement(tag);if(text!==undefined)n.textContent=text;if(cls)n.className=cls;return n;};
   const btn=(text,fn)=>{const b=make('button',text);b.type='button';b.onclick=fn;return b;};
-  const dialog=make('dialog',undefined,'record-picker'),title=make('h2','日時を選択');title.id='record-picker-title';dialog.setAttribute('aria-labelledby',title.id);
+  const dialog=make('dialog',undefined,'record-picker'),title=make('h2',config.dateOnly?'日付・期間を選択':'日時を選択');title.id=input.id+'-picker-title';dialog.setAttribute('aria-labelledby',title.id);
   const form=make('form'),head=make('div',undefined,'record-picker-head'),month=make('strong'),grid=make('div',undefined,'record-picker-grid'),selected=make('p',undefined,'record-picker-selected');
   let day='',view='';
   const pad=n=>String(n).padStart(2,'0');
@@ -23,18 +23,19 @@ const RecordPicker=(()=>{
   const [hl,hour]=timeSelect('時間',23),[ml,minute]=timeSelect('分',59);time.append(hl,make('span',':'),ml);
   const error=make('p');error.setAttribute('role','alert');const actions=make('div',undefined,'record-picker-actions');
   const cancel=btn('キャンセル',()=>dialog.close()),ok=make('button','決定');ok.type='submit';actions.append(cancel,ok);
-  form.append(title,head,grid,selected,time,error,actions);dialog.append(form);document.body.append(dialog);
+  form.append(title);if(config.choices)form.append(config.choices);form.append(head,grid,selected,time,error,actions);time.hidden=!!config.dateOnly;dialog.append(form);document.body.append(dialog);
   const trigger=btn('',()=>{const value=input.value||C.localInput();day=value.slice(0,10);view=day.slice(0,7);hour.value=value.slice(11,13);minute.value=value.slice(14,16);error.textContent='';paint();dialog.showModal();});
   trigger.className='record-picker-trigger';trigger.setAttribute('aria-label','記録日時を選択');trigger.setAttribute('aria-haspopup','dialog');
   // 元のinputとイベントは維持し、標準ピッカーを開く操作だけを置き換えます。
-  input.hidden=true;wrapper.append(trigger);
+  if(!config.dateOnly){input.hidden=true;wrapper.append(trigger);}
   function sync(){trigger.textContent=wrapper.querySelector('.date-weekday').textContent;}
-  new MutationObserver(sync).observe(wrapper.querySelector('.date-weekday'),{childList:true,characterData:true,subtree:true});sync();
-  form.onsubmit=e=>{e.preventDefault();const value=day+'T'+hour.value+':'+minute.value;
+  if(!config.dateOnly){new MutationObserver(sync).observe(wrapper.querySelector('.date-weekday'),{childList:true,characterData:true,subtree:true});sync();}
+  form.onsubmit=e=>{e.preventDefault();const value=config.dateOnly?day:day+'T'+hour.value+':'+minute.value;
    // 元のinputに設定されている制約をそのまま検証します。
    const probe=input.cloneNode();probe.value=value;if(!probe.checkValidity()){error.textContent=probe.validationMessage;return;}
-   input.value=value;input.dispatchEvent(new Event('input',{bubbles:true}));input.dispatchEvent(new Event('change',{bubbles:true}));dialog.close();
+   input.value=value;if(config.commit)config.commit();input.dispatchEvent(new Event('input',{bubbles:true}));input.dispatchEvent(new Event('change',{bubbles:true}));dialog.close();
   };
+  return ()=>trigger.onclick();
  }
  return {init};
 })();
