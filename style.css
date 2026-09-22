@@ -149,3 +149,8 @@ dialog{border:1px solid #dacda2;border-radius:14px;padding:18px;color:#725619;ba
 #candy-list{max-height:240px;overflow-y:auto;-webkit-overflow-scrolling:touch}
 #candy-list>.row{height:48px;align-items:center;padding-top:8px;padding-bottom:8px}
 .record-picker .period-picker-choices{margin-bottom:16px}
+
+.period-picker .period-quick-buttons{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:5px;margin-top:10px}
+.period-quick-buttons>.period-picker-choices{display:contents}
+.period-picker .period-quick-buttons button{padding:10px 2px;min-height:44px;font-size:13px;white-space:nowrap}
+.comma-input{font-size:16px;font-variant-numeric:tabular-nums}

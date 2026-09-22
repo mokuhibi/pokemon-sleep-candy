@@ -22,7 +22,7 @@ const PeriodPicker=(()=>{
   const period=document.getElementById(config.period),date=document.getElementById(config.date),old=period.closest('.card');
   const make=(tag,text,cls)=>{const e=document.createElement(tag);if(text)e.textContent=text;if(cls)e.className=cls;return e;};
   const root=make('div','','card period-picker'),top=make('div','','period-picker-top'),bottom=make('div','','period-picker-bottom');
-  const prev=make('button','＜'),center=make('button','','period-picker-date'),next=make('button','＞'),range=make('span','','period-picker-range'),today=make('button','今日に戻る');
+  const prev=make('button','＜'),center=make('button','','period-picker-date'),next=make('button','＞'),range=make('span','','period-picker-range'),today=make('button','今日');
   const dialog=make('dialog','','period-picker-dialog'),title=make('h2','日付・期間を選択'),choices=make('div','','period-picker-choices'),label=make('label','日付'),close=make('button','閉じる');
   title.id=config.period+'-dialog-title';dialog.id=config.period+'-dialog';dialog.setAttribute('aria-labelledby',title.id);center.setAttribute('aria-haspopup','dialog');center.setAttribute('aria-controls',dialog.id);
   for(const b of [prev,center,next,today,close])b.type='button';
@@ -39,6 +39,7 @@ const PeriodPicker=(()=>{
   prev.onclick=()=>{date.value=shift(validDay,period.value,-1);refresh();};next.onclick=()=>{date.value=shift(validDay,period.value,1);refresh();};
   today.onclick=()=>{date.value=C.gameDay(new Date());refresh();};center.onclick=()=>{date.value=validDay;DateUI.update();dialog.showModal();};close.onclick=()=>dialog.close();
   if(compact){label.hidden=true;dialog.hidden=true;const draftChoices=choices.cloneNode(true);let draftKind=period.value;const open=RecordPicker.init({input:date,dateOnly:true,choices:draftChoices,commit:()=>{period.value=draftKind;}});for(const b of draftChoices.children)b.onclick=()=>{draftKind=b.dataset.period;for(const c of draftChoices.children)c.setAttribute('aria-pressed',String(c===b));};center.onclick=()=>{draftKind=period.value;for(const b of draftChoices.children)b.setAttribute('aria-pressed',String(b.dataset.period===draftKind));open();};}
+  bottom.replaceChildren(choices,today);bottom.classList.add('period-quick-buttons');
   instances.push(item);item.sync();
  }
  function init(){

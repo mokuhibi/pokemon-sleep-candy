@@ -267,3 +267,5 @@ $('summary-today').onclick=()=>{$('summary-date').value=C.gameDay(new Date());re
 PeriodPicker.init();
 
 RecordPicker.init();
+
+NumberInput.init();
