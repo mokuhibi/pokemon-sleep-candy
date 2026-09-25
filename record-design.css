@@ -1,0 +1,61 @@
+/* 記録タブの試作。すべての指定を #record 内に限定します。 */
+#record{--accent:#756027;--edge:#e4e3da;--tint:#f4f0e4;color:#292a26}
+#record :is(.help,.mew,.delibird,.shards){--accent:#756027;--edge:#e4e3da;--tint:#f4f0e4;color:#292a26}
+#record :is(h2,h3){font-size:17px;font-weight:600;line-height:1.5;margin:24px 0 12px}
+#record :is(p,label){font-size:14px;line-height:1.5}
+#record :is(small,.muted){font-size:12px;color:#686b63}
+#record .card,#record .hero{background:#fff;border:0;border-radius:16px;box-shadow:none;padding:16px;margin-bottom:16px}
+#record #today-total{padding:12px 20px}
+#record .total{font-size:38px;line-height:1.15;letter-spacing:-1px;margin:4px 0 8px}
+#record .total .quantity-unit{font-size:15px;letter-spacing:0;margin-left:4px;color:#686b63}
+#record .total-breakdown{margin-top:0;font-size:14px}
+#record .total-breakdown :is(th,td){padding-top:6px;padding-bottom:6px}
+#record .total-breakdown thead th{font-size:12px;color:#686b63;padding-top:0;padding-bottom:4px}
+#record .total-breakdown .quantity-number{font-size:18px;font-weight:600}
+#record .total-breakdown .quantity-unit{font-size:12px;color:#686b63}
+#record .record-date-card{padding:8px 0;background:#fbf8ee;border-radius:0;gap:8px;border-bottom:1px solid var(--edge)}
+#record .record-datetime-field{border:0;border-radius:10px;background:#fff;height:48px}
+#record .record-picker-trigger{font-size:16px;font-weight:600;letter-spacing:-.4px;padding:0 8px;min-height:48px}
+#record .record-date-card .check{font-size:12px;min-height:48px;min-width:100px;justify-content:center;padding:4px 6px;gap:6px;color:#686b63}
+#record .record-date-card .check input{width:18px;height:18px}
+#record .record-slots{gap:8px;margin-bottom:24px}
+#record .help-card{background:#fff;border:1px solid var(--edge);border-radius:10px;padding:12px;min-height:88px;gap:6px;color:#292a26}
+#record .help-card strong{font-size:15px;font-weight:600;line-height:1.5}
+#record .leader-slot{border:1px solid #a89461!important;box-shadow:none;background:#fffdf7}
+#record :is(button,input,select){border-radius:10px}
+#record button{min-height:44px;font-weight:600}
+#record button:disabled{opacity:1;color:#8a8d84;background:#f1f1eb;border-color:#e8e8e0}
+#record button:active:not(:disabled){background:#e9e2cd}
+#record .mew-actions{gap:8px;margin-top:6px}
+#record .mew-actions button,#record .shard-amount-buttons button{background:#f4f0e4;border-color:transparent;color:#564721}
+#record button[type=submit]{background:#756027;color:#fff;border-color:#756027;padding:12px 16px;min-height:48px}
+#record button[type=submit]:active{background:#59491e}
+#record :is(input:not([type=checkbox]),select){font-size:16px;min-height:48px;background:#fff;border-color:#d3d5ca;padding:10px 12px}
+#record :is(input[type=number],.comma-input){text-align:right;font-variant-numeric:tabular-nums}
+#record .formatted-date-field{height:48px;border-color:#d3d5ca}
+#record .filters{gap:0 12px}
+#record label{color:#686b63;margin:12px 0}
+#record .card>h3{margin:0 0 8px;font-size:16px}
+#record .card>p{margin:0 0 12px;color:#686b63;font-size:13px}
+#record details.card{padding:0 16px}
+#record details.card>summary{font-size:16px;font-weight:600;min-height:56px;padding:16px 0;line-height:24px}
+#record details.card[open]{padding-bottom:16px}
+#record .shard-skill-form button{margin-bottom:12px}
+#record #help-section>h2::before,#record #mew-section>h2::before,#record #delibird-section>h2::before{content:'';display:inline-block;width:4px;height:14px;border-radius:2px;margin-right:8px;background:#567563}
+#record #mew-section>h2::before{background:#a46f85}
+#record #delibird-section>h2::before{background:#ae7568}
+
+/* 記録の密度だけを調整し、操作領域と長い名前の折り返しを維持します。 */
+#record #help-slots{gap:6px;margin-bottom:20px}
+#record #help-slots>.help-card{min-height:76px;padding:10px 12px;gap:4px}
+#record #mew-section>h2{margin-bottom:6px}
+#record #mew-section>.mew-record-skill{margin:0 0 4px;font-size:14px;font-weight:500;overflow-wrap:anywhere}
+#record #mew-section>.mew-record-meta{margin:0 0 12px;font-size:12px;line-height:1.5}
+
+/* 最終微調整：ラベル全体の操作領域を維持し、グループ間のみ少し圧縮。 */
+#record .record-date-card .check{cursor:pointer;touch-action:manipulation;min-height:48px}
+#record #record-methods>div>h2{margin-top:20px}
+#record #record-methods .record-slots{margin-bottom:16px}
+#record #mew-slots>.help-card{padding:8px 12px;gap:4px}
+#record #mew-slots .mew-actions{margin-top:4px}
+#record #mew-slots .mew-actions button{min-width:44px;min-height:44px}

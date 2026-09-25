@@ -1,0 +1,72 @@
+/* DESIGN.mdの記録タブ基準を、アメ集計の表示だけに適用します。 */
+#summary{--accent:#756027;--edge:#e4e3da;--tint:#f4f0e4;color:#292a26}
+#summary :is(.help,.mew,.delibird){--accent:#756027;--edge:#e4e3da;--tint:#f4f0e4;color:#292a26}
+#summary>h2{font-size:22px;font-weight:700;margin:20px 0 16px}
+#summary :is(.card,.hero){border:0;background:#fff;border-radius:16px;box-shadow:none;padding:16px;margin-bottom:20px;min-width:0}
+#summary #summary-total{padding:16px 20px}
+#summary .total{font-size:40px;font-weight:700;line-height:1.15;letter-spacing:-1px;margin:8px 0 12px;overflow-wrap:anywhere}
+#summary .total .quantity{white-space:normal}
+#summary .total .quantity-unit{font-size:15px;font-weight:400;color:#686b63;margin-left:4px;letter-spacing:0;white-space:nowrap}
+#summary :is(small,.muted){color:#686b63;font-size:12px}
+#summary .total-breakdown{font-size:14px;margin-top:0}
+#summary .total-breakdown :is(th,td){padding-top:7px;padding-bottom:7px}
+#summary .total-breakdown thead th{font-size:12px;font-weight:400;color:#686b63;padding-top:0;padding-bottom:4px}
+#summary .total-breakdown .quantity-number{font-size:18px;font-weight:600}
+#summary .quantity-unit{font-size:12px;font-weight:400;color:#686b63}
+#summary .quantity-number{font-variant-numeric:tabular-nums}
+#summary h3{font-size:17px;font-weight:600;line-height:1.5;margin:0 0 12px}
+#summary h3::before{content:'';width:4px;height:14px;flex:none;border-radius:2px;background:#a89461}
+#summary .heading-with-total{gap:8px;flex-wrap:wrap}
+#summary .heading-total{font-size:12px;font-weight:400;color:#686b63}
+#summary .heading-total .quantity-number{font-size:16px;font-weight:600;color:#292a26}
+#summary h4{font-size:15px;font-weight:600;margin:20px 0 8px}
+#summary p{font-size:13px;line-height:1.6;color:#686b63}
+#summary .row{font-size:14px;align-items:center;gap:12px;padding:12px 0}
+#summary .row>span{min-width:0}
+#summary .row>strong{font-weight:600;text-align:right;font-variant-numeric:tabular-nums}
+#summary .row .quantity-number{font-size:18px}
+#summary .period-picker{padding:0;background:transparent;border-radius:0}
+#summary :is(button,input,select){border-radius:10px}
+#summary button{min-height:44px;font-weight:600}
+#summary .period-picker-top{grid-template-columns:44px minmax(0,1fr) 44px;gap:6px}
+#summary .period-picker-top>button{background:transparent;border-color:transparent}
+#summary .period-picker-date{font-size:clamp(12px,3.4vw,16px);font-weight:600}
+#summary .period-quick-buttons{gap:4px}
+#summary .period-quick-buttons button{background:transparent;border-color:transparent;color:#686b63;font-size:13px;font-weight:400}
+#summary .period-quick-buttons [aria-pressed=true]{background:#f4f0e4;color:#564721;font-weight:600}
+#summary #mew-image-card{background:transparent;padding:0}
+#summary #create-mew-image{background:transparent;border:1px solid var(--edge);font-size:14px;font-weight:500;color:#686b63}
+#summary #candy-list{max-height:240px;overflow-y:auto;-webkit-overflow-scrolling:touch}
+#summary #candy-list>.row{height:48px;padding:8px 0}
+#summary .weekly-bars{gap:4px;margin-top:16px}
+#summary .weekly-value{font-size:12px;font-weight:600;line-height:1.35;min-height:34px;overflow-wrap:anywhere}
+#summary .weekly-track{height:112px;background:transparent;border-color:#e4e3da}
+#summary .weekly-bar{width:60%;background:#756027;opacity:1;border-radius:4px 4px 0 0}
+#summary .weekly-weekday{font-size:12px;color:#686b63}
+#summary .weekly-date{font-size:11px;line-height:1.5;word-break:normal;overflow-wrap:anywhere;color:#686b63}
+#summary .weekly-range{font-size:12px;margin-top:0}
+#summary .calendar{gap:4px}
+#summary .weekday{font-size:12px;color:#686b63}
+#summary .day{min-height:44px;padding:4px 0}
+#summary .day-number{font-size:14px;font-weight:600;color:#292a26}
+#summary .candy-values{border:1px solid #e4e3da;border-radius:10px;background:#fff;padding:6px 0;gap:5px;font-size:11px}
+#summary .day.selected .candy-values{border:2px solid #a89461;padding:5px 0}
+#summary .candy-values .help,#summary .legend .help{color:#567563}
+#summary .candy-values .mew,#summary .legend .mew{color:#925f75}
+#summary .candy-values .delibird,#summary .legend .delibird{color:#985e52}
+#summary .legend{font-size:12px;gap:12px}
+#summary #slot-counts>.row{display:grid;grid-template-columns:minmax(0,1fr) auto}
+#summary #analysis-card .filters{gap:0 12px}
+#summary #analysis-card label{font-size:12px;color:#686b63;margin:8px 0}
+#summary #analysis-card select{font-size:16px;min-height:48px;border-color:#d3d5ca;background:#fff;color:#292a26}
+#summary .table-scroll{max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch}
+#summary .position-table{width:100%;min-width:0;table-layout:fixed;font-size:11px;font-variant-numeric:tabular-nums}
+#summary .position-table :is(th,td){padding:10px 2px;border:0;border-bottom:1px solid #e4e3da;overflow-wrap:anywhere;vertical-align:middle}
+#summary .position-table th{background:#f4f0e4;font-weight:500}
+#summary .position-table th:first-child{width:28px;font-size:11px}
+#summary .position-table th:last-child{width:42px;font-size:11px}
+#summary .position-table td{text-align:right;color:#686b63;line-height:1.6}
+#summary .position-table .quantity{white-space:normal}
+#summary .position-table .quantity-number{font-size:13px;font-weight:600;color:#292a26}
+#summary .position-table .quantity-unit{font-size:10px}
+#summary .position-table caption{font-size:12px;font-weight:400;color:#686b63;padding:8px}

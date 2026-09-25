@@ -82,7 +82,7 @@ function renderRecord(){
    const l=el('label','スキル個体'),s=el('select');s.id=method+'-actor';optionList(s,candidates,actors[method]);s.onchange=()=>{actors[method]=s.value;renderRecord();};l.append(s);if(method!=='mew')section.append(l);
    context=skillContext(method);
    if(!context){section.append(el('p',candidates.length?(method==='delibird'&&!actors[method]?'スキル個体未選択':'個体情報未設定'):name+'未設定','muted'));}
-   else{if(method==='delibird')section.append(el('p',mainSkillText(actorOf(context))));section.append(el('p',`スキルLv.${method==='mew'?actorOf(context).profile.skillLevel:context.effectiveLevel} · 確率${context.event.multiplier}倍 · ${context.event.name}`,'muted'));}
+   else{if(method==='delibird')section.append(el('p',mainSkillText(actorOf(context))));if(method!=='mew')section.append(el('p',`スキルLv.${method==='mew'?actorOf(context).profile.skillLevel:context.effectiveLevel} · 確率${context.event.multiplier}倍 · ${context.event.name}`,'muted'));}
   }
   if(method==='mew'&&context)MewUI.renderRecord(section,context);
   const grid=el('div',undefined,'record-slots');grid.id=method+'-slots';

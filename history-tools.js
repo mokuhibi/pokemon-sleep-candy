@@ -6,7 +6,7 @@ const MewUI=(()=>{
  function init(){for(const skill of C.mewSkills)$('edit-registered-skill').add(new Option(mainSkillText({species:'ミュウ'},skill),skill));skillOptions($('edit-fired-skill'),true);$('edit-fired-skill').onchange=refreshEditor;}
  function editProfile(p){SkillUI.editProfile(p);}
  function renderMewRecord(section,context){
-  const p=actorOf(context);section.append(el('p',label(p)),el('p',mainSkillText(p)));
+  const p=actorOf(context);section.querySelector('h2').replaceWith(el('h2',label(p)));section.append(el('p',mainSkillText(p),'mew-record-skill'),el('p',`Lv.${p.profile.skillLevel} ・ 確率${context.event.multiplier}倍 ・ ${context.event.name}`,'muted mew-record-meta'));
  }
  // アメ欄では、選んでいない「ゆびをふる」の結果やかけら数を推測しません。
  function recordFields(context){const main=SK.value(SK.forPokemon(actorOf(context)));return {recordedSkillLevel:actorOf(context).profile.skillLevel,registeredMainSkill:main,mainSkillId:SK.id(main)};}
