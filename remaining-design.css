@@ -1,0 +1,108 @@
+/* 確定済みの集計デザインをゆめのかけらに適用。記録・アメには適用しません。 */
+#shards{--accent:#756027;--edge:#e4e3da;--tint:#f4f0e4;color:#292a26}
+#shards :is(.help,.mew,.delibird){--accent:#756027;--edge:#e4e3da;--tint:#f4f0e4;color:#292a26}
+#shards>h2{font-size:22px;font-weight:700;margin:20px 0 16px}
+#shards :is(.card,.hero){border:0;background:#fff;border-radius:16px;box-shadow:none;padding:16px;margin-bottom:20px;min-width:0}
+#shards #shard-total{padding:16px 20px}
+#shards .total{font-size:40px;font-weight:700;line-height:1.15;letter-spacing:-1px;margin:8px 0 12px;overflow-wrap:anywhere}
+#shards .total .quantity{white-space:normal}
+#shards .total .quantity-unit{font-size:15px;font-weight:400;color:#686b63;margin-left:4px;letter-spacing:0;white-space:nowrap}
+#shards :is(small,.muted){color:#686b63;font-size:12px}
+#shards .total-breakdown{font-size:14px;margin-top:0}
+#shards .total-breakdown :is(th,td){padding-top:7px;padding-bottom:7px}
+#shards .total-breakdown thead th{font-size:12px;font-weight:400;color:#686b63;padding-top:0;padding-bottom:4px}
+#shards .total-breakdown .quantity-number{font-size:18px;font-weight:600}
+#shards .quantity-unit{font-size:12px;font-weight:400;color:#686b63}
+#shards .quantity-number{font-variant-numeric:tabular-nums}
+#shards h3{font-size:17px;font-weight:600;line-height:1.5;margin:0 0 12px}
+#shards h3::before{content:'';width:4px;height:14px;flex:none;border-radius:2px;background:#a89461}
+#shards .heading-with-total{gap:8px;flex-wrap:wrap}
+#shards .heading-total{font-size:12px;font-weight:400;color:#686b63}
+#shards .heading-total .quantity-number{font-size:16px;font-weight:600;color:#292a26}
+#shards h4{font-size:15px;font-weight:600;margin:20px 0 8px}
+#shards p{font-size:13px;line-height:1.6;color:#686b63}
+#shards .row{font-size:14px;align-items:center;gap:12px;padding:12px 0}
+#shards .row>span{min-width:0}
+#shards .row>strong{font-weight:600;text-align:right;font-variant-numeric:tabular-nums}
+#shards .row .quantity-number{font-size:18px}
+#shards .period-picker{padding:0;background:transparent;border-radius:0}
+#shards :is(button,input,select){border-radius:10px}
+#shards button{min-height:44px;font-weight:600}
+#shards .period-picker-top{grid-template-columns:44px minmax(0,1fr) 44px;gap:6px}
+#shards .period-picker-top>button{background:transparent;border-color:transparent}
+#shards .period-picker-date{font-size:clamp(12px,3.4vw,16px);font-weight:600}
+#shards .period-quick-buttons{gap:4px}
+#shards .period-quick-buttons button{background:transparent;border-color:transparent;color:#686b63;font-size:13px;font-weight:400}
+#shards .period-quick-buttons [aria-pressed=true]{background:#f4f0e4;color:#564721;font-weight:600}
+#shards .weekly-bars{gap:4px;margin-top:16px}
+#shards .weekly-value{font-size:12px;font-weight:600;line-height:1.35;min-height:34px;overflow-wrap:anywhere}
+#shards .weekly-track{height:112px;background:transparent;border-color:#e4e3da}
+#shards .weekly-bar{width:60%;background:#756027;opacity:1;border-radius:4px 4px 0 0}
+#shards .weekly-weekday{font-size:12px;color:#686b63}
+#shards .weekly-date{font-size:11px;line-height:1.5;word-break:normal;overflow-wrap:anywhere;color:#686b63}
+#shards .weekly-range{font-size:12px;margin-top:0}
+/* 管理・履歴画面の共通部品。操作と保存処理は既存のまま。 */
+:is(#history,#team,#settings){--accent:#756027;--edge:#e4e3da;--tint:#f4f0e4;color:#292a26}
+:is(#history,#team,#settings) :is(.help,.mew,.delibird,.shards){--accent:#756027;--edge:#e4e3da;--tint:#f4f0e4;color:#292a26}
+:is(#history,#team,#settings) .card{padding:16px;border:0;border-radius:16px;background:#fff;box-shadow:none;margin-bottom:16px}
+:is(#history,#team,#settings)>h2{font-size:22px;font-weight:700;margin:20px 0 16px}
+:is(#history,#team,#settings) :is(h3,.section-head h2,#individual-editor>h2){font-size:17px;font-weight:600;line-height:1.5;margin:0 0 12px}
+:is(#history,#team,#settings) :is(p,label){font-size:14px;line-height:1.6;overflow-wrap:anywhere}
+:is(#history,#team,#settings) :is(small,.muted){font-size:12px;color:#686b63}
+:is(#history,#team,#settings) :is(button,input,select){border-radius:10px}
+:is(#history,#team,#settings) button{min-height:44px;min-width:44px;font-size:14px;font-weight:500;background:transparent;border-color:#e4e3da;white-space:normal}
+:is(#history,#team,#settings) button:active:not(:disabled){background:#e9e2cd}
+:is(#history,#team,#settings) button:disabled{opacity:1;color:#8a8d84;background:#f1f1eb;border-color:#e8e8e0}
+:is(#history,#team,#settings) button[type=submit],#team #add-pokemon,#settings #export{background:#756027;color:#fff;border-color:#756027;min-height:48px;font-weight:600}
+:is(#history,#team,#settings) :is(input:not([type=checkbox]),select){font-size:16px;min-height:48px;padding:10px 12px;border-color:#d3d5ca;background:#fff}
+:is(#history,#team,#settings) :is(input[type=number],.comma-input){text-align:right;font-variant-numeric:tabular-nums}
+:is(#history,#team,#settings) .formatted-date-field{height:48px;border-color:#d3d5ca}
+:is(#history,#team,#settings) .filters{gap:0 12px}
+:is(#history,#team,#settings) .quantity-number{font-size:18px;font-weight:600;font-variant-numeric:tabular-nums}
+:is(#history,#team,#settings) .quantity-unit{font-size:12px;font-weight:400;color:#686b63}
+#shards .shard-individual{padding:12px 0;border-bottom:1px solid #e4e3da}
+#shards .shard-individual:last-of-type{border-bottom:0}
+#shards .shard-individual h4{font-size:15px;font-weight:600;margin:0 0 8px;overflow-wrap:anywhere}
+#shards .shard-individual p{display:flex;justify-content:flex-end;flex-wrap:wrap;gap:8px 20px;margin:0;text-align:right}
+#shards .shard-individual .quantity-number{font-size:18px;font-weight:600;color:#292a26}
+#history .period-picker{background:transparent;padding:0;border-radius:0}
+#history .period-picker-top>button{background:transparent;border-color:transparent}
+#history .period-picker-date{font-size:16px;font-weight:600}
+#history .period-quick-buttons button{padding:10px 2px;font-size:13px;border-color:transparent;color:#686b63}
+#history .period-quick-buttons [aria-pressed=true]{background:#f4f0e4;color:#564721;font-weight:600}
+#history #history-list .card{padding:16px;margin-bottom:12px}
+#history .history-head{align-items:center;gap:8px;flex-wrap:wrap}
+#history .history-head>strong{font-size:15px;font-weight:600;line-height:1.5}
+#history .history-actions{margin-left:auto;gap:4px}
+#history .history-actions button{font-size:12px;padding:8px;border-color:transparent;color:#686b63}
+#history .history-actions button:last-child{color:#985e52}
+#history #history-list .card>p{margin:8px 0;color:#292a26;line-height:1.7}
+#history #history-list .card>p:first-of-type::first-line{color:#686b63;font-size:13px}
+#history details{border-top:1px solid #e4e3da;padding:0;margin-top:12px}
+#history summary{min-height:44px;padding:12px 0;color:#686b63}
+#team .section-head{margin:24px 0 12px;flex-wrap:wrap}
+#team .section-head h2{margin:0}
+#team .registered-row{gap:8px;padding:8px 0;flex-wrap:wrap;border-color:#e4e3da}
+#team .registered-row>strong{font-size:14px;font-weight:600;flex:1;min-width:120px}
+#team .row-actions{margin-left:auto;flex-wrap:wrap}
+#team .row-actions button{font-size:12px;padding:8px}
+#team .shard-setting{font-size:12px;color:#686b63}
+#team #team-slots label{margin:8px 0}
+#team #team-slots>.leader-slot{border:1px solid #a89461!important;box-shadow:none;background:#fffdf7;border-radius:10px;padding:10px}
+#team #profile-species{font-size:18px;font-weight:600;margin:12px 0}
+#team #profile-form .profile-stats{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:0 12px}
+#team #profile-form .profile-stats>label:last-child{grid-column:1/-1}
+#team .catalog{gap:8px}
+#team .catalog button{font-size:13px;text-align:left;background:#fff;padding:10px 8px}
+#team .danger{color:#985e52}
+#settings .card>h3{padding-bottom:12px;border-bottom:1px solid #e4e3da}
+#settings .check{min-height:48px;margin:0;gap:12px;cursor:pointer;border-bottom:1px solid #e4e3da}
+#settings .check:last-child{border-bottom:0}
+#settings .check input{width:20px;height:20px;flex:none}
+#settings #event-list{margin:12px 0}
+#settings .day{min-width:0;min-height:44px;padding:4px 0;font-size:12px}
+#settings #import{font-size:14px;padding:8px;overflow:hidden}
+#settings #import::file-selector-button{min-height:44px;border:1px solid #d3d5ca;border-radius:10px;background:#fff;color:#292a26;margin-right:8px}
+#shards .shard-individual p{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.5fr);gap:8px 16px}
+#shards .shard-individual p>.quantity{justify-self:end;white-space:normal;overflow-wrap:anywhere}
+#shards .shard-individual p>.quantity:only-of-type{grid-column:2}
