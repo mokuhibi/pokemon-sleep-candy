@@ -106,3 +106,15 @@
 #shards .shard-individual p{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.5fr);gap:8px 16px}
 #shards .shard-individual p>.quantity{justify-self:end;white-space:normal;overflow-wrap:anywhere}
 #shards .shard-individual p>.quantity:only-of-type{grid-column:2}
+
+/* ゆめのかけら週間グラフだけの短縮ラベルと取得元別の積み上げ。 */
+#shards #shard-weekly-chart .weekly-value{white-space:nowrap;overflow-wrap:normal;font-size:11px;min-height:24px;font-variant-numeric:tabular-nums}
+#shards #shard-weekly-chart .weekly-bars{gap:3px}
+#shards #shard-weekly-chart .weekly-bar{display:flex;flex-direction:column-reverse;overflow:hidden;background:transparent;width:65%}
+#shards #shard-weekly-chart .weekly-bar>span{display:block;flex-shrink:0;width:100%}
+#shards #shard-weekly-chart .shard-source-research{background:#a89461}
+#shards #shard-weekly-chart .shard-source-skill{background:#567563}
+#shards #shard-weekly-chart .shard-source-other{background:#a46f85}
+#shards .shard-chart-legend{display:flex;flex-wrap:wrap;gap:8px 14px;color:#686b63;font-size:12px}
+#shards .shard-chart-legend>span{display:flex;align-items:center;gap:5px}
+#shards .shard-chart-legend i{width:10px;height:10px;border-radius:2px;display:inline-block}

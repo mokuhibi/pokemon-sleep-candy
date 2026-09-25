@@ -70,3 +70,21 @@
 #summary .position-table .quantity-number{font-size:13px;font-weight:600;color:#292a26}
 #summary .position-table .quantity-unit{font-size:10px}
 #summary .position-table caption{font-size:12px;font-weight:400;color:#686b63;padding:8px}
+
+/* 週間と日別で同じ獲得元の色を共有します。 */
+#summary{--candy-help:#567563;--candy-mew:#a46f85;--candy-delibird:#ae7568;--candy-other:#686b63}
+#summary .candy-chart-legend,#summary .legend{display:flex;flex-wrap:wrap;gap:8px 12px;font-size:12px;color:#686b63}
+#summary .candy-chart-legend>span{display:flex;align-items:center;gap:5px}
+#summary .candy-chart-legend i,#summary .legend>span::before{width:9px;height:9px;display:inline-block;border-radius:2px;content:''}
+#summary .legend>span::before{margin-right:4px;background:currentColor}
+#summary .candy-source-help{background:var(--candy-help)}
+#summary .candy-source-mew{background:var(--candy-mew)}
+#summary .candy-source-delibird{background:var(--candy-delibird)}
+#summary .candy-source-skill{background:var(--candy-other)}
+#summary .candy-values .help,#summary .legend .help{color:var(--candy-help)}
+#summary .candy-values .mew,#summary .legend .mew{color:var(--candy-mew)}
+#summary .candy-values .delibird,#summary .legend .delibird{color:var(--candy-delibird)}
+#summary .candy-values .skill,#summary .legend .skill{color:var(--candy-other)}
+#summary .candy-stacked-chart .weekly-bar{display:flex;flex-direction:column-reverse;overflow:hidden;background:transparent}
+#summary .candy-stacked-chart .weekly-bar>span{display:block;flex-shrink:0;width:100%}
+#summary .candy-stacked-chart .weekly-value{white-space:nowrap;overflow-wrap:normal;font-size:11px}
