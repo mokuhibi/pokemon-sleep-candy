@@ -1,0 +1,28 @@
+/* 月間表示は両タブで共通。表示設定は保存済みの合計を変更しません。 */
+:is(#summary,#shards) .resource-calendar{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:3px}
+:is(#summary,#shards) .resource-calendar .day{min-width:0;padding:5px 1px;background:transparent;border:0;min-height:44px;font-variant-numeric:tabular-nums}
+:is(#summary,#shards) .resource-calendar .weekday{font-size:10px;text-align:center}
+:is(#summary,#shards) .resource-calendar .day-number{display:block;font-size:13px;font-weight:650;margin-bottom:4px}
+:is(#summary,#shards) .resource-calendar .candy-values{display:flex;flex-direction:column;gap:2px;border:1px solid #e4e3da;border-radius:8px;padding:3px 0;min-width:0}
+:is(#summary,#shards) .resource-calendar .month-value{display:block;white-space:nowrap;font-weight:600;line-height:1.4;letter-spacing:-.3px}
+:is(#summary,#shards) .resource-calendar .day.selected{background:#f2eddf;border-radius:8px}
+:is(#summary,#shards) .month-legend{display:flex;flex-wrap:wrap;gap:6px 12px;margin:8px 0 12px;font-size:11px;line-height:1.5}
+.month-legend-item:before{content:'';display:inline-block;width:7px;height:7px;border-radius:2px;background:currentColor;margin-right:4px}
+[data-source="candy-help"],[data-source="shard-skill"]{color:#567563}
+[data-source="candy-mew"],[data-source="shard-other"]{color:#a46f85}
+[data-source="candy-delibird"]{color:#ae7568}
+[data-source="candy-skill"]{color:#686b63}
+[data-source="shard-research"]{color:#a89461}
+:is(#summary,#shards) .weekly-bar>span{position:relative;min-height:0;overflow:hidden;flex-shrink:0}
+:is(#summary,#shards) .stack-label{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);white-space:nowrap;font-size:10px;line-height:14px;font-weight:600;color:white;visibility:hidden;letter-spacing:-.3px}
+#summary .summary-section-head{display:flex;align-items:center;gap:8px;justify-content:space-between;margin-bottom:12px}
+#summary .summary-section-head h3{flex:1;min-width:0;margin:0}
+#summary .summary-section-head button{width:auto;min-height:44px;min-width:44px;padding:8px 12px;font-size:13px;border-radius:10px;background:#f5f3ec;border:1px solid #e4e3da;color:#756027;flex-shrink:0}
+#summary #candy-list{max-height:240px;overflow-y:auto;-webkit-overflow-scrolling:touch}
+#summary .candy-breakdown{padding:0;margin:0;border:0;border-bottom:1px solid #e4e3da;border-radius:0;background:transparent}
+#summary .candy-breakdown summary{display:flex;justify-content:space-between;align-items:center;gap:8px;min-height:48px;padding:6px 0;font-size:14px;cursor:pointer}
+#summary .candy-breakdown summary>span{min-width:0}
+#summary .candy-breakdown summary strong{white-space:nowrap;font-variant-numeric:tabular-nums}
+#summary .candy-source-row{font-size:12px;padding:5px 8px;min-height:28px}
+#summary #candy-image-preview img,#summary #mew-image-preview{display:block;width:100%;height:auto;margin-top:16px;border-radius:10px}
+#summary #mew-image-preview[hidden]{display:none}

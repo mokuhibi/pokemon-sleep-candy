@@ -44,6 +44,9 @@ const ShardUI=(()=>{
    root.append(card);
   }
   CopySkills.render(root,'shards');
+  root.hidden=!SummaryExtras.shardVisible('skill')||!root.children.length;
+  $('research-panel').hidden=!SummaryExtras.shardVisible('research');
+  $('shard-other-form').closest('details').hidden=!SummaryExtras.shardVisible('other');
  }
  function addSkillSetting(card,p){card.append(el('small',mainSkillText(p)+(p.profile?` · Lv.${p.profile.skillLevel}`:''),'shard-setting'));}
  function renderSummary(){
@@ -52,17 +55,19 @@ const ShardUI=(()=>{
   $('shard-range').textContent=period?`${C.displayDate(period[0])} 04:00 〜 ${C.displayDate(period[1])} 04:00`:'全期間';
   const title=summaryTitle(period).replace(/のアメ$/,'のゆめのかけら'),root=$('shard-total');root.replaceChildren(el('small',title),qel('div',C.sum(rs)+'個','total'));
   const body=totalBreakdown(root,'ゆめのかけら');
-  for(const [key,name] of [['skill','スキル'],['research','睡眠リサーチ'],['other','その他']]){const xs=rs.filter(r=>key==='skill'?['skill','lucky'].includes(r.method):r.method===key);if(xs.length){totalBreakdownRow(body,name,key==='skill'?xs.length:null,C.sum(xs));}}
+  for(const [key,name] of [['skill','スキル'],['research','睡眠リサーチ'],['other','その他']]){const xs=rs.filter(r=>key==='skill'?['skill','lucky'].includes(r.method):r.method===key);if(xs.length&&SummaryExtras.shardVisible(key)){totalBreakdownRow(body,name,key==='skill'?xs.length:null,C.sum(xs));}}
   WeeklyChart.render($('shard-weekly-chart'),summaryRecords(),day);
+  SummaryExtras.monthly('shard',summaryRecords(),day);
   const list=$('shard-pokemon-totals');list.replaceChildren();const groups=new Map();
-  const research=rs.filter(r=>r.method==='research');const researchCard=el('div',undefined,'shard-individual');researchCard.append(el('h4','睡眠リサーチ'),qel('p',C.sum(research)+'個'));list.append(researchCard);
-  for(const r of rs.filter(r=>['skill','lucky'].includes(r.method))){if(!groups.has(r.pokemonId))groups.set(r.pokemonId,[]);groups.get(r.pokemonId).push(r);}
+  const research=rs.filter(r=>r.method==='research');const researchCard=el('div',undefined,'shard-individual');researchCard.append(el('h4','睡眠リサーチ'),qel('p',C.sum(research)+'個'));if(SummaryExtras.shardVisible('research'))list.append(researchCard);
+  for(const r of rs.filter(r=>SummaryExtras.shardVisible('skill')&&['skill','lucky'].includes(r.method))){if(!groups.has(r.pokemonId))groups.set(r.pokemonId,[]);groups.get(r.pokemonId).push(r);}
   for(const [id,xs] of groups){const latest=[...xs].sort((a,b)=>Date.parse(b.datetime)-Date.parse(a.datetime))[0],current=state.pokemon.find(p=>p.id===id),p=current||latest.pokemonSnapshot;const card=el('div',undefined,'shard-individual');const name=p?individual(p):label(historicalPokemon(latest));card.append(el('h4',name+(current?'':'（登録解除済み）')));card.append(qel('p',xs.length+'回　'+C.sum(xs)+'個'));list.append(card);}
-  headingTotal('shard-pokemon-totals',C.sum(rs.filter(r=>r.method==='research'||['skill','lucky'].includes(r.method))));
-  if(!groups.size)list.append(el('p','この期間のスキル記録はありません。'));
+  const other=rs.filter(r=>r.method==='other');if(other.length&&SummaryExtras.shardVisible('other')){const card=el('div',undefined,'shard-individual');card.append(el('h4','その他'),qel('p',C.sum(other)+'個'));list.append(card);}
+  headingTotal('shard-pokemon-totals',C.sum(rs));
+  if(!groups.size&&SummaryExtras.shardVisible('skill'))list.append(el('p','この期間のスキル記録はありません。'));
  }
  function appendHistory(root,period){
-  for(const r of records().filter(r=>C.inRange(r,period))){
+  for(const r of records().filter(r=>C.inRange(r,period)&&SummaryExtras.shardVisible(r.method))){
    const card=el('div',undefined,'card shards'),head=el('div',undefined,'history-head'),actions=el('div',undefined,'history-actions');card.dataset.datetime=r.datetime;
    actions.append(button('訂正',()=>ShardEditor.open(r)),button('削除',()=>{if(confirm('このゆめのかけら記録を削除しますか？'))commit({...state,shardRecords:records().filter(x=>x.id!==r.id)},'ゆめのかけら記録を削除しました。');},'danger'));
    head.append(qel('strong',`ゆめのかけら · ${r.amount}個`),actions);card.append(head,el('p',(r.targetDate?'対象日 '+C.displayDate(r.targetDate):DateUI.datetime(r.datetime))+' · '+methodNames[r.method]));
