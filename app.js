@@ -65,7 +65,7 @@ function record(method,slot,amount){const date=recordDate();if(!Number.isFinite(
 // 合計カードだけで使う表示用の表。集計済みの値を列に分けます。
 function totalBreakdown(parent,amountLabel){const table=el('table',undefined,'total-breakdown'),head=el('thead'),tr=el('tr'),body=el('tbody');for(const text of ['', '回数',amountLabel]){const th=el('th',text);th.scope='col';tr.append(th);}head.append(tr);table.append(head,body);parent.append(table);return body;}
 function totalBreakdownRow(body,name,count,amount,cls=''){const tr=el('tr',undefined,cls),nameCell=el('th',name);nameCell.scope='row';tr.append(nameCell,qel('td',count===null?'―':count+'回'),qel('td',amount+'個'));body.append(tr);}
-function totals(parent,records,title){records=records.filter(visibleRecord);parent.replaceChildren(el('small',title),qel('div',`${C.sum(records)}個`,'total'));const body=totalBreakdown(parent,'アメ');for(const [method,name] of Object.entries(methods)){if(!enabled(method))continue;const rs=records.filter(r=>r.method===method);if(method==='skill'&&!rs.length)continue;totalBreakdownRow(body,name,rs.length,C.sum(rs),method);}}
+function totals(parent,records,title){parent.replaceChildren(el('small',title),qel('div',`${C.sum(records)}個`,'total'));const body=totalBreakdown(parent,'アメ');for(const [method,name] of Object.entries(methods)){if(!enabled(method))continue;const rs=records.filter(r=>r.method===method);if(method==='skill'&&!rs.length)continue;totalBreakdownRow(body,name,rs.length,C.sum(rs),method);}}
 
 
 function renderRecord(){
@@ -106,7 +106,7 @@ function renderActorFilters(){
  const lv=$('analysis-level'),value=lv.value;lv.replaceChildren(new Option('すべて',''));for(let i=1;i<=(m.value==='delibird'?7:8);i++)lv.add(new Option(String(i),String(i)));lv.value=value; 
  $('analysis-card').hidden=!enabled('mew')&&!enabled('delibird');
 }
-function filteredRecords(){const period=C.range($('period').value,$('summary-date').value||C.gameDay(new Date()));return state.records.filter(r=>visibleRecord(r)&&!(r.method==='mew'&&r.amount===0&&r.shardAmount!==undefined&&!SummaryExtras.shardVisible('skill'))&&C.inRange(r,period));}
+function filteredRecords(){const period=C.range($('period').value,$('summary-date').value||C.gameDay(new Date()));return state.records.filter(r=>C.inRange(r,period));}
 
 function calendar(parent,month,cell){parent.replaceChildren();if(!/^\d{4}-\d{2}$/.test(month))return;for(const d of ['月','火','水','木','金','土','日'])parent.append(el('span','（'+d+'）','weekday'));const first=month+'-01',offset=(new Date(first).getUTCDay()+6)%7;for(let i=0;i<offset;i++)parent.append(el('span'));for(let day=first;day.startsWith(month);day=C.addDays(day,1)){const date=day;parent.append(cell(date));}}
 // 終了日は翌朝4時のため、見出しではその前日を表示します。
@@ -115,7 +115,7 @@ function renderSummary(){
  PeriodPicker.sync();
  $('create-mew-image').hidden=!enabled('mew');$('mew-image-preview').hidden=true;
  const rs=filteredRecords(),period=C.range($('period').value,$('summary-date').value||C.gameDay(new Date()));$('range-label').textContent=period?`${C.displayDate(period[0])} 04:00 〜 ${C.displayDate(period[1])} 04:00`:'全期間';totals($('summary-total'),rs,summaryTitle(period));
- const calendarRs=state.records.filter(visibleRecord);
+ const calendarRs=state.records;
  const month=($('summary-date').value||C.gameDay(new Date())).slice(0,7);$('candy-month').textContent=month.replace('-','年')+'月';
  WeeklyChart.render($('candy-weekly-chart'),calendarRs,$('summary-date').value||C.gameDay(new Date()));
  SummaryExtras.monthly('candy',calendarRs,$('summary-date').value||C.gameDay(new Date()));
@@ -131,7 +131,7 @@ function renderAnalysis(){
  const amountSelect=$('analysis-amount');for(const option of amountSelect.options)option.hidden=option.value!==''&&!source.some(r=>r.amount===Number(option.value));
  const rs=source.filter(r=>r.context?.actorId&&r.context.actorSlot&&r.slot&&(!actor||r.context.actorId===actor)&&(!level||(r.method==='mew'?(r.recordedSkillLevel??actorOf(r.context)?.profile?.skillLevel??r.context.effectiveLevel):r.context.effectiveLevel)===Number(level))&&(!multi||r.context.event.multiplier===Number(multi))&&(amount===''||r.amount===Number(amount)));
  headingTotal('analysis',C.sum(rs));const root=$('analysis');root.className=method;root.replaceChildren(qel('p',`分析対象 ${rs.length}回 · 位置などが不明な記録 ${unknown}回は除外`));
- const positions=[...new Set(rs.map(r=>r.context.actorSlot))].sort((a,b)=>a-b),destinations=[...new Set(rs.map(r=>r.slot))].sort((a,b)=>a-b);if(!rs.length){root.append(el('p','この条件の記録はありません。'));return;}
+ const positions=[...new Set(rs.map(r=>r.context.actorSlot))].sort((a,b)=>a-b),destinations=Array.from({length:method==='mew'?5:6},(_,i)=>i+1);if(!rs.length)root.append(el('p','この条件の記録はありません。'));
  const wrap=el('div',undefined,'table-scroll'),table=el('table'),head=el('tr');table.className='position-table'+(method==='mew'?' mew-position-table':'');const caption=el('caption','獲得先 →');table.append(caption);head.append(el('th','位置 ↓'));for(const i of destinations)head.append(el('th',i===6?'アメなし':String(i)));head.append(el('th','スキル回数'));table.append(head);
  for(const i of positions){const tr=el('tr'),xs=rs.filter(r=>r.context.actorSlot===i);tr.append(el('th',i===1?'1\nR':String(i)));for(const j of destinations){const count=xs.filter(r=>r.slot===j).length;tr.append(qel('td',`${count}回\n${xs.length?(count/xs.length*100).toFixed(1)+'%':'—'}`));}tr.append(qel('td',xs.length+'回'));table.append(tr);}wrap.append(table);root.append(wrap);
  for(const count of [...new Set(rs.map(r=>r.amount))].sort((a,b)=>a-b)){row(root,`${count}個の記録`,rs.filter(r=>r.amount===count).length+'回');const n=root.lastElementChild.firstElementChild;quantityText(n,n.textContent);}

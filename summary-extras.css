@@ -26,3 +26,15 @@
 #summary .candy-source-row{font-size:12px;padding:5px 8px;min-height:28px}
 #summary #candy-image-preview img,#summary #mew-image-preview{display:block;width:100%;height:auto;margin-top:16px;border-radius:10px}
 #summary #mew-image-preview[hidden]{display:none}
+/* 合計直下の補足内訳。数値は正確な値を右揃えで表示。 */
+:is(#summary,#shards) .source-totals{margin:4px 0 12px}
+:is(#summary,#shards) .source-total-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:center;padding:3px 0;font-size:13px;line-height:1.5}
+:is(#summary,#shards) .source-total-row strong{font-weight:500;text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
+:is(#summary,#shards) .source-total-row .quantity-number{font-size:14px}
+:is(#summary,#shards) .source-total-row .quantity-unit{font-size:11px;color:#686b63}
+.source-total-row>span:before{content:'';display:inline-block;width:6px;height:6px;border-radius:2px;background:currentColor;margin-right:6px}
+#summary .position-table{width:100%;min-width:0;table-layout:fixed}
+#summary .position-table :is(th,td){padding:5px 1px;overflow-wrap:anywhere}
+#summary .position-table th:first-child{width:27px}
+#summary .position-table th:last-child{width:34px}
+#summary .position-table .quantity-number{font-size:12px}

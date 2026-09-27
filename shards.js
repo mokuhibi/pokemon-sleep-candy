@@ -7,7 +7,7 @@ const ShardUI=(()=>{
  const typeOf=p=>SK.shardMode(p);
  const skillName=type=>SK.name(type==='lucky'?'super_luck':'dream_shard_s');
  const records=()=>state.shardRecords||[];
- const summaryRecords=()=>[...records(),...C.mewShardRecords(state.records).filter(()=>enabled('mew'))];
+ const summaryRecords=()=>[...records(),...C.mewShardRecords(state.records)];
  const individual=p=>label(p);
  const amountInput=(id,min=0)=>{const input=el('input');Object.assign(input,{id,type:'number',inputMode:'numeric',min:String(min),max:'1000000000',step:'1',required:true});return input;};
  function number(id,min=0,max=1000000000){const raw=$(id).value.trim(),n=Number(raw);if(raw===''||!Number.isSafeInteger(n)||n<min||n>max)throw Error('入力値を確認してください。');return n;}
@@ -55,7 +55,7 @@ const ShardUI=(()=>{
   $('shard-range').textContent=period?`${C.displayDate(period[0])} 04:00 〜 ${C.displayDate(period[1])} 04:00`:'全期間';
   const title=summaryTitle(period).replace(/のアメ$/,'のゆめのかけら'),root=$('shard-total');root.replaceChildren(el('small',title),qel('div',C.sum(rs)+'個','total'));
   const body=totalBreakdown(root,'ゆめのかけら');
-  for(const [key,name] of [['skill','スキル'],['research','睡眠リサーチ'],['other','その他']]){const xs=rs.filter(r=>key==='skill'?['skill','lucky'].includes(r.method):r.method===key);if(xs.length&&SummaryExtras.shardVisible(key)){totalBreakdownRow(body,name,key==='skill'?xs.length:null,C.sum(xs));}}
+  for(const [key,name] of SummaryExtras.shardSources){const xs=rs.filter(r=>key==='skill'?['skill','lucky'].includes(r.method):r.method===key);if(xs.length&&SummaryExtras.shardVisible(key)){totalBreakdownRow(body,name,key==='skill'?xs.length:null,C.sum(xs));}}
   WeeklyChart.render($('shard-weekly-chart'),summaryRecords(),day);
   SummaryExtras.monthly('shard',summaryRecords(),day);
   const list=$('shard-pokemon-totals');list.replaceChildren();const groups=new Map();

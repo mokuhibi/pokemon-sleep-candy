@@ -12,6 +12,7 @@ const WeeklyChart={
   const days=C.weeklyTotals(records,day),max=Math.max(1,...days.map(d=>d.amount));
   const parts=sources.map(([key])=>C.weeklyTotals(records.filter(r=>key==='skill'?['skill','lucky'].includes(r.method):r.method===key),day));
   root.replaceChildren();headingTotal(root.id,days.reduce((n,d)=>n+d.amount,0));
+  SummaryExtras.sourceTotals($('shard-week-totals'),'shard',records.filter(r=>C.inRange(r,C.range('week',day))));
   root.append(el('p',`${C.displayDate(days[0].date)} 〜 ${C.displayDate(days[6].date)}`,'weekly-range'));
   const legend=el('div',undefined,'shard-chart-legend');
   for(const [key,name] of sources){if(!SummaryExtras.shardVisible(key))continue;const item=el('span'),swatch=el('i',undefined,'shard-source-'+key);swatch.setAttribute('aria-hidden','true');item.append(swatch,el('span',name));legend.append(item);}root.append(legend);
@@ -29,6 +30,7 @@ const WeeklyChart={
   const days=C.weeklyTotals(records,day),max=Math.max(1,...days.map(d=>d.amount));
   const parts=sources.map(([key])=>C.weeklyTotals(records.filter(r=>r.method===key),day));
   root.replaceChildren();headingTotal(root.id,days.reduce((n,d)=>n+d.amount,0));
+  SummaryExtras.sourceTotals($('candy-week-totals'),'candy',records.filter(r=>C.inRange(r,C.range('week',day))));
   root.append(el('p',`${C.displayDate(days[0].date)} 〜 ${C.displayDate(days[6].date)}`,'weekly-range'));
   const legend=el('div',undefined,'candy-chart-legend');
   for(const [key,name] of sources){const item=el('span'),swatch=el('i',undefined,'candy-source-'+key);swatch.setAttribute('aria-hidden','true');item.append(swatch,el('span',name));legend.append(item);}root.append(legend);
