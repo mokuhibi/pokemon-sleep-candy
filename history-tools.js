@@ -61,12 +61,12 @@ const SkillUI=(()=>{
   const list=species==='ミュウ'?SK.mewEntries():SK.entries;select.replaceChildren();
   if(!species){select.add(new Option('ポケモンを選んでください',''));select.disabled=true;return;}
   select.disabled=false;for(const s of list)select.add(new Option(mainSkillText({species},s.id),s.id));
-  const key=SK.id(selected||SK.defaultId(species));
+  const key=SK.id(selected||SK.defaultId(species)||list[0]?.id);
   // マスター外の旧データも失わず表示・再保存できるようにします。
   if(key&&![...select.options].some(o=>o.value===key))select.add(new Option(mainSkillText({species},key)+'（保存済み）',key));
   select.value=key;
  }
- function registration(species){options($('register-main-skill'),species,SK.defaultId(species));}
+ function registration(species){options($('register-main-skill'),species,SK.defaultId(species));ProfileForm.reset(species);}
  function editProfile(p){$('profile-main-skill-label').hidden=false;options($('profile-main-skill'),p.species,SK.forPokemon(p));refreshDetails(p);$('profile-main-skill').onchange=()=>refreshDetails(p);}
  function refreshDetails(p){const selected={...p,...SK.fields($('profile-main-skill').value)},show=!!p.profile||special(p)||!!SK.shardMode(selected);$('profile-details').hidden=!show;for(const input of $('profile-details').querySelectorAll('input,select'))input.disabled=!show;$('profile-nature').disabled=!show||p.species==='ミュウ';$('profile-skill').max=SK.shardMode(selected)==='lucky'?7:C.skillCap(p.species);}
  function savedFields(p,key){if(p.mainSkill&&SK.id(SK.forPokemon(p))===SK.id(key))return {mainSkill:p.mainSkill,mainSkillId:SK.id(key)};return SK.fields(key);}

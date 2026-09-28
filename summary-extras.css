@@ -38,3 +38,13 @@
 #summary .position-table th:first-child{width:27px}
 #summary .position-table th:last-child{width:34px}
 #summary .position-table .quantity-number{font-size:12px}
+/* 個体別内訳は名前・回数・数量を同じ行に置く。 */
+#shards .shard-individual{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:8px;padding:10px 0}
+#shards .shard-individual h4{margin:0;min-width:0;font-size:14px;line-height:1.5}
+#shards .shard-individual p{display:flex;gap:12px;align-items:baseline;justify-content:flex-end;white-space:nowrap;margin:0;font-variant-numeric:tabular-nums}
+#shards .shard-individual .quantity-number{font-size:16px}
+#shards .shard-individual .quantity-unit{font-size:11px}
+#team #register-details .filters{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+#team #register-subskill-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+#shards .shard-individual p{flex-wrap:nowrap}
+#shards .shard-individual p>.quantity{white-space:nowrap;overflow-wrap:normal}
