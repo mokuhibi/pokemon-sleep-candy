@@ -51,7 +51,7 @@ const ShardUI=(()=>{
  function addSkillSetting(card,p){card.append(el('small',mainSkillText(p)+(p.profile?` · Lv.${p.profile.skillLevel}`:''),'shard-setting'));}
  function renderSummary(){
   PeriodPicker.sync();
-  const day=$('shard-date').value||C.gameDay(new Date()),period=C.range($('shard-period').value,day),rs=summaryRecords().filter(r=>C.inRange(r,period));
+  const day=$('shard-date').value||C.gameDay(new Date()),period=RangePicker.get('shard-period'),rs=summaryRecords().filter(r=>C.inRange(r,period));
   $('shard-range').textContent=period?`${C.displayDate(period[0])} 04:00 〜 ${C.displayDate(period[1])} 04:00`:'全期間';
   const title=summaryTitle(period).replace(/のアメ$/,'のゆめのかけら'),root=$('shard-total');root.replaceChildren(el('small',title),qel('div',C.sum(rs)+'個','total'));
   const body=totalBreakdown(root,'ゆめのかけら');
@@ -85,5 +85,5 @@ const ShardUI=(()=>{
   $('shard-research-form').onsubmit=e=>{e.preventDefault();try{const targetDate=$('shard-research-date').value;if(!C.dateOnly(targetDate))throw Error('対象日を入力してください。');const r={method:'research',targetDate,baseAmount:number('shard-research-base'),researchExp:number('shard-research-exp'),researchLevel:number('shard-research-level',1,70)};r.amount=C.shardTotal(r);const existing=records().find(x=>x.id===researchEditingId);const ok=existing?commit({...state,shardRecords:records().map(x=>x.id===existing.id?{...x,...r,updatedAt:new Date().toISOString()}:x)},'睡眠リサーチを訂正しました。'):save(r);if(ok)loadResearch(true);}catch(err){notice(err.message);}};
   $('shard-other-form').onsubmit=e=>{e.preventDefault();try{if(save({method:'other',amount:number('shard-other-amount'),memo:$('shard-other-memo').value.trim()}))$('shard-other-form').reset();}catch(err){notice(err.message);}};
  }
- return {isTarget,init,renderInputs,addSkillSetting,renderSummary,appendHistory};
+ return {summaryRecords,isTarget,init,renderInputs,addSkillSetting,renderSummary,appendHistory};
 })();

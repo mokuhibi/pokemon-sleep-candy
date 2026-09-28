@@ -16,6 +16,14 @@ const SummaryExtras=(()=>{
   }
   root.hidden=!root.children.length;
  }
+ function recordSummary(){
+  const date=recordDate();if(!Number.isFinite(date.getTime()))return;
+  const day=C.gameDay(date),period=C.range('day',day),root=$('today-total');root.replaceChildren(el('small',C.displayDate(day)+' の記録'));
+  const candy=el('div',undefined,'daily-resource'),shard=el('div',undefined,'daily-resource');
+  totals(candy,state.records.filter(r=>C.inRange(r,period)),'アメ');
+  const records=ShardUI.summaryRecords().filter(r=>C.inRange(r,period));shard.append(el('small','ゆめのかけら'),qel('div',C.sum(records)+'個','total'));
+  const detail=el('div');sourceTotals(detail,'shard',records);shard.append(detail);root.append(candy,shard);
+ }
  function candyGroups(records){
   const groups=new Map();for(const r of records){if(!r.candy||!r.amount)continue;if(!groups.has(r.candy))groups.set(r.candy,{name:r.candy,total:0,sources:{}});const g=groups.get(r.candy);g.total+=r.amount;g.sources[r.method]=(g.sources[r.method]||0)+r.amount;}
   return [...groups.values()].sort((a,b)=>b.total-a.total||a.name.localeCompare(b.name,'ja'));
@@ -34,7 +42,7 @@ const SummaryExtras=(()=>{
   const sources=(candy?candySources:shardSources).filter(([key])=>candy?enabled(key)&&(key!=='skill'||state.settings.showOtherCandy!==false):shardVisible(key));
   for(const [key,name] of sources){const item=el('span',name,'month-legend-item');item.dataset.source=kind+'-'+key;legend.append(item);}
   const grouped=new Map();for(const r of records){const date=C.gameDay(r.datetime);if(!date.startsWith(month))continue;if(!grouped.has(date))grouped.set(date,{});const key=candy?r.method:shardKey(r.method),g=grouped.get(date);g[key]=(g[key]||0)+r.amount;}
-  calendar(root,month,date=>{const amounts=grouped.get(date)||{},b=button('',()=>{if(candy){$('summary-date').value=date;$('period').value='day';renderSummary();}else{$('shard-date').value=date;$('shard-period').value='day';ShardUI.renderSummary();}DateUI.update();},'day');b.append(el('strong',Number(date.slice(-2)),'day-number'));const values=el('span',undefined,'candy-values');const description=[];
+  calendar(root,month,date=>{const amounts=grouped.get(date)||{},b=button('',()=>{RangePicker.set(candy?'period':'shard-period',date);DateUI.update();},'day');b.append(el('strong',Number(date.slice(-2)),'day-number'));const values=el('span',undefined,'candy-values');const description=[];
    for(const [key,name] of sources){const amount=amounts[key]||0,text=candy?amount.toLocaleString('ja-JP'):WeeklyChart.shortAmount(amount),value=el('span',text,'month-value');value.dataset.source=kind+'-'+key;value.title=name+'：'+amount.toLocaleString('ja-JP')+'個';value.style.fontSize=Math.max(8,Math.min(11,65/text.length))+'px';values.append(value);description.push(value.title);}
    b.append(values);b.setAttribute('aria-label',C.displayDate(date)+' '+description.join('、'));b.title=C.displayDate(date)+' '+description.join('、');if(date===day)b.classList.add('selected');return b;
   });
@@ -51,8 +59,8 @@ const SummaryExtras=(()=>{
  }
  function init(){
   for(const [key,id] of Object.entries(settingKeys))$('setting-'+id).onchange=()=>commit({...state,settings:{...state.settings,[id]:$('setting-'+id).checked}},'表示設定を保存しました。');
-  $('create-candy-image').onclick=()=>{try{const root=$('candy-image-preview'),period=C.range($('period').value,$('summary-date').value||C.gameDay(new Date()));root.replaceChildren();for(const [i,url] of imagePages(candyGroups(filteredRecords()),summaryTitle(period)).entries()){const img=el('img');img.src=url;img.alt='アメ種類別合計 '+(i+1);root.append(img);}}catch(e){notice('画像を作成できませんでした：'+e.message);}};
+  $('create-candy-image').onclick=()=>{try{const root=$('candy-image-preview'),period=RangePicker.get('period');root.replaceChildren();for(const [i,url] of imagePages(candyGroups(filteredRecords()),summaryTitle(period)).entries()){const img=el('img');img.src=url;img.alt='アメ種類別合計 '+(i+1);root.append(img);}}catch(e){notice('画像を作成できませんでした：'+e.message);}};
  }
  function settings(){for(const [key,id] of Object.entries(settingKeys))$('setting-'+id).checked=shardVisible(key);}
- return {sourceTotals,candySources,shardSources,shardKey,shardVisible,candyGroups,candyList,monthly,imagePages,init,settings};
+ return {recordSummary,sourceTotals,candySources,shardSources,shardKey,shardVisible,candyGroups,candyList,monthly,imagePages,init,settings};
 })();

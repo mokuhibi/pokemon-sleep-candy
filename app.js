@@ -71,7 +71,7 @@ function totals(parent,records,title){parent.replaceChildren(el('small',title),q
 function renderRecord(){
 
  ShardUI.renderInputs();
- totals($('today-total'),state.records.filter(r=>C.gameDay(r.datetime)===C.gameDay(new Date())),`今日 ${C.displayDate(C.gameDay(new Date()))}`);
+ SummaryExtras.recordSummary();
  const root=$('record-methods');root.replaceChildren();const team=currentTeam();
  for(const [method,name] of Object.entries(methods)){
   if(method!=='help'&&!state.settings[method])continue;
@@ -106,7 +106,7 @@ function renderActorFilters(){
  const lv=$('analysis-level'),value=lv.value;lv.replaceChildren(new Option('すべて',''));for(let i=1;i<=(m.value==='delibird'?7:8);i++)lv.add(new Option(String(i),String(i)));lv.value=value; 
  $('analysis-card').hidden=!enabled('mew')&&!enabled('delibird');
 }
-function filteredRecords(){const period=C.range($('period').value,$('summary-date').value||C.gameDay(new Date()));return state.records.filter(r=>C.inRange(r,period));}
+function filteredRecords(){const period=RangePicker.get('period');return state.records.filter(r=>C.inRange(r,period));}
 
 function calendar(parent,month,cell){parent.replaceChildren();if(!/^\d{4}-\d{2}$/.test(month))return;for(const d of ['月','火','水','木','金','土','日'])parent.append(el('span','（'+d+'）','weekday'));const first=month+'-01',offset=(new Date(first).getUTCDay()+6)%7;for(let i=0;i<offset;i++)parent.append(el('span'));for(let day=first;day.startsWith(month);day=C.addDays(day,1)){const date=day;parent.append(cell(date));}}
 // 終了日は翌朝4時のため、見出しではその前日を表示します。
@@ -114,7 +114,7 @@ function summaryTitle(period){if(!period)return '全期間のアメ';const short
 function renderSummary(){
  PeriodPicker.sync();
  $('create-mew-image').hidden=!enabled('mew');$('mew-image-preview').hidden=true;
- const rs=filteredRecords(),period=C.range($('period').value,$('summary-date').value||C.gameDay(new Date()));$('range-label').textContent=period?`${C.displayDate(period[0])} 04:00 〜 ${C.displayDate(period[1])} 04:00`:'全期間';totals($('summary-total'),rs,summaryTitle(period));
+ const rs=filteredRecords(),period=RangePicker.get('period');$('range-label').textContent=period?`${C.displayDate(period[0])} 04:00 〜 ${C.displayDate(period[1])} 04:00`:'全期間';totals($('summary-total'),rs,summaryTitle(period));
  const calendarRs=state.records;
  const month=($('summary-date').value||C.gameDay(new Date())).slice(0,7);$('candy-month').textContent=month.replace('-','年')+'月';
  WeeklyChart.render($('candy-weekly-chart'),calendarRs,$('summary-date').value||C.gameDay(new Date()));
@@ -252,7 +252,7 @@ ProfileForm.init();MewUI.init();SkillUI.registration('');DateUI.init();$('histor
 // 画像用の集計は履歴を読むだけで、保存データを変更しません。
 $('create-mew-image').onclick=()=>{
  try{
-  const period=C.range($('period').value,$('summary-date').value||C.gameDay(new Date()));
+  const period=RangePicker.get('period');
   const records=state.records.filter(r=>r.method==='mew'&&C.inRange(r,period));
   const title=period?`${C.displayDate(period[0])} 04:00 〜 ${C.displayDate(period[1])} 04:00`:'全期間';
   const preview=$('mew-image-preview');preview.src=MewImage.png(MewImage.aggregate(records),title);preview.hidden=false;

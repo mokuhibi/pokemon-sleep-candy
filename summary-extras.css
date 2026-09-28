@@ -48,3 +48,21 @@
 #team #register-subskill-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
 #shards .shard-individual p{flex-wrap:nowrap}
 #shards .shard-individual p>.quantity{white-space:nowrap;overflow-wrap:normal}
+:is(#summary,#shards) .custom-range .period-picker-date{font-size:14px;line-height:1.5;white-space:normal;overflow-wrap:normal;padding:8px 2px}
+:is(#summary,#shards) .custom-range .period-picker-top{grid-template-columns:36px minmax(0,1fr) 36px;gap:2px}
+.range-today{display:flex;justify-content:flex-end;margin-top:4px}
+.range-today button{min-height:44px;font-size:13px;padding:8px 12px}
+.range-dialog{width:min(390px,calc(100% - 24px));box-sizing:border-box;padding:20px;border:1px solid #e4e3da;border-radius:16px;background:#fff;color:#292a26}
+.range-dialog label{display:block;margin:12px 0;font-size:14px}
+.range-dialog input{width:100%;min-height:48px;font-size:16px;box-sizing:border-box}
+.range-actions{display:flex;gap:8px;margin:12px 0}
+.range-actions button{min-height:48px;flex:1;padding:8px;font-size:14px}
+.range-actions button[type=submit]{background:#756027;color:white}
+#record #today-total .daily-resource{margin-top:8px}
+#record #today-total .daily-resource+.daily-resource{border-top:1px solid #e4e3da;padding-top:8px}
+#record #today-total .daily-resource .total{font-size:30px;margin:4px 0}
+#record #today-total .source-totals{margin:0}
+#record #today-total .source-total-row{display:flex;justify-content:space-between;gap:12px;padding:3px 0;font-size:13px;font-variant-numeric:tabular-nums}
+#record #today-total .source-total-row strong{white-space:nowrap;font-weight:500}
+#record #today-total .source-total-row .quantity-number{font-size:16px}
+#record #today-total .source-total-row .quantity-unit{font-size:11px}

@@ -17,7 +17,7 @@ const PeriodPicker=(()=>{
   if(kind==='month')return C.displayDate(start)+'〜'+C.displayDate(end).slice(5);
   return start.slice(0,4)===end.slice(0,4)?short(start)+'〜'+short(end):C.displayDate(start)+'〜'+C.displayDate(end);
  }
- function sync(){for(const item of instances)item.sync();}
+ function sync(){RangePicker.sync();for(const item of instances)item.sync();}
  function mount(config){
   const period=document.getElementById(config.period),date=document.getElementById(config.date),old=period.closest('.card');
   const make=(tag,text,cls)=>{const e=document.createElement(tag);if(text)e.textContent=text;if(cls)e.className=cls;return e;};
@@ -43,8 +43,8 @@ const PeriodPicker=(()=>{
   instances.push(item);item.sync();
  }
  function init(){
-  mount({period:'period',date:'summary-date',render:renderSummary});
-  mount({period:'shard-period',date:'shard-date',render:()=>ShardUI.renderSummary()});
+  RangePicker.mount({period:'period',date:'summary-date',render:renderSummary});
+  RangePicker.mount({period:'shard-period',date:'shard-date',render:()=>ShardUI.renderSummary()});
   mount({period:'history-period',date:'history-date',render:renderHistory});
   DateUI.update();
  }
