@@ -66,3 +66,6 @@
 #record #today-total .source-total-row strong{white-space:nowrap;font-weight:500}
 #record #today-total .source-total-row .quantity-number{font-size:16px}
 #record #today-total .source-total-row .quantity-unit{font-size:11px}
+.range-dialog h2{font-size:20px;margin:0 0 16px;outline:none}
+.range-dialog input[type=date]{display:block;position:static;opacity:1;min-width:0;width:100%;min-height:48px;margin-top:6px;color:#292a26;background:#fff;border-color:#d3d5ca}
+:is(#summary,#shards) .custom-range .period-quick-buttons{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:4px;margin-top:8px}

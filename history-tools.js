@@ -29,7 +29,7 @@ const MewUI=(()=>{
 
 const DateUI=(()=>{
  const datetime=value=>{const s=C.localInput(value);return C.displayDate(s.slice(0,10))+' '+s.slice(11);};
- function update(){for(const input of document.querySelectorAll('input[type=date],input[type=datetime-local]')){let wrapper=input.parentElement;if(!wrapper.classList.contains('date-field')){wrapper=document.createElement('span');wrapper.className='date-field';input.before(wrapper);wrapper.append(input);const day=document.createElement('small');day.className='date-weekday';wrapper.append(day);}const day=wrapper.querySelector('.date-weekday');
+ function update(){for(const input of document.querySelectorAll('input[type=date],input[type=datetime-local]')){if(input.dataset.nativeRange==='true')continue;let wrapper=input.parentElement;if(!wrapper.classList.contains('date-field')){wrapper=document.createElement('span');wrapper.className='date-field';input.before(wrapper);wrapper.append(input);const day=document.createElement('small');day.className='date-weekday';wrapper.append(day);}const day=wrapper.querySelector('.date-weekday');
    {
     // 保存値は変更せず、日付選択欄も共通の書式で表示します。
     wrapper.classList.add('formatted-date-field');if(input.id==='datetime')wrapper.classList.add('record-datetime-field');day.setAttribute('aria-hidden','true');
