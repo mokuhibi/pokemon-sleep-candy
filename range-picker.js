@@ -23,6 +23,8 @@ const RangePicker=(()=>{
   form.onsubmit=e=>{e.preventDefault();try{set(config.period,start.value,end.value);dialog.close();}catch(err){error.textContent=err.message;}};
   // 表示ボタンと基準日データを分離。透明な日付inputがボタンに重ならないようにする。
   const storage=el('div');storage.hidden=true;date.type='hidden';storage.append(date,period);root.append(storage);old.before(root);old.remove();
+  // 表示レイアウトのみ：合計と期間操作を同じ情報面にまとめます。
+  const hero=$(config.period==='period'?'summary-total':'shard-total');if(hero){const overview=el('div',undefined,'overview-header');hero.before(overview);overview.append(hero,root);}
   const day=date.value||C.gameDay(new Date()),item={kind:'day',anchor:day,start:day,end:day,render:config.render,sync(){center.textContent=this.kind==='all'?'全期間':text(this.start,this.end);prev.hidden=next.hidden=this.kind==='all';for(const b of quick.children)if(b.dataset.period)b.setAttribute('aria-pressed',String(b.dataset.period===this.kind));}};items.set(config.period,item);item.sync();
  }
  return {get,set,select,today,move,sync,mount,bounds,text};
