@@ -97,3 +97,16 @@
 }
 
 #record #today-total>small{display:block;font-size:16px;font-weight:600;line-height:1.5;color:#292a26;margin-bottom:8px}
+
+/* 入力ラベルを省いても、入力と記録操作を同じまとまりに保つ。 */
+#record .shard-skill-form{align-items:center;gap:8px;margin-top:8px}
+#record .shard-skill-form label{margin:0}
+#record .shard-skill-form button{margin:0;min-height:44px}
+#record .research-fields>label:nth-child(-n+2){text-align:center;min-width:0}
+#record .research-fields>label:nth-child(-n+2) input{ text-align:center }
+#record .research-fields>label:first-child .formatted-date-field{justify-content:center;text-align:center}
+#shards .total-breakdown .shard-member th{padding-left:12px;font-size:13px;font-weight:400;line-height:1.5}
+#shards .total-breakdown .shard-member td{white-space:nowrap}
+#shards .total-breakdown .shard-member .quantity-number{font-size:16px}
+#shards .total-breakdown .shard-member .quantity-unit{font-size:11px}
+#summary .analysis-note{font-size:12px;line-height:1.6;color:#686b63;margin:8px 0 12px}

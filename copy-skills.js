@@ -31,7 +31,7 @@ const CopySkills=(()=>{
    const draft=drafts.get(key)||{};input.value=draft.amount||'';input.oninput=()=>remember();
    optionList(source,choices.map(q=>({id:q.id,text:label(q)+' · '+mainSkillText(q)})),draft.source||choices[0].id);const sl=el('label','参照するポケモン');sl.append(source);if(isCopy(p))form.append(sl);
    if(kind==='candy'){optionList(target,currentTeam().map((q,i)=>q?{id:String(i+1),text:position(i+1)+' · '+label(q)}:null).filter(Boolean),draft.target||'1');const tl=el('label','アメの獲得先');tl.append(target);form.append(tl);}
-   const l=el('label',kind==='candy'?'獲得したアメの個数':'獲得したゆめのかけら');l.append(input);form.append(l);const b=button('記録',()=>{});b.type='submit';form.append(b);
+   const l=el('label',kind==='candy'?'獲得したアメの個数':undefined);if(kind!=='candy')input.setAttribute('aria-label',label(p)+'のゆめのかけら');l.append(input);form.append(l);const b=button('記録',()=>{});b.type='submit';form.append(b);
    function remember(){drafts.set(key,{amount:input.value,source:source.value,target:target.value});}
    function updateMin(){input.min=kind==='shards'&&SK.id(SK.forPokemon(choices.find(q=>q.id===source.value)))==='super_luck'?'0':'1';remember();}source.onchange=updateMin;target.onchange=remember;updateMin();
    form.onsubmit=e=>{e.preventDefault();try{if(!input.value.trim())throw Error('獲得数を入力してください。');const r=build(kind,p.id,source.value,Number(input.value),Number(target.value),recordDate());const field=kind==='candy'?'records':'shardRecords';drafts.delete(key);if(!commit({...state,[field]:[...state[field],r]},label(p)+'：'+r.amount+'個を記録しました。'))remember();}catch(e){notice(e.message);}};

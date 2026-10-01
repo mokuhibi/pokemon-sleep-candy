@@ -1,0 +1,23 @@
+const assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm');
+const A=require('../analysis-data.js'),C=require('../core.js'),B=require('../backup.js');
+const record=(amount,position=1,target=1,id='m')=>({method:'mew',amount,slot:target,context:{actorId:id,actorSlot:position},datetime:'2026-10-01T06:00:00+09:00'});
+const source=[record(1),record(2,1,2),record(3,1,3),record(4,1,5),record(1,2,4),record(4,2,4),record(1,3,1,'other'),record(1,0),record(1,1,0),record(5)];
+const initial=JSON.stringify(source),r=A.prepare(source,'mew','m');assert.equal(r.records.length,6);assert.equal(r.excluded,3);assert.equal(r.groups.length,2);assert.deepEqual(r.destinations,[1,2,3,4,5]);
+assert.deepEqual(r.groups.map(g=>g.rows.map(x=>x.count)),[[1,1],[3,1]]);
+for(let i=0;i<2;i++){const rows=r.groups.map(g=>g.rows[i]);assert.equal(rows[0].denominator,rows[1].denominator);assert.equal(rows.flatMap(x=>x.cells).reduce((n,c)=>n+c.percent,0),100);}
+assert.equal(r.groups[0].rows[0].cells[0].percent,25);assert.equal(r.groups[1].rows[0].cells[3].count,0);
+assert.equal(A.prepare(source,'mew','m','1').records.length,6);assert.equal(A.prepare([],'mew').groups[0].rows.length,0);assert.equal(JSON.stringify(source),initial);
+assert.equal(A.prepare([record(0,1,6)],'delibird').groups[0].rows[0].cells[5].percent,100);
+const el=(tag,text,cls)=>({tag,text,cls,children:[],append(...x){this.children.push(...x)},replaceChildren(...x){this.children=x}}),nodes={},$=id=>nodes[id]??=el('div');
+const a={id:'a',species:'ルカリオ',nickname:'A'},b={id:'b',species:'ルカリオ',nickname:'B'},crow={id:'c',species:'ヤミカラス'};
+const state={pokemon:[a,b,crow],version:2,team:[null,null,null,null,null],events:[],records:[],shardRecords:[],settings:{}};
+const add=(method,amount,p,day='2026-10-01')=>state.shardRecords.push({id:String(state.shardRecords.length),method,amount,datetime:day+'T06:00:00+09:00',...(p?{pokemonId:p.id,pokemonSnapshot:p}:{})});
+add('skill',1260,a);add('skill',1260,a);add('skill',240,b);add('lucky',0,crow);add('research',8500);add('other',500);add('skill',100,a,'2026-09-30');
+const before=JSON.stringify(state),label=p=>p.species+(p.nickname?'（'+p.nickname+'）':'');
+const ctx={C,state,$,el,qel:el,label,historicalPokemon:r=>r.pokemonSnapshot,PeriodPicker:{sync(){}},summaryTitle:()=>'',RangePicker:{get:()=>C.range('day','2026-10-01')},WeeklyChart:{render(){}},SummaryExtras:{monthly(){},shardSources:[['research','睡眠リサーチ'],['skill','スキル'],['other','その他']],shardVisible:key=>state.settings[key]!==false},totalBreakdown:root=>{const body=el('tbody');root.append(body);return body;},totalBreakdownRow:(body,name,count,amount,cls)=>body.append({name,count,amount,cls})};
+vm.createContext(ctx);vm.runInContext(fs.readFileSync(require.resolve('../shards.js'),'utf8'),ctx);vm.runInContext('ShardUI.renderSummary()',ctx);
+const rows=$('shard-total').children[2].children;assert.deepEqual(rows.map(x=>x.name),['睡眠リサーチ','スキル','ルカリオ（A）','ルカリオ（B）','ヤミカラス','その他']);assert.equal(rows[1].count,4);assert.equal(rows[1].amount,2760);assert.equal(rows[4].count,1);assert.equal(rows[4].amount,0);assert.equal($('shard-total').children[1].text,'11760個');
+state.settings.skill=false;vm.runInContext('ShardUI.renderSummary()',ctx);assert.equal($('shard-total').children[1].text,'11760個');assert.equal($('shard-total').children[2].children.length,2);delete state.settings.skill;assert.equal(JSON.stringify(state),before);
+assert.deepEqual(B.read(B.encode(state)),state);assert.deepEqual(B.read(JSON.stringify(state)),state);
+const html=fs.readFileSync(require.resolve('../index.html'),'utf8');assert(!html.includes('shard-pokemon-totals'));assert(!html.includes('analysis-level'));assert(!html.includes('analysis-multiplier'));assert(html.indexOf('analysis-data.js')<html.indexOf('app.js'));
+console.log('PASS: shared probability denominators, actual amounts, missing positions, zero cells, individual IDs, zero-shard skill count, period filtering, visibility preserves totals, source immutability, CSV/JSON roundtrip');

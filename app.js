@@ -103,7 +103,6 @@ function historicalActors(method){const species=methods[method],map=new Map();fo
 function renderActorFilters(){
  const m=$('analysis-method'),old=m.value;m.replaceChildren();for(const method of ['mew','delibird'])if(enabled(method))m.add(new Option(methods[method],method));if([...m.options].some(o=>o.value===old))m.value=old;
  const a=$('analysis-actor');optionList(a,historicalActors(m.value),a.value,'全個体');a.closest('label').hidden=m.value==='mew';
- const lv=$('analysis-level'),value=lv.value;lv.replaceChildren(new Option('すべて',''));for(let i=1;i<=(m.value==='delibird'?7:8);i++)lv.add(new Option(String(i),String(i)));lv.value=value; 
  $('analysis-card').hidden=!enabled('mew')&&!enabled('delibird');
 }
 function filteredRecords(){const period=RangePicker.get('period');return state.records.filter(r=>C.inRange(r,period));}
@@ -125,17 +124,29 @@ function renderSummary(){
  renderAnalysis();
 }
 function renderAnalysis(){
- const records=filteredRecords();
- const method=$('analysis-method').value,actor=$('analysis-actor').value,level=$('analysis-level').value,multi=$('analysis-multiplier').value,amount=$('analysis-amount').value;
- const source=records.filter(r=>r.method===method&&(method!=='mew'||r.amount>0)),unknown=source.filter(r=>!r.context?.actorId||!r.context.actorSlot||!r.slot).length;
- const amountSelect=$('analysis-amount');for(const option of amountSelect.options)option.hidden=option.value!==''&&!source.some(r=>r.amount===Number(option.value));
- const rs=source.filter(r=>r.context?.actorId&&r.context.actorSlot&&r.slot&&(!actor||r.context.actorId===actor)&&(!level||(r.method==='mew'?(r.recordedSkillLevel??actorOf(r.context)?.profile?.skillLevel??r.context.effectiveLevel):r.context.effectiveLevel)===Number(level))&&(!multi||r.context.event.multiplier===Number(multi))&&(amount===''||r.amount===Number(amount)));
- headingTotal('analysis',C.sum(rs));const root=$('analysis');root.className=method;root.replaceChildren(qel('p',`分析対象 ${rs.length}回 · 位置などが不明な記録 ${unknown}回は除外`));
- const positions=[...new Set(rs.map(r=>r.context.actorSlot))].sort((a,b)=>a-b),destinations=Array.from({length:method==='mew'?5:6},(_,i)=>i+1);if(!rs.length)root.append(el('p','この条件の記録はありません。'));
- const wrap=el('div',undefined,'table-scroll'),table=el('table'),head=el('tr');table.className='position-table'+(method==='mew'?' mew-position-table':'');const caption=el('caption','獲得先 →');table.append(caption);head.append(el('th','位置 ↓'));for(const i of destinations)head.append(el('th',i===6?'アメなし':String(i)));head.append(el('th','スキル回数'));table.append(head);
- for(const i of positions){const tr=el('tr'),xs=rs.filter(r=>r.context.actorSlot===i);tr.append(el('th',i===1?'1\nR':String(i)));for(const j of destinations){const count=xs.filter(r=>r.slot===j).length;tr.append(qel('td',`${count}回\n${xs.length?(count/xs.length*100).toFixed(1)+'%':'—'}`));}tr.append(qel('td',xs.length+'回'));table.append(tr);}wrap.append(table);root.append(wrap);
+ const method=$('analysis-method').value,actor=$('analysis-actor').value,amount=$('analysis-amount').value;
+ const source=filteredRecords().filter(r=>r.method===method&&(method!=='mew'||r.amount>0));
+ const amountSelect=$('analysis-amount');amountSelect.closest('label').hidden=method==='mew';
+ for(const option of amountSelect.options)option.hidden=option.value!==''&&!source.some(r=>r.amount===Number(option.value));
+ const result=AnalysisData.prepare(source,method,actor,amount),rs=result.records;
+ headingTotal('analysis',C.sum(rs));const root=$('analysis');root.className=method;
+ root.replaceChildren(qel('p',`分析対象 ${rs.length}回 · 位置・個数などが不明な記録 ${result.excluded}回は除外`));
+ if(!rs.length){root.append(el('p','この条件の記録はありません。'));return;}
+ if(method==='mew')root.append(el('p','各行の割合は、そのミュウ位置の全記録（1〜4個）を分母とします。両表の同じ行を合わせると100%です。','analysis-note'));
+ for(const group of result.groups){
+  if(method==='mew')root.append(el('h4',group.name));
+  const wrap=el('div',undefined,'table-scroll'),table=el('table'),head=el('tr');table.className='position-table'+(method==='mew'?' mew-position-table':'');
+  table.append(el('caption','獲得先 →'));head.append(el('th','位置 ↓'));
+  for(const j of result.destinations)head.append(el('th',j===6?'アメなし':String(j)));
+  head.append(el('th','回数'));table.append(head);
+  for(const rowData of group.rows){
+   const tr=el('tr');tr.append(el('th',rowData.position===1?'1\nR':String(rowData.position)));
+   for(const cell of rowData.cells)tr.append(qel('td',`${cell.count}回\n${cell.percent.toFixed(1)}%`));
+   tr.append(qel('td',rowData.count+'回'));table.append(tr);
+  }
+  wrap.append(table);root.append(wrap);
+ }
  for(const count of [...new Set(rs.map(r=>r.amount))].sort((a,b)=>a-b)){row(root,`${count}個の記録`,rs.filter(r=>r.amount===count).length+'回');const n=root.lastElementChild.firstElementChild;quantityText(n,n.textContent);}
-
 }
 function historicalPokemon(r){
  const snapshot=r.pokemonSnapshot||r.context?.team?.find(p=>p?.id===r.pokemonId);
@@ -230,7 +241,7 @@ for(const b of document.querySelectorAll('[data-tab]'))b.onclick=()=>showTab(b.d
 $('datetime').oninput=()=>{$('auto-now').checked=false;renderRecord();};$('auto-now').onchange=()=>{if($('auto-now').checked)$('datetime').value=C.localInput();renderRecord();};
 $('pokemon-search').oninput=()=>{selected='';SkillUI.registration('');$('add-pokemon').disabled=true;$('selected-name').textContent='一覧から選んでください。';renderCatalog();};
 $('add-pokemon').onclick=()=>{if(!names.includes(selected)||!speciesEnabled(selected))return;if(selected==='ミュウ'&&state.pokemon.some(p=>p.species==='ミュウ')){notice('ミュウは登録済みです。');return;}let profile;try{profile=$('register-details').hidden?null:ProfileForm.read('register-',selected,true);}catch(e){notice(e.message);return;}const p={id:uid(),species:selected,nickname:$('nickname').value.trim(),profile,...SK.fields($('register-main-skill').value),registrationOrder:Math.max(-1,...state.pokemon.map(p=>p.registrationOrder))+1};if(commit({...state,pokemon:[...state.pokemon,p]},label(p)+'を登録しました。')){$('nickname').value='';ProfileForm.reset(selected);}};
-for(const id of ['period','summary-date','analysis-level','analysis-multiplier','analysis-amount','analysis-actor'])$(id).onchange=renderSummary;
+for(const id of ['period','summary-date','analysis-amount','analysis-actor'])$(id).onchange=renderSummary;
 function historyRange(){return C.range($('history-period').value,$('history-date').value||C.gameDay(new Date()));}
 for(const id of ['history-period','history-date'])$(id).onchange=()=>{renderHistory();DateUI.update();};
 $('roster-other-toggle').onclick=()=>{showOtherPokemon=!showOtherPokemon;renderTeam();};
