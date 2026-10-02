@@ -186,7 +186,7 @@ function renderMewPositions(root,result){
   const unknown=rows[0].unknown+rows[1].unknown;if(unknown)section.append(qel('p','獲得先不明：1個 '+rows[0].unknown+'回 · 2〜4個 '+rows[1].unknown+'回','analysis-note'));
   // 前回追加した1・4個の比較は残し、補足として必要時に開けます。
   const comparison=el('details',undefined,'mew-comparison'),summary=qel('summary',`1個・4個 合計 · ${rows[2].count}回 · ${rows[2].percent.toFixed(1)}%`);
-  comparison.append(summary,targets([rows[2]]));if(rows[2].unknown)comparison.append(qel('p','獲得先不明 '+rows[2].unknown+'回'));section.append(comparison);root.append(section);
+  comparison.append(summary,targets([{...rows[2],name:"1・4個"}]));if(rows[2].unknown)comparison.append(qel('p','獲得先不明 '+rows[2].unknown+'回'));section.append(comparison);root.append(section);
  }
 }
 function historicalPokemon(r){
