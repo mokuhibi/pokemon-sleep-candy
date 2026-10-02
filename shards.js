@@ -49,15 +49,11 @@ const ShardUI=(()=>{
   $('shard-other-form').closest('details').hidden=!SummaryExtras.shardVisible('other');
  }
  function addSkillSetting(card,p){card.append(el('small',mainSkillText(p)+(p.profile?` · Lv.${p.profile.skillLevel}`:''),'shard-setting'));}
- function renderSummary(){
-  PeriodPicker.sync();
-  const day=$('shard-date').value||C.gameDay(new Date()),period=RangePicker.get('shard-period'),rs=summaryRecords().filter(r=>C.inRange(r,period));
-  $('shard-range').textContent=period?`${C.displayDate(period[0])} 04:00 〜 ${C.displayDate(period[1])} 04:00`:'全期間';
-  const title=summaryTitle(period).replace(/のアメ$/,'のゆめのかけら'),root=$('shard-total');root.replaceChildren(el('small',title),qel('div',C.sum(rs)+'個','total'));
-  const body=totalBreakdown(root,'ゆめのかけら');
+ // 記録日サマリーと期間合計で同じ個体別内訳を表示します。
+ function appendBreakdown(body,rs,hideZero=false){
   for(const [key,name] of SummaryExtras.shardSources){
    const xs=rs.filter(r=>key==='skill'?['skill','lucky'].includes(r.method):r.method===key);
-   if(!xs.length||!SummaryExtras.shardVisible(key))continue;
+   if(!xs.length||!SummaryExtras.shardVisible(key)||(hideZero&&key!=='skill'&&!C.sum(xs)))continue;
    totalBreakdownRow(body,name,key==='skill'?xs.length:null,C.sum(xs));
    if(key!=='skill')continue;
    // 同種でも内部IDごとにまとめ、0個のスキル記録も回数に含めます。
@@ -68,6 +64,14 @@ const ShardUI=(()=>{
     totalBreakdownRow(body,name,items.length,C.sum(items),'shard-member');
    }
   }
+ }
+ function renderSummary(){
+  PeriodPicker.sync();
+  const day=$('shard-date').value||C.gameDay(new Date()),period=RangePicker.get('shard-period'),rs=summaryRecords().filter(r=>C.inRange(r,period));
+  $('shard-range').textContent=period?`${C.displayDate(period[0])} 04:00 〜 ${C.displayDate(period[1])} 04:00`:'全期間';
+  const title=summaryTitle(period).replace(/のアメ$/,'のゆめのかけら'),root=$('shard-total');root.replaceChildren(el('small',title),qel('div',C.sum(rs)+'個','total'));
+  const body=totalBreakdown(root,'ゆめのかけら');
+  appendBreakdown(body,rs);
   WeeklyChart.render($('shard-weekly-chart'),summaryRecords(),day);
   SummaryExtras.monthly('shard',summaryRecords(),day);
  }
@@ -90,5 +94,5 @@ const ShardUI=(()=>{
   $('shard-research-form').onsubmit=e=>{e.preventDefault();try{const targetDate=$('shard-research-date').value;if(!C.dateOnly(targetDate))throw Error('対象日を入力してください。');const r={method:'research',targetDate,baseAmount:number('shard-research-base'),researchExp:number('shard-research-exp'),researchLevel:number('shard-research-level',1,70)};r.amount=C.shardTotal(r);const existing=records().find(x=>x.id===researchEditingId);const ok=existing?commit({...state,shardRecords:records().map(x=>x.id===existing.id?{...x,...r,updatedAt:new Date().toISOString()}:x)},'睡眠リサーチを訂正しました。'):save(r);if(ok)loadResearch(true);}catch(err){notice(err.message);}};
   $('shard-other-form').onsubmit=e=>{e.preventDefault();try{if(save({method:'other',amount:number('shard-other-amount'),memo:$('shard-other-memo').value.trim()}))$('shard-other-form').reset();}catch(err){notice(err.message);}};
  }
- return {summaryRecords,isTarget,init,renderInputs,addSkillSetting,renderSummary,appendHistory};
+ return {summaryRecords,isTarget,init,renderInputs,addSkillSetting,renderSummary,appendBreakdown,appendHistory};
 })();

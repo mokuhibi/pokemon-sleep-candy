@@ -65,7 +65,7 @@ function record(method,slot,amount){const date=recordDate();if(!Number.isFinite(
 // 合計カードだけで使う表示用の表。集計済みの値を列に分けます。
 function totalBreakdown(parent,amountLabel){const table=el('table',undefined,'total-breakdown'),head=el('thead'),tr=el('tr'),body=el('tbody');for(const text of ['', '回数',amountLabel]){const th=el('th',text);th.scope='col';tr.append(th);}head.append(tr);table.append(head,body);parent.append(table);return body;}
 function totalBreakdownRow(body,name,count,amount,cls=''){const tr=el('tr',undefined,cls),nameCell=el('th',name);nameCell.scope='row';tr.append(nameCell,qel('td',count===null?'―':count+'回'),qel('td',amount+'個'));body.append(tr);}
-function totals(parent,records,title){parent.replaceChildren(el('small',title),qel('div',`${C.sum(records)}個`,'total'));const body=totalBreakdown(parent,'アメ');for(const [method,name] of Object.entries(methods)){if(!enabled(method))continue;const rs=records.filter(r=>r.method===method);if(method==='skill'&&!rs.length)continue;totalBreakdownRow(body,name,rs.length,C.sum(rs),method);}}
+function totals(parent,records,title,hideEmpty=false){parent.replaceChildren(el('small',title),qel('div',`${C.sum(records)}個`,'total'));const body=totalBreakdown(parent,'アメ');for(const [method,name] of Object.entries(methods)){if(!enabled(method))continue;const rs=records.filter(r=>r.method===method);if((method==='skill'||hideEmpty)&&!rs.length)continue;totalBreakdownRow(body,name,rs.length,C.sum(rs),method);}}
 
 
 function renderRecord(){
@@ -118,10 +118,30 @@ function renderSummary(){
  const month=($('summary-date').value||C.gameDay(new Date())).slice(0,7);$('candy-month').textContent=month.replace('-','年')+'月';
  WeeklyChart.render($('candy-weekly-chart'),calendarRs,$('summary-date').value||C.gameDay(new Date()));
  SummaryExtras.monthly('candy',calendarRs,$('summary-date').value||C.gameDay(new Date()));
- $('slot-counts').replaceChildren();for(const [method,name] of Object.entries(methods)){if(!enabled(method))continue;const group=el('div',undefined,method);const source=rs.filter(r=>r.method===method);if(method==='skill'&&!source.length)continue;group.append(qel('h4',`${name}${method==='help'?'':` · スキル${source.length}回`}`));if(method!=='help')SkillUI.candyCounts(group,source);for(let i=1;i<=5;i++){const xs=source.filter(r=>r.slot===i);row(group,position(i),`${xs.length}回 · ${C.sum(xs)}個`);}if(method==='delibird')row(group,'6 · スキルのみ',source.filter(r=>r.slot===6).length+'回');if(method==='mew'&&source.some(r=>r.amount===0))row(group,'アメなし · スキルのみ',source.filter(r=>r.amount===0).length+'回');const unknown=source.filter(r=>r.slot===null&&r.amount!==0);if(unknown.length)row(group,'獲得位置不明',unknown.length+'回 · '+C.sum(unknown)+'個');$('slot-counts').append(group);}
+ renderSlotCounts(rs);
  SummaryExtras.candyList(rs);
  headingTotal('candy-calendar',C.sum(calendarRs.filter(r=>C.gameDay(r.datetime).startsWith(month))));headingTotal('slot-counts',C.sum(rs.filter(r=>r.slot>=1&&r.slot<=5)));headingTotal('candy-list',C.sum(rs));
  renderAnalysis();
+}
+// 割合の分母は、取得元ごとの獲得位置1〜5が分かる記録回数です。
+function renderSlotCounts(records){
+ const root=$('slot-counts');root.replaceChildren();
+ root.append(el('p','割合：取得元ごとの獲得先1〜5の記録回数に対する比率','slot-note'));
+ for(const [method,name] of Object.entries(methods)){
+  if(!enabled(method))continue;const source=records.filter(r=>r.method===method);if(!source.length)continue;
+  const group=el('div',undefined,'slot-group '+method);group.append(qel('h4',`${name} · ${source.length}回`));
+  if(method!=='help')SkillUI.candyCounts(group,source);
+  const table=el('table',undefined,'slot-table'),head=el('thead'),headRow=el('tr'),body=el('tbody');
+  for(const name of ['位置','回数','割合','アメ']){const th=el('th',name);th.scope='col';headRow.append(th);}head.append(headRow);table.append(head,body);
+  const denominator=source.filter(r=>r.slot>=1&&r.slot<=5).length;
+  function entry(name,xs,percent){const tr=el('tr'),th=el('th',name);th.scope='row';tr.append(th,qel('td',xs.length+'回'),el('td',percent),qel('td',C.sum(xs)+'個'));body.append(tr);}
+  for(let i=1;i<=5;i++){const xs=source.filter(r=>r.slot===i);entry(i===1?'R':String(i),xs,denominator?(100*xs.length/denominator).toFixed(1)+'%':'―');}
+  if(method==='delibird')entry('6 · スキルのみ',source.filter(r=>r.slot===6),'―');
+  if(method==='mew'&&source.some(r=>r.amount===0))entry('アメなし',source.filter(r=>r.amount===0),'―');
+  const unknown=source.filter(r=>r.slot===null&&r.amount!==0);if(unknown.length)entry('位置不明',unknown,'―');
+  group.append(table);root.append(group);
+ }
+ if(root.children.length===1)root.append(el('p','この期間の記録はありません。'));
 }
 function renderAnalysis(){
  const method=$('analysis-method').value,actor=$('analysis-actor').value,amount=$('analysis-amount').value;
@@ -132,7 +152,7 @@ function renderAnalysis(){
  headingTotal('analysis',C.sum(rs));const root=$('analysis');root.className=method;
  root.replaceChildren(qel('p',`分析対象 ${rs.length}回 · 位置・個数などが不明な記録 ${result.excluded}回は除外`));
  if(!rs.length){root.append(el('p','この条件の記録はありません。'));return;}
- if(method==='mew')root.append(el('p','各行の割合は、そのミュウ位置の全記録（1〜4個）を分母とします。両表の同じ行を合わせると100%です。','analysis-note'));
+ if(method==='mew')root.append(el('p','各行の割合は、そのミュウ位置の全記録（1〜4個）を分母とします。先の2表の同じ行を合わせると100%です。「1個・4個 合計」は重複する比較表で、3表は足し合わせません。','analysis-note'));
  for(const group of result.groups){
   if(method==='mew')root.append(el('h4',group.name));
   const wrap=el('div',undefined,'table-scroll'),table=el('table'),head=el('tr');table.className='position-table'+(method==='mew'?' mew-position-table':'');

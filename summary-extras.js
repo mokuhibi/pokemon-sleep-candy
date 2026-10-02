@@ -20,9 +20,9 @@ const SummaryExtras=(()=>{
   const date=recordDate();if(!Number.isFinite(date.getTime()))return;
   const day=C.gameDay(date),period=C.range('day',day),root=$('today-total');root.replaceChildren(el('small',C.displayDate(day)+' の記録'));
   const candy=el('div',undefined,'daily-resource'),shard=el('div',undefined,'daily-resource');
-  totals(candy,state.records.filter(r=>C.inRange(r,period)),'アメ');
+  totals(candy,state.records.filter(r=>C.inRange(r,period)),'アメ',true);
   const records=ShardUI.summaryRecords().filter(r=>C.inRange(r,period));shard.append(el('small','ゆめのかけら'),qel('div',C.sum(records)+'個','total'));
-  const detail=el('div');sourceTotals(detail,'shard',records);shard.append(detail);root.append(candy,shard);
+  const body=totalBreakdown(shard,'ゆめのかけら');ShardUI.appendBreakdown(body,records,true);root.append(candy,shard);
  }
  function candyGroups(records){
   const groups=new Map();for(const r of records){if(!r.candy||!r.amount)continue;if(!groups.has(r.candy))groups.set(r.candy,{name:r.candy,total:0,sources:{}});const g=groups.get(r.candy);g.total+=r.amount;g.sources[r.method]=(g.sources[r.method]||0)+r.amount;}
