@@ -14,7 +14,12 @@ const AnalysisData=(()=>{
   })}));
   // 分類が網羅的な2群は、同じ小数1桁で合計100%になるよう表示値を揃えます。
   if(method==='mew')groups[1].rows.forEach((row,i)=>{row.percent=100-groups[0].rows[i].percent;});
-  return {records,excluded:selected.length-valid.length,destinations,groups};
+  // 獲得先の条件付き割合。各分類自身の件数を分母にします。
+  const destinationGroups=method==='mew'?[['全体',()=>true],...definitions.slice(0,2)].map(([name,matches])=>({name,rows:positions.map(position=>{
+   const xs=records.filter(r=>r.context.actorSlot===position&&matches(r));
+   return {position,count:xs.length,unknown:xs.filter(r=>!destinations.includes(r.slot)).length,cells:destinations.map(target=>{const count=xs.filter(r=>r.slot===target).length;return {target,count,percent:xs.length?100*count/xs.length:null};})};
+  })})):[];
+  return {records,excluded:selected.length-valid.length,destinations,groups,destinationGroups};
  }
  return {prepare};
 })();

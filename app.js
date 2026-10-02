@@ -171,10 +171,10 @@ function renderAnalysis(){
 // 発動位置ごとの獲得数の割合と、獲得先の回数を分けて表示します。
 function renderMewPositions(root,result){
  root.append(el('p','割合は、この発動位置からの全記録（1〜4個）が分母です。','analysis-note'));
- function targets(rows){
-  const table=el('table',undefined,'mew-target-table'),head=el('thead'),tr=el('tr'),body=el('tbody');table.append(el('caption','獲得先（回数）'));
-  tr.append(el('th','アメ'));for(const j of result.destinations){const th=el('th',j===1?'R':String(j));th.scope='col';tr.append(th);}head.append(tr);table.append(head,body);
-  for(const data of rows){const line=el('tr'),name=el('th',data.name);name.scope='row';line.append(name);for(const cell of data.cells)line.append(el('td',cell.count.toLocaleString('ja-JP')));body.append(line);}
+ function targets(rows,distribution=false){
+  const table=el('table',undefined,'mew-target-table'),head=el('thead'),tr=el('tr'),body=el('tbody');table.append(el('caption',distribution?'獲得先 · 各行の記録数が分母':'獲得先（回数）'));if(distribution)table.className='mew-target-table mew-distribution';
+  tr.append(el('th',distribution?'分類':'アメ'));for(const j of result.destinations){const th=el('th',j===1?'R':String(j));th.scope='col';tr.append(th);}head.append(tr);table.append(head,body);
+  for(const data of rows){const line=el('tr'),name=el('th',data.name);name.scope='row';line.append(name);for(const cell of data.cells){const td=el('td');if(distribution){td.append(el('strong',cell.percent===null?'―':cell.percent.toFixed(1)+'%'),qel('small',cell.count+'回'));}else td.textContent=cell.count.toLocaleString('ja-JP');line.append(td);}body.append(line);}
   return table;
  }
  for(let i=0;i<result.groups[0].rows.length;i++){
@@ -182,8 +182,8 @@ function renderMewPositions(root,result){
   const head=el('div',undefined,'mew-position-head');head.append(el('h4','スキル位置 '+(base.position===1?'R':base.position)),qel('span','全'+base.denominator+'回'));section.append(head);
   const rates=el('div',undefined,'mew-rates');
   for(const data of rows.slice(0,2)){const line=el('div',undefined,'mew-rate');line.append(el('span',data.name),qel('span',data.count+'回'),el('strong',data.percent.toFixed(1)+'%'));rates.append(line);}
-  section.append(rates,targets(rows.slice(0,2)));
-  const unknown=rows[0].unknown+rows[1].unknown;if(unknown)section.append(qel('p','獲得先不明：1個 '+rows[0].unknown+'回 · 2〜4個 '+rows[1].unknown+'回','analysis-note'));
+  const distributions=result.destinationGroups.map(g=>({...g.rows[i],name:g.name}));section.append(rates,targets(distributions,true));
+  const unknown=rows[0].unknown+rows[1].unknown;if(unknown)section.append(qel('p','分母に含む獲得先不明：1個 '+rows[0].unknown+'回 · 2〜4個 '+rows[1].unknown+'回','analysis-note'));
   // 前回追加した1・4個の比較は残し、補足として必要時に開けます。
   const comparison=el('details',undefined,'mew-comparison'),summary=qel('summary',`1個・4個 合計 · ${rows[2].count}回 · ${rows[2].percent.toFixed(1)}%`);
   comparison.append(summary,targets([{...rows[2],name:"1・4個"}]));if(rows[2].unknown)comparison.append(qel('p','獲得先不明 '+rows[2].unknown+'回'));section.append(comparison);root.append(section);

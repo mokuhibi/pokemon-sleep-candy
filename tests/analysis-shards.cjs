@@ -19,7 +19,7 @@ vm.createContext(ctx);vm.runInContext(fs.readFileSync(require.resolve('../shards
 const rows=$('shard-total').children[2].children;assert.deepEqual(rows.map(x=>x.name),['睡眠リサーチ','スキル','ルカリオ（A）','ルカリオ（B）','ヤミカラス','その他']);assert.equal(rows[1].count,4);assert.equal(rows[1].amount,2760);assert.equal(rows[4].count,1);assert.equal(rows[4].amount,0);assert.equal($('shard-total').children[1].text,'11760個');
 state.settings.skill=false;vm.runInContext('ShardUI.renderSummary()',ctx);assert.equal($('shard-total').children[1].text,'11760個');assert.equal($('shard-total').children[2].children.length,2);delete state.settings.skill;assert.equal(JSON.stringify(state),before);
 assert.deepEqual(B.read(B.encode(state)),state);assert.deepEqual(B.read(JSON.stringify(state)),state);
-const html=fs.readFileSync(require.resolve('../index.html'),'utf8');assert(!html.includes('shard-pokemon-totals'));assert(!html.includes('analysis-level'));assert(!html.includes('analysis-multiplier'));assert(html.includes('src="analysis-data.js?v=20261002-rates"'));assert(html.indexOf('analysis-data.js')>=0&&html.indexOf('analysis-data.js')<html.indexOf('app.js'));
+const html=fs.readFileSync(require.resolve('../index.html'),'utf8');assert(!html.includes('shard-pokemon-totals'));assert(!html.includes('analysis-level'));assert(!html.includes('analysis-multiplier'));assert(html.includes('src="analysis-data.js?v=20261002-targets"'));assert(html.indexOf('analysis-data.js')>=0&&html.indexOf('analysis-data.js')<html.indexOf('app.js'));
 console.log('PASS: shared probability denominators, actual amounts, missing positions, zero cells, individual IDs, zero-shard skill count, period filtering, visibility preserves totals, source immutability, CSV/JSON roundtrip');
 // 実際の描画関数で記録日・04:00境界・取得元の0件省略を確認。
 const app=fs.readFileSync(require.resolve('../app.js'),'utf8');ctx.methods={help:'アメ拾い',mew:'ミュウ',delibird:'デリバード',skill:'スキル'};ctx.enabled=()=>true;
@@ -41,6 +41,19 @@ console.log('PASS: 12/20=60%, 8/20=40%, unknown destination remains in denominat
 
 vm.runInContext(app.slice(app.indexOf('function renderMewPositions('),app.indexOf('function historicalPokemon(')),ctx);
 ctx.analysisResult=twentyResult;vm.runInContext('renderMewPositions($("test-analysis"),analysisResult)',ctx);
-const position=$('test-analysis').children[1];assert.equal(position.children[0].children[1].text,'全20回');assert.deepEqual(position.children[1].children.map(r=>r.children[2].text),['60.0%','40.0%']);assert.equal(position.children[2].children[2].children[0].children[1].text,'12');assert.equal(position.children[3].children[0].text,'1個・4個 合計 · 20回 · 100.0%');
+const position=$('test-analysis').children[1];assert.equal(position.children[0].children[1].text,'全20回');assert.deepEqual(position.children[1].children.map(r=>r.children[2].text),['60.0%','40.0%']);assert.equal(position.children[2].children[2].children[0].children[1].children[0].text,'60.0%');assert.equal(position.children[3].children[0].text,'1個・4個 合計 · 20回 · 100.0%');
 const noID=record(1);delete noID.context.actorId;assert.equal(A.prepare([noID],'mew').records.length,1);assert.equal(A.prepare([noID],'mew','m').records.length,0);
 console.log('PASS: rendered group probabilities and destination counts, supplemental comparison, unknown individual does not remove valid position data');
+
+// ユーザー例: 全176件、1個123件、2〜4個53件の条件付き獲得先割合。
+const counts1=[26,32,20,26,19],countsMany=[9,14,12,8,10];
+const destinationsFixture=[];for(const [amount,counts] of [[1,counts1],[4,countsMany]])counts.forEach((n,j)=>{for(let k=0;k<n;k++)destinationsFixture.push(record(amount,1,j+1));});
+const destinationBefore=JSON.stringify(destinationsFixture),distribution=A.prepare(destinationsFixture,'mew');
+assert.deepEqual(distribution.destinationGroups.map(g=>g.rows[0].count),[176,123,53]);
+assert.deepEqual(distribution.destinationGroups.map(g=>g.rows[0].cells.map(c=>c.percent.toFixed(1))),[['19.9','26.1','18.2','19.3','16.5'],['21.1','26.0','16.3','21.1','15.4'],['17.0','26.4','22.6','15.1','18.9']]);
+for(const group of distribution.destinationGroups){const row=group.rows[0];assert.equal(row.cells.reduce((n,c)=>n+c.count,0),row.count);assert(Math.abs(row.cells.reduce((n,c)=>n+c.percent,0)-100)<1e-10);}
+assert.equal(JSON.stringify(destinationsFixture),destinationBefore);
+const zeroGroup=A.prepare([record(1)],'mew').destinationGroups[2].rows[0];assert.equal(zeroGroup.count,0);assert(zeroGroup.cells.every(c=>c.percent===null&&c.count===0));
+assert.equal(unknownTarget.destinationGroups[1].rows[0].cells.reduce((n,c)=>n+c.percent,0),0);assert.equal(unknownTarget.destinationGroups[1].rows[0].unknown,1);
+ctx.analysisResult=distribution;vm.runInContext('renderMewPositions($("distribution"),analysisResult)',ctx);const distributionTable=$('distribution').children[1].children[2];assert.equal(distributionTable.className,'mew-target-table mew-distribution');assert.equal(distributionTable.children[2].children.length,3);assert.equal(distributionTable.children[2].children[1].children[1].children[0].text,'21.1%');assert.equal(distributionTable.children[2].children[1].children[1].children[1].text,'26回');
+console.log('PASS: separate destination denominators 176/123/53, per-row unrounded total100%, zero denominator, unknown destination, immutable history, rendered percentages and counts');
