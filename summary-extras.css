@@ -156,5 +156,5 @@
 #summary .mew-target-table :is(th,td){padding:4px 2px;border:0;border-bottom:1px solid #e4e3da;text-align:right;background:transparent;white-space:nowrap}
 #summary .mew-target-table th{font-weight:400;color:#686b63}
 #summary .mew-target-table th:first-child{width:60px;text-align:left}
-#summary .mew-comparison{margin-top:4px;border:0;background:transparent}
+#summary .mew-comparison{margin-top:4px;padding:0;border:0;background:transparent}
 #summary .mew-comparison summary{min-height:44px;padding:10px 0;font-size:12px;line-height:24px;color:#686b63}
