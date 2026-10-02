@@ -2,11 +2,11 @@ const assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('nod
 const A=require('../analysis-data.js'),C=require('../core.js'),B=require('../backup.js');
 const record=(amount,position=1,target=1,id='m')=>({method:'mew',amount,slot:target,context:{actorId:id,actorSlot:position},datetime:'2026-10-01T06:00:00+09:00'});
 const source=[record(1),record(2,1,2),record(3,1,3),record(4,1,5),record(1,2,4),record(4,2,4),record(1,3,1,'other'),record(1,0),record(1,1,0),record(5)];
-const initial=JSON.stringify(source),r=A.prepare(source,'mew','m');assert.equal(r.records.length,6);assert.equal(r.excluded,3);assert.equal(r.groups.length,3);assert.deepEqual(r.destinations,[1,2,3,4,5]);
-assert.deepEqual(r.groups.map(g=>g.rows.map(x=>x.count)),[[1,1],[3,1],[2,2]]);
-for(let i=0;i<2;i++){const rows=r.groups.slice(0,2).map(g=>g.rows[i]);assert.equal(rows[0].denominator,rows[1].denominator);assert.equal(rows.flatMap(x=>x.cells).reduce((n,c)=>n+c.percent,0),100);}
-assert.equal(r.groups[0].rows[0].cells[0].percent,25);assert.equal(r.groups[1].rows[0].cells[3].count,0);
-assert.equal(A.prepare(source,'mew','m','1').records.length,6);assert.equal(A.prepare([],'mew').groups[0].rows.length,0);assert.equal(JSON.stringify(source),initial);
+const initial=JSON.stringify(source),r=A.prepare(source,'mew','m');assert.equal(r.records.length,7);assert.equal(r.excluded,2);assert.equal(r.groups.length,3);assert.deepEqual(r.destinations,[1,2,3,4,5]);
+assert.deepEqual(r.groups.map(g=>g.rows.map(x=>x.count)),[[2,1],[3,1],[3,2]]);
+for(let i=0;i<2;i++){const rows=r.groups.slice(0,2).map(g=>g.rows[i]);assert.equal(rows[0].denominator,rows[1].denominator);assert.equal(rows.reduce((n,c)=>n+c.percent,0),100);}
+assert.equal(r.groups[0].rows[0].cells[0].percent,20);assert.equal(r.groups[1].rows[0].cells[3].count,0);
+assert.equal(A.prepare(source,'mew','m','1').records.length,7);assert.equal(A.prepare([],'mew').groups[0].rows.length,0);assert.equal(JSON.stringify(source),initial);
 assert.equal(A.prepare([record(0,1,6)],'delibird').groups[0].rows[0].cells[5].percent,100);
 const el=(tag,text,cls)=>({tag,text,cls,children:[],append(...x){this.children.push(...x)},replaceChildren(...x){this.children=x}}),nodes={},$=id=>nodes[id]??=el('div');
 const a={id:'a',species:'ルカリオ',nickname:'A'},b={id:'b',species:'ルカリオ',nickname:'B'},crow={id:'c',species:'ヤミカラス'};
@@ -19,7 +19,7 @@ vm.createContext(ctx);vm.runInContext(fs.readFileSync(require.resolve('../shards
 const rows=$('shard-total').children[2].children;assert.deepEqual(rows.map(x=>x.name),['睡眠リサーチ','スキル','ルカリオ（A）','ルカリオ（B）','ヤミカラス','その他']);assert.equal(rows[1].count,4);assert.equal(rows[1].amount,2760);assert.equal(rows[4].count,1);assert.equal(rows[4].amount,0);assert.equal($('shard-total').children[1].text,'11760個');
 state.settings.skill=false;vm.runInContext('ShardUI.renderSummary()',ctx);assert.equal($('shard-total').children[1].text,'11760個');assert.equal($('shard-total').children[2].children.length,2);delete state.settings.skill;assert.equal(JSON.stringify(state),before);
 assert.deepEqual(B.read(B.encode(state)),state);assert.deepEqual(B.read(JSON.stringify(state)),state);
-const html=fs.readFileSync(require.resolve('../index.html'),'utf8');assert(!html.includes('shard-pokemon-totals'));assert(!html.includes('analysis-level'));assert(!html.includes('analysis-multiplier'));assert(html.includes('src="analysis-data.js?v=20261002-summary"'));assert(html.indexOf('analysis-data.js')>=0&&html.indexOf('analysis-data.js')<html.indexOf('app.js'));
+const html=fs.readFileSync(require.resolve('../index.html'),'utf8');assert(!html.includes('shard-pokemon-totals'));assert(!html.includes('analysis-level'));assert(!html.includes('analysis-multiplier'));assert(html.includes('src="analysis-data.js?v=20261002-rates"'));assert(html.indexOf('analysis-data.js')>=0&&html.indexOf('analysis-data.js')<html.indexOf('app.js'));
 console.log('PASS: shared probability denominators, actual amounts, missing positions, zero cells, individual IDs, zero-shard skill count, period filtering, visibility preserves totals, source immutability, CSV/JSON roundtrip');
 // 実際の描画関数で記録日・04:00境界・取得元の0件省略を確認。
 const app=fs.readFileSync(require.resolve('../app.js'),'utf8');ctx.methods={help:'アメ拾い',mew:'ミュウ',delibird:'デリバード',skill:'スキル'};ctx.enabled=()=>true;
@@ -33,3 +33,14 @@ ctx.slotFixture=[{method:'mew',amount:1,slot:1},{method:'mew',amount:4,slot:2},{
 const groups=$('slot-counts').children.filter(x=>x.cls?.startsWith('slot-group'));assert.equal(groups.length,2);const mewRows=groups[0].children.at(-1).children[1].children;assert.equal(mewRows.length,6);assert.equal(mewRows[0].children[2].text,'50.0%');assert.equal(mewRows[1].children[2].text,'50.0%');assert.equal(mewRows[5].children[0].text,'位置不明');assert.equal(mewRows[5].children[3].text,'4個');const deliRows=groups[1].children.at(-1).children[1].children;assert.equal(deliRows[0].children[2].text,'―');assert.equal(deliRows[5].children[1].text,'1回');
 assert(html.indexOf('setting-showShardSkill')<html.indexOf('setting-showShardResearch'));
 console.log('PASS: daily individual breakdown, zero-source omission, game-day boundary, compact slot counts/amounts/percentages, unknown/skill-only preservation, settings order');
+
+const twenty=[...Array.from({length:12},()=>record(1)),...Array.from({length:8},()=>record(4,1,2))],twentyResult=A.prepare(twenty,'mew');assert.equal(twentyResult.groups[0].rows[0].percent,60);assert.equal(twentyResult.groups[1].rows[0].percent,40);assert.equal(twentyResult.groups[0].rows[0].count,12);assert.equal(twentyResult.groups[1].rows[0].count,8);
+const unknownTarget=A.prepare([record(1,1,null),record(4,1,2)],'mew');assert.equal(unknownTarget.records.length,2);assert.equal(unknownTarget.groups[0].rows[0].percent,50);assert.equal(unknownTarget.groups[0].rows[0].unknown,1);
+const thirds=A.prepare([record(1),record(2),record(4)],'mew');assert.equal(thirds.groups[0].rows[0].percent+thirds.groups[1].rows[0].percent,100);
+console.log('PASS: 12/20=60%, 8/20=40%, unknown destination remains in denominator, display rounding sums to100%');
+
+vm.runInContext(app.slice(app.indexOf('function renderMewPositions('),app.indexOf('function historicalPokemon(')),ctx);
+ctx.analysisResult=twentyResult;vm.runInContext('renderMewPositions($("test-analysis"),analysisResult)',ctx);
+const position=$('test-analysis').children[1];assert.equal(position.children[0].children[1].text,'全20回');assert.deepEqual(position.children[1].children.map(r=>r.children[2].text),['60.0%','40.0%']);assert.equal(position.children[2].children[2].children[0].children[1].text,'12');assert.equal(position.children[3].children[0].text,'1個・4個 合計 · 20回 · 100.0%');
+const noID=record(1);delete noID.context.actorId;assert.equal(A.prepare([noID],'mew').records.length,1);assert.equal(A.prepare([noID],'mew','m').records.length,0);
+console.log('PASS: rendered group probabilities and destination counts, supplemental comparison, unknown individual does not remove valid position data');
