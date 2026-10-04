@@ -2,14 +2,15 @@
 (function(root){
  'use strict';
  const slot=n=>Number.isInteger(n)&&n>=1&&n<=5;
- function aggregate(records){
+ function aggregate(records,map=typeof candyMap!=='undefined'?candyMap:{}){
+  const analysis=typeof AnalysisData!=='undefined'?AnalysisData:require('./analysis-data.js');
   const rows=records.filter(r=>r.method==='mew');
   const counts=Array(5).fill(0),one=Array(5).fill(0),four=Array(5).fill(0),matrix=Array.from({length:5},()=>Array(5).fill(0));
   let selected=0,located=0,self=0;
-  for(const r of rows){if(!slot(r.slot))continue;const j=r.slot-1;selected++;counts[j]++;if(r.amount===1)one[j]++;if(r.amount===4)four[j]++;
-   const i=r.context?.actorSlot;if(slot(i)){matrix[i-1][j]++;located++;if(i===r.slot)self++;}
+  for(const r of rows){const target=analysis.targetSlot(r,map);if(!slot(target))continue;const j=target-1;selected++;counts[j]++;if(r.amount===1)one[j]++;if(r.amount===4)four[j]++;
+   const i=r.context?.actorSlot;if(slot(i)){matrix[i-1][j]++;located++;if(i===target)self++;}
   }
-  return {total:rows.length,selected,located,self,counts,one,four,matrix};
+  return {total:rows.length,selected,located,self,counts,one,four,matrix,excluded:rows.length-selected};
  }
  const percent=(n,d)=>d?(100*n/d).toFixed(1)+'%':'—';
  function png(data,period){
@@ -22,6 +23,7 @@
   function cell(value,x,y,w,h,header=false){c.fillStyle=header?'#f6e3ec':'#ffffff';c.fillRect(x,y,w,h);c.strokeStyle=line;c.lineWidth=2;c.strokeRect(x,y,w,h);text(value,x+w/2,y+h/2+9,25,ink,'center',header);}
   // 上部は期間と記録回数のみ。
   text(period,60,65,29);text(`記録回数 ${data.total}回`,60,116,34,ink,'left',true);
+  text(`獲得先分析 ${data.selected}回 · 特定できず除外 ${data.excluded}回`,1140,116,24,muted,'right');
   heading('1〜5枠の選択回数・割合',190);
   for(let i=0;i<5;i++){const x=60+i*216;c.fillStyle='#f6e3ec';c.fillRect(x,216,200,142);text(`${i+1}枠`,x+100,251,25,muted,'center');text(`${data.counts[i]}回`,x+100,300,38,ink,'center',true);text(percent(data.counts[i],data.selected),x+100,339,26,ink,'center');}
   heading('ミュウの配置枠 × 選ばれた枠',425);

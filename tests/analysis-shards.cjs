@@ -1,6 +1,8 @@
 const assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm');
-const A=require('../analysis-data.js'),C=require('../core.js'),B=require('../backup.js');
-const record=(amount,position=1,target=1,id='m')=>({method:'mew',amount,slot:target,context:{actorId:id,actorSlot:position},datetime:'2026-10-01T06:00:00+09:00'});
+const dataContext={};vm.createContext(dataContext);vm.runInContext(fs.readFileSync(require.resolve('../pokemon-data.js'),'utf8')+';this.map=candyMap',dataContext);const candyMap=dataContext.map;
+const rawA=require('../analysis-data.js'),A={...rawA,prepare:(source,method,actor='',amount='')=>rawA.prepare(source,method,actor,amount,candyMap)},C=require('../core.js'),B=require('../backup.js');
+const species=['ミュウ','ルカリオ','ピカチュウ','デリバード','ヤミカラス'];
+const record=(amount,position=1,target=1,id='m')=>({method:'mew',amount,slot:target,candy:candyMap[species[target-1]||'ミュウ'],context:{actorId:id,actorSlot:position,...(target>=1&&target<=5?{team:species.map((species,i)=>({id:'snapshot-'+i,species,nickname:''}))}:{})},datetime:'2026-10-01T06:00:00+09:00'});
 const source=[record(1),record(2,1,2),record(3,1,3),record(4,1,5),record(1,2,4),record(4,2,4),record(1,3,1,'other'),record(1,0),record(1,1,0),record(5)];
 const initial=JSON.stringify(source),r=A.prepare(source,'mew','m');assert.equal(r.records.length,7);assert.equal(r.excluded,2);assert.equal(r.groups.length,3);assert.deepEqual(r.destinations,[1,2,3,4,5]);
 assert.deepEqual(r.groups.map(g=>g.rows.map(x=>x.count)),[[2,1],[3,1],[3,2]]);
@@ -14,12 +16,12 @@ const state={pokemon:[a,b,crow],version:2,team:[null,null,null,null,null],events
 const add=(method,amount,p,day='2026-10-01')=>state.shardRecords.push({id:String(state.shardRecords.length),method,amount,datetime:day+'T06:00:00+09:00',...(p?{pokemonId:p.id,pokemonSnapshot:p}:{})});
 add('skill',1260,a);add('skill',1260,a);add('skill',240,b);add('lucky',0,crow);add('research',8500);add('other',500);add('skill',100,a,'2026-09-30');
 const before=JSON.stringify(state),label=p=>p.species+(p.nickname?'（'+p.nickname+'）':'');
-const ctx={C,state,$,el,qel:el,label,historicalPokemon:r=>r.pokemonSnapshot,PeriodPicker:{sync(){}},summaryTitle:()=>'',RangePicker:{get:()=>C.range('day','2026-10-01')},WeeklyChart:{render(){}},SummaryExtras:{monthly(){},shardSources:[['research','睡眠リサーチ'],['skill','スキル'],['other','その他']],shardVisible:key=>state.settings[key]!==false},totalBreakdown:root=>{const body=el('tbody');root.append(body);return body;},totalBreakdownRow:(body,name,count,amount,cls)=>body.append({name,count,amount,cls})};
+const ctx={C,state,AnalysisData:rawA,candyMap,$,el,qel:el,label,historicalPokemon:r=>r.pokemonSnapshot,PeriodPicker:{sync(){}},summaryTitle:()=>'',RangePicker:{get:()=>C.range('day','2026-10-01')},WeeklyChart:{render(){}},SummaryExtras:{monthly(){},shardSources:[['research','睡眠リサーチ'],['skill','スキル'],['other','その他']],shardVisible:key=>state.settings[key]!==false},totalBreakdown:root=>{const body=el('tbody');root.append(body);return body;},totalBreakdownRow:(body,name,count,amount,cls)=>body.append({name,count,amount,cls})};
 vm.createContext(ctx);vm.runInContext(fs.readFileSync(require.resolve('../shards.js'),'utf8'),ctx);vm.runInContext('ShardUI.renderSummary()',ctx);
 const rows=$('shard-total').children[2].children;assert.deepEqual(rows.map(x=>x.name),['睡眠リサーチ','スキル','ルカリオ（A）','ルカリオ（B）','ヤミカラス','その他']);assert.equal(rows[1].count,4);assert.equal(rows[1].amount,2760);assert.equal(rows[4].count,1);assert.equal(rows[4].amount,0);assert.equal($('shard-total').children[1].text,'11760個');
 state.settings.skill=false;vm.runInContext('ShardUI.renderSummary()',ctx);assert.equal($('shard-total').children[1].text,'11760個');assert.equal($('shard-total').children[2].children.length,2);delete state.settings.skill;assert.equal(JSON.stringify(state),before);
 assert.deepEqual(B.read(B.encode(state)),state);assert.deepEqual(B.read(JSON.stringify(state)),state);
-const html=fs.readFileSync(require.resolve('../index.html'),'utf8');assert(!html.includes('shard-pokemon-totals'));assert(!html.includes('analysis-level'));assert(!html.includes('analysis-multiplier'));assert(html.includes('src="analysis-data.js?v=20261002-targets"'));assert(html.indexOf('analysis-data.js')>=0&&html.indexOf('analysis-data.js')<html.indexOf('app.js'));
+const html=fs.readFileSync(require.resolve('../index.html'),'utf8');assert(!html.includes('shard-pokemon-totals'));assert(!html.includes('analysis-level'));assert(!html.includes('analysis-multiplier'));assert(html.includes('src="analysis-data.js?v=20261005-unique"'));assert(html.indexOf('analysis-data.js')>=0&&html.indexOf('analysis-data.js')<html.indexOf('app.js'));
 console.log('PASS: shared probability denominators, actual amounts, missing positions, zero cells, individual IDs, zero-shard skill count, period filtering, visibility preserves totals, source immutability, CSV/JSON roundtrip');
 // 実際の描画関数で記録日・04:00境界・取得元の0件省略を確認。
 const app=fs.readFileSync(require.resolve('../app.js'),'utf8');ctx.methods={help:'アメ拾い',mew:'ミュウ',delibird:'デリバード',skill:'スキル'};ctx.enabled=()=>true;
@@ -29,8 +31,8 @@ vm.runInContext(fs.readFileSync(require.resolve('../summary-extras.js'),'utf8'),
 vm.runInContext('SummaryExtras.recordSummary()',ctx);const daily=$('today-total').children;assert.equal(daily[1].children[1].text,'0個');assert.equal(daily[1].children[2].children.length,0);assert.equal(daily[2].children[1].text,'11760個');assert(daily[2].children[2].children.some(x=>x.name==='ヤミカラス'&&x.count===1&&x.amount===0));
 ctx.recordDate=()=>new Date('2026-10-01T03:59:00+09:00');vm.runInContext('SummaryExtras.recordSummary()',ctx);assert.equal($('today-total').children[2].children[1].text,'100個');assert.equal(JSON.stringify(state),before);
 vm.runInContext(app.slice(app.indexOf('function renderSlotCounts('),app.indexOf('function renderAnalysis(){')),ctx);
-ctx.slotFixture=[{method:'mew',amount:1,slot:1},{method:'mew',amount:4,slot:2},{method:'mew',amount:4,slot:null},{method:'delibird',amount:0,slot:6}];vm.runInContext('renderSlotCounts(slotFixture)',ctx);
-const groups=$('slot-counts').children.filter(x=>x.cls?.startsWith('slot-group'));assert.equal(groups.length,2);const mewRows=groups[0].children.at(-1).children[1].children;assert.equal(mewRows.length,6);assert.equal(mewRows[0].children[2].text,'50.0%');assert.equal(mewRows[1].children[2].text,'50.0%');assert.equal(mewRows[5].children[0].text,'位置不明');assert.equal(mewRows[5].children[3].text,'4個');const deliRows=groups[1].children.at(-1).children[1].children;assert.equal(deliRows[0].children[2].text,'―');assert.equal(deliRows[5].children[1].text,'1回');
+ctx.slotFixture=[record(1,1,1),record(4,1,2),record(4,1,null),{method:'delibird',amount:0,slot:6}];vm.runInContext('renderSlotCounts(slotFixture)',ctx);
+const groups=$('slot-counts').children.filter(x=>x.cls?.startsWith('slot-group'));assert.equal(groups.length,2);const mewRows=groups[0].children.at(-1).children[1].children;assert.equal(mewRows.length,5);assert.equal(mewRows[0].children[2].text,'50.0%');assert.equal(mewRows[1].children[2].text,'50.0%');assert(groups[0].children.some(x=>x.text?.includes('特定できない記録 1回')));const deliRows=groups[1].children.at(-1).children[1].children;assert.equal(deliRows[0].children[2].text,'―');assert.equal(deliRows[5].children[1].text,'1回');
 assert(html.indexOf('setting-showShardSkill')<html.indexOf('setting-showShardResearch'));
 console.log('PASS: daily individual breakdown, zero-source omission, game-day boundary, compact slot counts/amounts/percentages, unknown/skill-only preservation, settings order');
 
@@ -41,7 +43,7 @@ console.log('PASS: 12/20=60%, 8/20=40%, unknown destination remains in denominat
 
 vm.runInContext(app.slice(app.indexOf('function renderMewPositions('),app.indexOf('function historicalPokemon(')),ctx);
 ctx.analysisResult=twentyResult;vm.runInContext('renderMewPositions($("test-analysis"),analysisResult)',ctx);
-const position=$('test-analysis').children[1];assert.equal(position.children[0].children[1].text,'全20回');assert.deepEqual(position.children[1].children.map(r=>r.children[2].text),['60.0%','40.0%']);assert.equal(position.children[2].children[2].children[0].children[1].children[0].text,'60.0%');assert.equal(position.children[3].children[0].text,'1個・4個 合計 · 20回 · 100.0%');
+const position=$('test-analysis').children[1];assert.equal(position.children[0].children[1].text,'全20回');assert.deepEqual(position.children[1].children.map(r=>r.children[2].text),['60.0%','40.0%']);assert.equal(position.children[3].children[2].children[0].children[1].children[0].text,'60.0%');assert.equal(position.children[4].children[0].text,'1個・4個 合計 · 20回 · 100.0%');
 const noID=record(1);delete noID.context.actorId;assert.equal(A.prepare([noID],'mew').records.length,1);assert.equal(A.prepare([noID],'mew','m').records.length,0);
 console.log('PASS: rendered group probabilities and destination counts, supplemental comparison, unknown individual does not remove valid position data');
 
@@ -54,6 +56,19 @@ assert.deepEqual(distribution.destinationGroups.map(g=>g.rows[0].cells.map(c=>c.
 for(const group of distribution.destinationGroups){const row=group.rows[0];assert.equal(row.cells.reduce((n,c)=>n+c.count,0),row.count);assert(Math.abs(row.cells.reduce((n,c)=>n+c.percent,0)-100)<1e-10);}
 assert.equal(JSON.stringify(destinationsFixture),destinationBefore);
 const zeroGroup=A.prepare([record(1)],'mew').destinationGroups[2].rows[0];assert.equal(zeroGroup.count,0);assert(zeroGroup.cells.every(c=>c.percent===null&&c.count===0));
-assert.equal(unknownTarget.destinationGroups[1].rows[0].cells.reduce((n,c)=>n+c.percent,0),0);assert.equal(unknownTarget.destinationGroups[1].rows[0].unknown,1);
-ctx.analysisResult=distribution;vm.runInContext('renderMewPositions($("distribution"),analysisResult)',ctx);const distributionTable=$('distribution').children[1].children[2];assert.equal(distributionTable.className,'mew-target-table mew-distribution');assert.equal(distributionTable.children[2].children.length,3);assert.equal(distributionTable.children[2].children[1].children[1].children[0].text,'21.1%');assert.equal(distributionTable.children[2].children[1].children[1].children[1].text,'26回');
+assert.equal(unknownTarget.destinationGroups[1].rows[0].count,0);assert(unknownTarget.destinationGroups[1].rows[0].cells.every(c=>c.percent===null));assert.equal(unknownTarget.targetExcluded,1);
+ctx.analysisResult=distribution;vm.runInContext('renderMewPositions($("distribution"),analysisResult)',ctx);const distributionTable=$('distribution').children[1].children[3];assert.equal(distributionTable.className,'mew-target-table mew-distribution');assert.equal(distributionTable.children[2].children.length,3);assert.equal(distributionTable.children[2].children[1].children[1].children[0].text,'21.1%');assert.equal(distributionTable.children[2].children[1].children[1].children[1].text,'26回');
 console.log('PASS: separate destination denominators 176/123/53, per-row unrounded total100%, zero denominator, unknown destination, immutable history, rendered percentages and counts');
+
+// 同種・進化系の重複は枠分析だけ除外。現在編成や保存された選択枠を信用して補完しない。
+const unique=record(1,1,2),sameSpecies=record(4,1,2),evolution=record(1,1,2),legacy=record(4,1,3),conflict=record(1,1,3);
+sameSpecies.context.team[4]={id:'duplicate',species:'ルカリオ'};evolution.context.team[4]={id:'evolution',species:'リオル'};delete legacy.context.team;conflict.slot=4;
+const ambiguityFixture=[unique,sameSpecies,evolution,legacy,conflict],ambiguityBefore=JSON.stringify(ambiguityFixture),amb=A.prepare(ambiguityFixture,'mew');
+assert.equal(amb.records.length,5);assert.equal(amb.targetRecords.length,1);assert.equal(amb.targetExcluded,4);assert.equal(amb.groups[0].rows[0].count,3);assert.equal(amb.groups[1].rows[0].count,2);assert.equal(amb.groups[0].rows[0].percent,60);assert.equal(amb.groups[1].rows[0].percent,40);assert.equal(amb.destinationGroups[0].rows[0].count,1);assert.equal(amb.destinationGroups[0].rows[0].cells[1].percent,100);assert.equal(amb.destinationGroups[2].rows[0].count,0);
+assert.equal(rawA.targetSlot(evolution,candyMap),null);assert.equal(rawA.targetSlot(unique,candyMap),2);const nullSlot=record(1,1,2);nullSlot.slot=null;assert.equal(rawA.targetSlot(nullSlot,candyMap),2);
+const unknownMember=record(1);unknownMember.context.team[4]={species:'未知のポケモン'};assert.equal(rawA.targetSlot(unknownMember,candyMap),null);
+const emptySlots=record(1);emptySlots.context.team[4]=null;assert.equal(rawA.targetSlot(emptySlots,candyMap),1);
+assert.equal(JSON.stringify(ambiguityFixture),ambiguityBefore);assert.deepEqual(B.read(B.encode({...state,records:ambiguityFixture})).records,ambiguityFixture);
+const image=require('../mew-image.js').aggregate(ambiguityFixture,candyMap);assert.equal(image.total,5);assert.equal(image.selected,1);assert.equal(image.excluded,4);assert.deepEqual(image.counts,[0,1,0,0,0]);assert.equal(image.matrix[0][1],1);assert.equal(image.one[1],1);assert.equal(image.four.reduce((n,x)=>n+x,0),0);
+ctx.analysisResult=amb;vm.runInContext('renderMewPositions($("ambiguous"),analysisResult)',ctx);assert($('ambiguous').children[1].children[2].text.includes('特定できず除外 4回'));
+console.log('PASS: same species/evolution ambiguity, missing historical team, conflicting target, unknown member, empty slot, snapshot-only resolution, occurrence ratios unchanged, destination denominators exclude ambiguity, image parity, CSV and source immutability');

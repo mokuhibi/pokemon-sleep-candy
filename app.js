@@ -133,12 +133,15 @@ function renderSlotCounts(records){
   if(method!=='help')SkillUI.candyCounts(group,source);
   const table=el('table',undefined,'slot-table'),head=el('thead'),headRow=el('tr'),body=el('tbody');
   for(const name of ['位置','回数','割合','アメ']){const th=el('th',name);th.scope='col';headRow.append(th);}head.append(headRow);table.append(head,body);
-  const denominator=source.filter(r=>r.slot>=1&&r.slot<=5).length;
+  const located=method==='mew'?source.filter(r=>AnalysisData.targetSlot(r,candyMap)!==null):source;
+  const target=r=>method==='mew'?AnalysisData.targetSlot(r,candyMap):r.slot;
+  const denominator=located.filter(r=>target(r)>=1&&target(r)<=5).length;
+  if(method==='mew')group.append(qel('p','獲得先を特定できない記録 '+(source.length-located.length)+'回を除外','slot-note'));
   function entry(name,xs,percent){const tr=el('tr'),th=el('th',name);th.scope='row';tr.append(th,qel('td',xs.length+'回'),el('td',percent),qel('td',C.sum(xs)+'個'));body.append(tr);}
-  for(let i=1;i<=5;i++){const xs=source.filter(r=>r.slot===i);entry(i===1?'R':String(i),xs,denominator?(100*xs.length/denominator).toFixed(1)+'%':'―');}
+  for(let i=1;i<=5;i++){const xs=located.filter(r=>target(r)===i);entry(i===1?'R':String(i),xs,denominator?(100*xs.length/denominator).toFixed(1)+'%':'―');}
   if(method==='delibird')entry('6 · スキルのみ',source.filter(r=>r.slot===6),'―');
   if(method==='mew'&&source.some(r=>r.amount===0))entry('アメなし',source.filter(r=>r.amount===0),'―');
-  const unknown=source.filter(r=>r.slot===null&&r.amount!==0);if(unknown.length)entry('位置不明',unknown,'―');
+  const unknown=method==='mew'?[]:source.filter(r=>r.slot===null&&r.amount!==0);if(unknown.length)entry('位置不明',unknown,'―');
   group.append(table);root.append(group);
  }
  if(root.children.length===1)root.append(el('p','この期間の記録はありません。'));
@@ -148,9 +151,10 @@ function renderAnalysis(){
  const source=filteredRecords().filter(r=>r.method===method&&(method!=='mew'||r.amount>0));
  const amountSelect=$('analysis-amount');amountSelect.closest('label').hidden=method==='mew';
  for(const option of amountSelect.options)option.hidden=option.value!==''&&!source.some(r=>r.amount===Number(option.value));
- const result=AnalysisData.prepare(source,method,actor,amount),rs=result.records;
+ const result=AnalysisData.prepare(source,method,actor,amount,candyMap),rs=result.records;
  headingTotal('analysis',C.sum(rs));const root=$('analysis');root.className=method;
  root.replaceChildren(qel('p',`分析対象 ${rs.length}回 · ${method==='mew'?'発動位置・個数':'位置など'}が不明な記録 ${result.excluded}回は除外`));
+ if(method==='mew')root.append(qel('p',`獲得先分析対象 ${result.targetRecords.length}回 · 獲得先を特定できない記録 ${result.targetExcluded}回を除外`,'analysis-note'));
  if(!rs.length){root.append(el('p','この条件の記録はありません。'));return;}
  if(method==='mew'){renderMewPositions(root,result);return;}
  for(const group of result.groups){
@@ -182,8 +186,8 @@ function renderMewPositions(root,result){
   const head=el('div',undefined,'mew-position-head');head.append(el('h4','スキル位置 '+(base.position===1?'R':base.position)),qel('span','全'+base.denominator+'回'));section.append(head);
   const rates=el('div',undefined,'mew-rates');
   for(const data of rows.slice(0,2)){const line=el('div',undefined,'mew-rate');line.append(el('span',data.name),qel('span',data.count+'回'),el('strong',data.percent.toFixed(1)+'%'));rates.append(line);}
-  const distributions=result.destinationGroups.map(g=>({...g.rows[i],name:g.name}));section.append(rates,targets(distributions,true));
-  const unknown=rows[0].unknown+rows[1].unknown;if(unknown)section.append(qel('p','分母に含む獲得先不明：1個 '+rows[0].unknown+'回 · 2〜4個 '+rows[1].unknown+'回','analysis-note'));
+  const distributions=result.destinationGroups.map(g=>({...g.rows[i],name:g.name}));section.append(rates,qel('p','獲得先分析対象 '+distributions[0].count+'回 · 特定できず除外 '+(rows[0].unknown+rows[1].unknown)+'回','analysis-note'),targets(distributions,true));
+  const unknown=rows[0].unknown+rows[1].unknown;if(unknown)section.append(qel('p','獲得先分析から除外：1個 '+rows[0].unknown+'回 · 2〜4個 '+rows[1].unknown+'回','analysis-note'));
   // 前回追加した1・4個の比較は残し、補足として必要時に開けます。
   const comparison=el('details',undefined,'mew-comparison'),summary=qel('summary',`1個・4個 合計 · ${rows[2].count}回 · ${rows[2].percent.toFixed(1)}%`);
   comparison.append(summary,targets([{...rows[2],name:"1・4個"}]));if(rows[2].unknown)comparison.append(qel('p','獲得先不明 '+rows[2].unknown+'回'));section.append(comparison);root.append(section);
@@ -307,7 +311,7 @@ $('create-mew-image').onclick=()=>{
   const period=RangePicker.get('period');
   const records=state.records.filter(r=>r.method==='mew'&&C.inRange(r,period));
   const title=period?`${C.displayDate(period[0])} 04:00 〜 ${C.displayDate(period[1])} 04:00`:'全期間';
-  const preview=$('mew-image-preview');preview.src=MewImage.png(MewImage.aggregate(records),title);preview.hidden=false;
+  const preview=$('mew-image-preview');preview.src=MewImage.png(MewImage.aggregate(records,candyMap),title);preview.hidden=false;
  }catch(e){notice('画像を作成できませんでした：'+e.message);}
 };
 
