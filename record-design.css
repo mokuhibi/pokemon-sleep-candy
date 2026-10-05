@@ -59,3 +59,37 @@
 #record #mew-slots>.help-card{padding:8px 12px;gap:4px}
 #record #mew-slots .mew-actions{margin-top:4px}
 #record #mew-slots .mew-actions button{min-width:44px;min-height:44px}
+
+/* 記録タブ限定のコントラスト試作。寸法・配置・保存処理は変更しない。 */
+#record,#record :is(.help,.mew,.delibird,.shards){--accent:#695322;--edge:#c9c8bc;--tint:#eee7d5;color:#24251f}
+#record :is(h2,h3,.help-card strong){color:#24251f}
+#record :is(small,.muted,label),#record .card>p{color:#5c6056}
+#record .card,#record .hero{box-shadow:inset 0 0 0 1px #d4d1c4}
+#record .record-date-card{box-shadow:none;border-bottom-color:#c9c8bc}
+#record .record-datetime-field{box-shadow:inset 0 0 0 1px #bdbba9}
+#record .record-picker-trigger{color:#24251f}
+#record .record-date-card .check{color:#53492f}
+#record .record-date-card .check:has(input:checked){color:#695322}
+#record .help-card{color:#24251f;border-color:#c9c8bc}
+#record .leader-slot{border-color:#8c763f!important;background:#fffdf7}
+#record :is(input:not([type=checkbox]),select),#record .formatted-date-field{color:#24251f;border-color:#bdbeb0}
+#record input::placeholder{color:#73766d;opacity:1}
+#record .mew-actions button,#record .shard-amount-buttons button{background:#eee7d5;border-color:#c9bc94;color:#51401b}
+#record button[type=submit]{background:#695322;border-color:#695322;color:#fff}
+#record button:active:not(:disabled){background:#e3dac0}
+#record button[type=submit]:active{background:#51401b}
+#record button:disabled{color:#85887e;background:#f1f1eb;border-color:#e0e0d6}
+#record #help-section>h2::before{background:#496a56}
+#record #mew-section>h2::before{background:#946078}
+#record #delibird-section>h2::before{background:#9c6559}
+#record #today-total>small,#record #today-total .daily-resource>small{color:#24251f}
+#record #today-total .daily-resource>.total{color:#20221c}
+#record #today-total .daily-resource .total-breakdown .quantity-number{color:#292b24}
+#record #today-total .daily-resource .shard-member th{color:#5c6056}
+#record #today-total .daily-resource .total-breakdown :is(.quantity-unit,thead th),#record .total .quantity-unit{color:#5c6056}
+/* 記録タブ表示中だけ共通ナビの選択色を強める。他タブは従来どおり。 */
+body:has(#record:not([hidden])) .tabs button[data-tab=record][aria-current=page]{color:#51401b;background:#e8d9ae;border-color:#ad9254}
+/* 記録日時専用パネルのみ。集計側の日付・期間パネルには適用しない。 */
+.record-picker[aria-labelledby="datetime-picker-title"]{color:#24251f;--accent:#695322;--edge:#c9c8bc}
+.record-picker[aria-labelledby="datetime-picker-title"] .record-picker-grid button[aria-pressed=true]{background:#e8d9ae;border-color:#ad9254;color:#51401b}
+.record-picker[aria-labelledby="datetime-picker-title"] .record-picker-actions button[type=submit]{background:#695322;border-color:#695322;color:#fff}
