@@ -61,7 +61,9 @@ const SkillUI=(()=>{
   const list=species==='ミュウ'?SK.mewEntries():SK.entries;select.replaceChildren();
   if(!species){select.add(new Option('ポケモンを選んでください',''));select.disabled=true;return;}
   select.disabled=false;for(const s of list)select.add(new Option(mainSkillText({species},s.id),s.id));
-  const key=SK.id(selected||SK.defaultId(species)||list[0]?.id);
+  const key=SK.id(selected||SK.defaultId(species));
+  // 基本スキルが未確認の種類は、先頭のスキルを推測して設定しません。
+  if(!key)select.add(new Option('未設定',''));
   // マスター外の旧データも失わず表示・再保存できるようにします。
   if(key&&![...select.options].some(o=>o.value===key))select.add(new Option(mainSkillText({species},key)+'（保存済み）',key));
   select.value=key;

@@ -983,7 +983,7 @@ const MainSkillMaster=(()=>{
  const defaultId=kind=>species[kind]?.skillId||'';
  // 保存済みの選択を優先。未保存の旧個体は表示時だけ基本スキルを補います。
  const forPokemon=p=>p?((p.mainSkillId&&find(p.mainSkillId)?p.mainSkillId:p.mainSkill||p.mainSkillId||defaultId(p.species))):'';
- const fields=key=>({mainSkillId:id(key),mainSkill:value(key)});
+ const fields=key=>key?({mainSkillId:id(key),mainSkill:value(key)}):{};
  const mewEntries=()=>entries.filter(s=>s.mew);
  const shardMode=p=>{const key=id(forPokemon(p));if(key==='super_luck')return 'lucky';if(p?.species==='ミュウ'&&key==='metronome')return 'fixed';if(key!=='dream_shard_s')return null;return species[p.species]?.shardMode==='random'?'random':'fixed';};
  return {entries,species,find,id,name,value,defaultId,forPokemon,fields,mewEntries,shardMode};
