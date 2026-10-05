@@ -30,6 +30,12 @@ ctx.recordDate=()=>new Date('2026-10-01T06:00:00+09:00');ctx.SkillUI={candyCount
 vm.runInContext(fs.readFileSync(require.resolve('../summary-extras.js'),'utf8'),ctx);
 vm.runInContext('SummaryExtras.recordSummary()',ctx);const daily=$('today-total').children;assert.equal(daily[1].children[1].text,'0個');assert.equal(daily[1].children[2].children.length,0);assert.equal(daily[2].children[1].text,'11760個');assert(daily[2].children[2].children.some(x=>x.name==='ヤミカラス'&&x.count===1&&x.amount===0));
 ctx.recordDate=()=>new Date('2026-10-01T03:59:00+09:00');vm.runInContext('SummaryExtras.recordSummary()',ctx);assert.equal($('today-total').children[2].children[1].text,'100個');assert.equal(JSON.stringify(state),before);
+// 空の日は項目全体を省略し、0個のスキルがある日は残す。
+ctx.recordDate=()=>new Date('2026-10-02T06:00:00+09:00');vm.runInContext('SummaryExtras.recordSummary()',ctx);assert.equal($('today-total').children.length,2);assert.equal($('today-total').children[1].children[0].text,'アメ');
+add('lucky',0,crow,'2026-10-02');vm.runInContext('SummaryExtras.recordSummary()',ctx);assert.equal($('today-total').children.length,3);assert.equal($('today-total').children[2].children[1].text,'0個');assert($('today-total').children[2].children[2].children.some(x=>x.name==='ヤミカラス'&&x.count===1));state.shardRecords.pop();
+ctx.recordDate=()=>new Date('2026-10-01T06:00:00+09:00');vm.runInContext('SummaryExtras.recordSummary()',ctx);assert.equal($('today-total').children[2].children[1].text,'11760個');assert.equal(JSON.stringify(state),before);
+assert(html.includes('<label>リサーチ日<input id="shard-research-date"'));
+console.log('PASS: empty-day shard section hidden, zero-amount skill retained, date switching restores breakdown, original history unchanged');
 vm.runInContext(app.slice(app.indexOf('function renderSlotCounts('),app.indexOf('function renderAnalysis(){')),ctx);
 ctx.slotFixture=[record(1,1,1),record(4,1,2),record(4,1,null),{method:'delibird',amount:0,slot:6}];vm.runInContext('renderSlotCounts(slotFixture)',ctx);
 const groups=$('slot-counts').children.filter(x=>x.cls?.startsWith('slot-group'));assert.equal(groups.length,2);const mewRows=groups[0].children.at(-1).children[1].children;assert.equal(mewRows.length,5);assert.equal(mewRows[0].children[2].text,'50.0%');assert.equal(mewRows[1].children[2].text,'50.0%');assert(groups[0].children.some(x=>x.text?.includes('特定できない記録 1回')));const deliRows=groups[1].children.at(-1).children[1].children;assert.equal(deliRows[0].children[2].text,'―');assert.equal(deliRows[5].children[1].text,'1回');

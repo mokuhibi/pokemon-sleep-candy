@@ -93,3 +93,8 @@ body:has(#record:not([hidden])) .tabs button[data-tab=record][aria-current=page]
 .record-picker[aria-labelledby="datetime-picker-title"]{color:#24251f;--accent:#695322;--edge:#c9c8bc}
 .record-picker[aria-labelledby="datetime-picker-title"] .record-picker-grid button[aria-pressed=true]{background:#e8d9ae;border-color:#ad9254;color:#51401b}
 .record-picker[aria-labelledby="datetime-picker-title"] .record-picker-actions button[type=submit]{background:#695322;border-color:#695322;color:#fff}
+
+/* 睡眠リサーチの主要2項目を同じ階層で、値をラベルより強く表示。 */
+#record .research-fields>label:nth-child(-n+2){font-size:14px;font-weight:500;color:#5c6056;margin:12px 0;text-align:center}
+#record .research-fields>label:nth-child(-n+2) :is(input,.formatted-date-field){min-height:48px;border-color:#a9aa9b;color:#24251f;font-size:18px;font-weight:600;text-align:center}
+#record .research-fields>label:first-child .formatted-date-field>.date-weekday{font-size:16px;font-weight:600;color:#24251f;letter-spacing:-.4px;padding:0 4px;line-height:1.5}
