@@ -1,0 +1,20 @@
+const assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm');
+const C=require('../core.js'),B=require('../backup.js');
+const app=fs.readFileSync(require.resolve('../app.js'),'utf8');
+const event=(id,start,end)=>({id,name:id,start,end,target:'both',multiplier:1.25,boost:0});
+const state={version:2,pokemon:[],team:[null,null,null,null,null],records:[],shardRecords:[],events:[event('past','2026-09-01','2026-09-30'),event('ongoing','2026-09-28','2026-10-11'),event('this-month','2026-10-01','2026-10-03'),event('future','2026-11-02','2026-11-08')],settings:{mew:true,delibird:true}};
+const before=JSON.stringify(state),nodes={};
+const make=(tag,text,cls)=>({tag,text,cls,children:[],options:[],value:'',classList:{add(){}},setAttribute(){},replaceChildren(...children){this.children=children;this.options=children;},add(o){this.options.push(o)},append(...children){this.children.push(...children)}});
+const $=id=>nodes[id]??=make('div');$('event-month').value='2026-09';
+let now='2026-10-06T06:00:00+09:00';class Clock extends Date{constructor(...args){super(...(args.length?args:[now]));}}
+const ctx={C,state,$,Date:Clock,Option:function(text,value){return {text,value}},methods:{mew:'ミュウ',delibird:'デリバード'},enabled:()=>true,el:make,button:text=>make('button',text),calendar:(root,month,day)=>{root.replaceChildren(day(month+'-28'));}};
+vm.createContext(ctx);vm.runInContext(app.slice(app.indexOf('function renderEvents()'),app.indexOf('function showTab(')),ctx);
+vm.runInContext('renderEvents()',ctx);
+assert.deepEqual($('event-list').children.map(e=>e.children[0].text.split(' · ')[0]),['ongoing','this-month','future']);
+assert.equal($('event-calendar').children[0].children.length,2,'past event hidden in old calendar, spanning event retained');
+assert.equal(JSON.stringify(state),before);assert.equal(C.eventFor(state.events,'2026-09-15','mew').multiplier,1.25,'past compensation retained');
+assert.deepEqual(B.read(B.encode(state)),state);assert.deepEqual(B.read(JSON.stringify(state)),state);
+now='2026-10-31T15:00:00Z';vm.runInContext('renderEvents()',ctx);assert.deepEqual($('event-list').children.map(e=>e.children[0].text.split(' · ')[0]),['future'],'month boundary uses JST');
+let clicked=0;$('import').click=()=>clicked++;vm.runInContext(app.slice(app.indexOf("$('restore-backup').onclick="),app.indexOf("$('import').onchange=")),ctx);$('restore-backup').onclick();assert.equal(clicked,1);
+assert.equal(JSON.stringify(state),before);
+console.log('PASS: past-month visibility, spanning/current/future events, JST month boundary, unchanged state/old compensation, CSV/JSON roundtrip, restore delegates to existing file input');
