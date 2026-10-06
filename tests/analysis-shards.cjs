@@ -83,9 +83,12 @@ console.log('PASS: same species/evolution ambiguity, missing historical team, co
 const drawn=[],canvas={getContext:()=>({fillRect(){},beginPath(){},moveTo(){},lineTo(){},stroke(){},fillText(value){drawn.push(String(value))}}),toDataURL:()=> 'data:image/png;base64,test'};
 const imageCtx={document:{createElement:()=>canvas}};vm.createContext(imageCtx);vm.runInContext(fs.readFileSync(require.resolve('../mew-image.js'),'utf8'),imageCtx);
 assert.equal(imageCtx.MewImage.png(distribution,'全期間'),'data:image/png;base64,test');
-for(const value of ['ミュウ','スキル位置と獲得先','分析対象 176回','69.9%','30.1%','21.1%','17.0%'])assert(drawn.includes(value),value);
+for(const value of ['ミュウ','スキル位置と獲得先','獲得個数','獲得先の割合','すべて','1個の時','2〜4個の時','分析対象 176回','69.9%','30.1%','21.1%','17.0%'])assert(drawn.includes(value),value);
 assert.equal(canvas.width,780);assert.equal(JSON.stringify(destinationsFixture),destinationBefore);
 const rangeSource=fs.readFileSync(require.resolve('../range-picker.js'),'utf8');let selectedArgs;
 const todayCtx={items:new Map(),C,select:(...args)=>selectedArgs=args};vm.createContext(todayCtx);vm.runInContext(rangeSource.slice(rangeSource.indexOf(' function today('),rangeSource.indexOf(' function move(')),todayCtx);
 for(const kind of ['day','week','month','all','custom']){todayCtx.items.set('period',{kind});vm.runInContext('today("period")',todayCtx);assert.equal(selectedArgs[1],'day');assert.equal(selectedArgs[2],C.gameDay(new Date()));}
 console.log('PASS: PNG parity, unchanged fixture, today resets day/week/month/all/custom to day');
+
+assert.equal(drawn.filter(x=>x==='分析対象 176回').length,1);
+assert(!drawn.some(x=>x.startsWith('獲得個数：')));
