@@ -1,0 +1,93 @@
+/* 確定済み記録タブの暖色デザインを残りの画面へ展開。
+   記録タブの局所スタイルとカテゴリー色、表示条件には触れない。 */
+body:has(#record[hidden]){background:#fbf8ee}
+body:has(#record[hidden]) .app{padding-left:16px;padding-right:16px}
+:is(#summary,#shards,#team,#history,#settings){--accent:#695322;--edge:#c9c8bc;--tint:#eee7d5;color:#24251f}
+:is(#summary,#shards,#team,#history,#settings) :is(.help,.mew,.delibird,.shards):not([data-source]){--accent:#695322;--edge:#c9c8bc;--tint:#eee7d5}
+:is(#summary,#shards,#team,#history,#settings) :is(.card,.hero){background:#fff;border:0;border-radius:16px;box-shadow:inset 0 0 0 1px #d4d1c4;padding:16px;margin-bottom:16px}
+:is(#summary,#shards) .overview-header{background:#fff;box-shadow:inset 0 0 0 1px #d4d1c4;padding:12px 16px;margin-bottom:16px}
+:is(#summary,#shards,#team,#history,#settings) :is(h2,h3){color:#695322;font-size:17px;font-weight:600;line-height:1.5}
+:is(#summary,#shards,#team,#history,#settings) :is(h4,.help-card strong){color:#24251f}
+:is(#summary,#shards,#team,#history,#settings) :is(p,label){font-size:14px;line-height:1.5}
+:is(#summary,#shards,#team,#history,#settings) :is(small,.muted,label){color:#5c6056}
+:is(#summary,#shards,#team,#history,#settings) :is(button,input,select){border-radius:10px;min-height:44px}
+:is(#summary,#shards,#team,#history,#settings) button{color:#51401b;border-color:#c9c8bc;font-weight:600}
+:is(#summary,#shards,#team,#history,#settings) button:active:not(:disabled){background:#e3dac0}
+:is(#summary,#shards,#team,#history,#settings) button:disabled{color:#85887e;background:#f1f1eb;border-color:#e0e0d6;opacity:1}
+:is(#summary,#shards,#team,#history,#settings) :is(input:not([type=checkbox]),select){color:#24251f;background:#fff;border-color:#bdbeb0;min-height:48px;font-size:16px;padding:10px 12px}
+:is(#summary,#shards,#team,#history,#settings) .formatted-date-field{height:48px;border-color:#bdbeb0;background:#fff;color:#24251f}
+:is(#summary,#shards,#team,#history,#settings) input::placeholder{color:#73766d;opacity:1}
+:is(#summary,#shards,#team,#history,#settings) :is(button,input,select):focus-visible{outline-color:#695322}
+:is(#summary,#shards,#team,#history,#settings) .formatted-date-field:focus-within{outline-color:#695322}
+:is(#summary,#shards,#team,#history,#settings) button[type=submit],#team #add-pokemon,#settings #export{background:#695322;border-color:#695322;color:#fff;min-height:48px;font-weight:600}
+:is(#summary,#shards,#team,#history,#settings) button[type=submit]:active,#team #add-pokemon:active,#settings #export:active{background:#51401b}
+#team #add-pokemon:disabled{background:#f1f1eb;color:#85887e;border-color:#e0e0d6}
+/* 集計：合計を主役に、単位と補足は控えめに揃える。 */
+:is(#summary,#shards) .total{color:#20221c;font-weight:700;font-variant-numeric:tabular-nums}
+:is(#summary,#shards) .quantity-number{color:#292b24;font-variant-numeric:tabular-nums}
+:is(#summary,#shards) :is(.quantity-unit,.heading-total,.weekly-weekday,.weekly-date,.weekly-range){color:#5c6056}
+:is(#summary,#shards) .total-breakdown :is(th,td){padding-top:6px;padding-bottom:6px}
+:is(#summary,#shards) .total-breakdown thead th{color:#5c6056;font-size:12px}
+:is(#summary,#shards) h3::before{background:#8c763f}
+:is(#summary,#shards,#history) .period-picker-top>button{background:transparent;border-color:transparent}
+:is(#summary,#shards,#history) .period-picker-date{color:#24251f;font-weight:600}
+:is(#summary,#shards,#history) .period-quick-buttons button{color:#5c6056;background:transparent;border-color:transparent;font-weight:400}
+:is(#summary,#shards,#history) .period-quick-buttons [aria-pressed=true]{color:#51401b;background:#eee7d5;font-weight:600}
+#summary .summary-section-head button{background:#eee7d5;color:#51401b;border-color:#c9bc94}
+#summary #analysis-card label{color:#5c6056}
+#summary #analysis-card select{color:#24251f;border-color:#bdbeb0}
+#summary .mew-rate strong{color:#20221c}
+#summary :is(.mew-position-head>span,.mew-target-table th,.mew-target-table caption,.mew-comparison summary,.mew-distribution td small){color:#5c6056}
+:is(#summary,#shards) :is(.weekly-track,.row,.shard-individual){border-color:#c9c8bc}
+:is(#summary,#shards) .resource-calendar .candy-values{border-color:#c9c8bc}
+:is(#summary,#shards) .resource-calendar .day-number{color:#24251f}
+:is(#summary,#shards) .resource-calendar .day.selected{background:#eee7d5;outline-color:#ad9254}
+#summary .day.selected .candy-values{border-color:#ad9254}
+/* 管理：一覧・フォームを別の階層として整え、Rは既存の暖色で強調。 */
+#team>h2{color:#695322;font-size:17px;margin:20px 0 12px}
+#team .registered-row{border-color:#c9c8bc;color:#24251f}
+#team .row-actions button{font-weight:500}
+#team #team-slots>.leader-slot{border-color:#8c763f!important;background:#fffdf7;border-radius:12px}
+#team .catalog button{background:#fff;font-weight:500}
+#team .section-head h2,#team .card h2{font-size:17px}
+#team .danger,#history .history-actions button:last-child{color:#985e52}
+/* 履歴：日時、内容、数字、補助操作の順で読める濃淡。 */
+#history .history-head>strong{color:#24251f;font-size:15px;font-weight:600}
+#history #history-list .card>p{color:#24251f;font-size:14px;line-height:1.6}
+#history #history-list .card>p:first-of-type::first-line{color:#5c6056}
+#history .history-actions button{font-weight:500;color:#5c6056;border-color:transparent}
+#history :is(details,summary){border-color:#c9c8bc;color:#5c6056}
+:is(#history,#team,#settings) .quantity-number{color:#292b24}
+:is(#history,#team,#settings) .quantity-unit{color:#5c6056}
+/* 設定：細い区切りと同じ操作部品。カテゴリー色は小さな目印にする。 */
+#settings .card>h3,#settings .check{border-color:#c9c8bc}
+#settings .check{color:#24251f;min-height:48px}
+#settings .check input{min-height:0;accent-color:#695322}
+#settings .check.mew{border-left:3px solid #946078;padding-left:8px}
+#settings .check.delibird{border-left:3px solid #9c6559;padding-left:8px}
+#settings #import::file-selector-button{color:#51401b;background:#eee7d5;border-color:#c9bc94;font-weight:600}
+/* パネルは記録日時パネルと同じ部品ルール。記録日時自身は変更しない。 */
+:is(.range-dialog,.period-picker-dialog,#history-editor){--accent:#695322;--edge:#c9c8bc;color:#24251f;background:#fffefa;border-color:#c9c8bc;border-radius:16px}
+:is(.range-dialog,.period-picker-dialog,#history-editor) :is(h2,h3){color:#695322;font-size:20px}
+:is(.range-dialog,.period-picker-dialog,#history-editor) label{font-size:14px;color:#5c6056}
+:is(.range-dialog,.period-picker-dialog,#history-editor) :is(input,select){font-size:16px;min-height:48px;color:#24251f;border-color:#bdbeb0;background:#fff;border-radius:10px}
+:is(.range-dialog,.period-picker-dialog,#history-editor) input[type=checkbox]{min-height:0;accent-color:#695322}
+:is(.range-dialog,.period-picker-dialog,#history-editor) button{min-height:44px;border-radius:10px;color:#51401b;font-weight:600}
+:is(.range-dialog,.period-picker-dialog,#history-editor) button[type=submit]{min-height:48px;color:#fff;background:#695322;border-color:#695322}
+.period-picker-dialog [aria-pressed=true]{background:#e8d9ae;border-color:#ad9254;color:#51401b}
+#history-edit-form>.section-head{background:#fffefa}
+/* ナビの寸法・並びを保ち、記録タブと同じ選択色を全画面で使う。 */
+body:has(#record[hidden]) .tabs{background:#fffcf1;border-top-color:#dfd2a5}
+body:has(#record[hidden]) .tabs button{color:#725619;min-height:44px}
+body:has(#record[hidden]) .tabs [aria-current=page]{color:#51401b;background:#e8d9ae;border-color:#ad9254}
+body:has(#record[hidden]) #notice:not(:empty){background:#695322;color:#fff}
+
+/* アプリ名の階層も記録タブに合わせる。記録側の指定はそのまま。 */
+body:has(#record[hidden]) .app>header{display:grid;grid-template-columns:44px minmax(0,1fr);column-gap:12px;row-gap:4px;align-items:center;margin:0 0 20px;padding:8px 0 20px;border-bottom:1px solid #e4e3da}
+body:has(#record[hidden]) .app>header .series-icon{display:block;grid-column:1;grid-row:1/3;width:44px;height:44px;object-fit:contain}
+body:has(#record[hidden]) .app>header h1{grid-column:2;grid-row:1;font-size:20px;font-weight:700;line-height:1.4;letter-spacing:0;margin:0;color:#725619}
+body:has(#record[hidden]) .app>header small{grid-column:2;grid-row:2;font-size:10px;line-height:1.5;letter-spacing:1.6px;color:#756027}
+:is(#summary,#shards) .overview-header>.hero>.total{font-size:clamp(28px,8.2vw,34px);line-height:1.2;color:#20221c}
+:is(#summary,#shards) .overview-header .total .quantity-number{font-size:inherit;font-weight:700}
+:is(#summary,#shards) .overview-header .total .quantity-unit{font-size:13px;color:#5c6056}
+@media(max-width:360px){body:has(#record[hidden]) .app>header{column-gap:8px}body:has(#record[hidden]) .app>header h1{font-size:18px}}
