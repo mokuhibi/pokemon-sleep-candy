@@ -112,7 +112,7 @@ function calendar(parent,month,cell){parent.replaceChildren();if(!/^\d{4}-\d{2}$
 function summaryTitle(period){if(!period)return '全期間のアメ';const short=C.displayDate;const end=C.addDays(period[1],-1);return (period[0]===end?short(period[0]):short(period[0])+'〜'+short(end))+'のアメ';}
 function renderSummary(){
  PeriodPicker.sync();
- $('create-mew-image').hidden=!enabled('mew');$('mew-image-preview').hidden=true;
+ $('create-mew-image').hidden=!enabled('mew')&&!enabled('delibird');$('mew-image-preview').hidden=true;
  const rs=filteredRecords(),period=RangePicker.get('period');$('range-label').textContent=period?`${C.displayDate(period[0])} 04:00 〜 ${C.displayDate(period[1])} 04:00`:'全期間';totals($('summary-total'),rs,summaryTitle(period));
  const calendarRs=state.records;
  const month=($('summary-date').value||C.gameDay(new Date())).slice(0,7);$('candy-month').textContent=month.replace('-','年')+'月';
@@ -155,49 +155,36 @@ function renderAnalysis(){
  const analysisHeading=$('analysis-card').querySelector('h3');analysisHeading.firstChild.textContent='アメゲット記録';
  headingTotal('analysis',C.sum(rs));const root=$('analysis');root.className=method;
  root.replaceChildren();
- if(method==='mew'){
-  if(rs.length)renderMewPositions(root,result);else root.append(el('p','この条件の記録はありません。'));
-  if(result.excluded)root.append(qel('p','発動した場所・個数不明 '+result.excluded+'回','analysis-note'));
-  return;
- }
- root.append(qel('p',`場所がわかる記録 ${rs.length}回${result.excluded?"・場所不明 "+result.excluded+"回":""}`));
- if(!rs.length){root.append(el('p','この条件の記録はありません。'));return;}
- for(const group of result.groups){
-  if(method==='mew')root.append(el('h4',group.name));
-  const wrap=el('div',undefined,'table-scroll'),table=el('table'),head=el('tr');table.className='position-table'+(method==='mew'?' mew-position-table':'');
-  table.append(el('caption','アメゲット場所 →'));head.append(el('th','発動した場所 ↓'));
-  for(const j of result.destinations)head.append(el('th',j===6?'アメなし':String(j)));
-  head.append(el('th','回数'));table.append(head);
-  for(const rowData of group.rows){
-   const tr=el('tr');tr.append(el('th',rowData.position===1?'1\nR':String(rowData.position)));
-   for(const cell of rowData.cells)tr.append(qel('td',`${cell.count}回\n${cell.percent.toFixed(1)}%`));
-   tr.append(qel('td',rowData.count+'回'));table.append(tr);
-  }
-  wrap.append(table);root.append(wrap);
- }
- for(const count of [...new Set(rs.map(r=>r.amount))].sort((a,b)=>a-b)){row(root,`${count}個の記録`,rs.filter(r=>r.amount===count).length+'回');const n=root.lastElementChild.firstElementChild;quantityText(n,n.textContent);}
+ if(rs.length)renderMewPositions(root,result);else root.append(el('p','この条件の記録はありません。'));
+ if(result.excluded)root.append(qel('p','発動した場所・個数不明 '+result.excluded+'回','analysis-note'));
+
 }
 // 発動位置ごとの獲得数の割合と、獲得先の回数を分けて表示します。
 function renderMewPositions(root,result){
 
  function targets(rows,distribution=false){
-  const table=el('table',undefined,'mew-target-table'),head=el('thead'),tr=el('tr'),body=el('tbody');table.append(el('caption',distribution?'アメゲット場所':'アメゲット場所（回数）'));if(distribution)table.className='mew-target-table mew-distribution';
-  tr.append(el('th',distribution?'分類':'アメ'));for(const j of result.destinations){const th=el('th',j===1?'1R':String(j));th.scope='col';tr.append(th);}head.append(tr);table.append(head,body);
-  for(const data of rows){const line=el('tr'),name=el('th',data.name);name.scope='row';line.append(name);for(const cell of data.cells){const td=el('td');if(distribution){td.append(el('strong',cell.percent===null?'―':cell.percent.toFixed(1)+'%'),qel('small',cell.count+'回'));if(data.name==='2〜4個の時')td.append(qel('small',cell.candyAmount+'個','mew-cell-amount'));}else td.textContent=cell.count.toLocaleString('ja-JP');line.append(td);}body.append(line);}
+  const table=el('table',undefined,'mew-target-table'),head=el('thead'),tr=el('tr'),body=el('tbody');table.append(el('caption',distribution?'アメゲット場所':'アメゲット場所（回数）'));if(distribution)table.className='mew-target-table mew-distribution'+(result.destinations.length>5?' mew-six-targets':'');
+  tr.append(el('th',distribution?'分類':'アメ'));for(const j of result.destinations){const th=el('th',j===1?'1R':j===6?'アメなし':String(j));th.scope='col';tr.append(th);}head.append(tr);table.append(head,body);
+  for(const data of rows){const line=el('tr'),name=el('th',data.name);name.scope='row';line.append(name);for(const cell of data.cells){const td=el('td');if(distribution){td.append(el('strong',cell.percent===null?'―':cell.percent.toFixed(1)+'%'),qel('small',cell.count+'回'));if(data.amount!==null&&data.amount!==1)td.append(qel('small',cell.candyAmount+'個','mew-cell-amount'));}else td.textContent=cell.count.toLocaleString('ja-JP');line.append(td);}body.append(line);}
   if(distribution){const foot=el('tfoot'),line=el('tr');line.append(el('th','アメ合計'));for(const cell of rows[0].cells)line.append(qel('td',cell.candyAmount+'個'));foot.append(line);table.append(foot);}
   return table;
  }
- for(let i=0;i<result.groups[0].rows.length;i++){
-  const rows=result.groups.map(g=>({...g.rows[i],name:g.name})),base=rows[0],section=el('div',undefined,'mew-position');
-  const head=el('div',undefined,'mew-position-head');head.append(el('h4','発動した場所 '+(base.position===1?'1R':base.position)),qel('span',base.denominator+'回'));section.append(head);
+ for(const block of result.blocks){
+  const section=el('div',undefined,'mew-position'),head=el('div',undefined,'mew-position-head');
+  head.append(el('h4','発動した場所 '+(block.position===1?'1R':block.position)),qel('span',block.denominator+'回'));section.append(head);
   const rates=el('div',undefined,'mew-rates');
-  for(const data of rows.slice(0,2)){const line=el('div',undefined,'mew-rate');line.append(el('span',data.name),qel('span',data.count+'回'),el('strong',data.percent.toFixed(1)+'%'));rates.append(line);}
-  const distributions=result.destinationGroups.map((g,j)=>({...g.rows[i],name:['すべて','1個の時','2〜4個の時'][j]}));section.append(el('h5','ゲットした個数'),rates,targets(distributions,true));
-  const unknown=rows[0].unknown+rows[1].unknown;section.append(qel('p','場所がわかる記録 '+distributions[0].count+'回'+(unknown?'・場所不明 '+unknown+'回':''),'analysis-note'));
-  // 前回追加した1・4個の比較は残し、補足として必要時に開けます。
-  const comparison=el('details',undefined,'mew-comparison'),summary=qel('summary',`1個・4個 合計 · ${rows[2].count}回 · ${rows[2].percent.toFixed(1)}%`);
-  comparison.append(summary,targets([{...rows[2],name:"1・4個"}]));if(rows[2].unknown)comparison.append(qel('p','場所不明 '+rows[2].unknown+'回'));section.append(comparison);root.append(section);
+  for(const data of block.rates){const line=el('div',undefined,'mew-rate');line.append(el('span',data.name),qel('span',data.count+'回'),el('strong',data.percent.toFixed(1)+'%'));rates.append(line);}
+  section.append(el('h5','ゲットした個数'),rates,targets(block.distributions,true));
+  section.append(qel('p','場所がわかる記録 '+block.distributions[0].count+'回'+(block.unknown?'・場所不明 '+block.unknown+'回':''),'analysis-note'));
+  // 従来の1・4個の補足比較はミュウのみ保持します。
+  if(result.method==='mew'){
+   const row=result.groups[2].rows.find(r=>r.position===block.position);
+   const comparison=el('details',undefined,'mew-comparison'),summary=qel('summary',`1個・4個 合計 · ${row.count}回 · ${row.percent.toFixed(1)}%`);
+   comparison.append(summary,targets([{...row,name:'1・4個'}]));if(row.unknown)comparison.append(qel('p','場所不明 '+row.unknown+'回'));section.append(comparison);
+  }
+  root.append(section);
  }
+
 }
 function historicalPokemon(r){
  const snapshot=r.pokemonSnapshot||r.context?.team?.find(p=>p?.id===r.pokemonId);
@@ -319,10 +306,10 @@ ProfileForm.init();MewUI.init();SkillUI.registration('');DateUI.init();$('histor
 $('create-mew-image').onclick=()=>{
  try{
   const period=RangePicker.get('period');
-  const records=state.records.filter(r=>r.method==='mew'&&C.inRange(r,period));
+  const method=$('analysis-method').value,records=filteredRecords().filter(r=>r.method===method&&(method!=='mew'||r.amount>0));
   const title=period?`${C.displayDate(period[0])} 04:00 〜 ${C.displayDate(period[1])} 04:00`:'全期間';
-  const analysis=AnalysisData.prepare(records.filter(r=>r.amount>0),'mew',$('analysis-actor').value,'',candyMap);
-  const preview=$('mew-image-preview');preview.src=MewImage.png(analysis,title);preview.hidden=false;
+  const analysis=AnalysisData.prepare(records,method,$('analysis-actor').value,$('analysis-amount').value,candyMap);
+  const preview=$('mew-image-preview');preview.src=MewImage.png(analysis,title,methods[method]);preview.hidden=false;
  }catch(e){notice('画像を作成できませんでした：'+e.message);}
 };
 

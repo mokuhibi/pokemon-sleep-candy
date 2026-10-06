@@ -21,7 +21,7 @@ vm.createContext(ctx);vm.runInContext(fs.readFileSync(require.resolve('../shards
 const rows=$('shard-total').children[2].children;assert.deepEqual(rows.map(x=>x.name),['睡眠リサーチ','スキル','ルカリオ（A）','ルカリオ（B）','ヤミカラス','その他']);assert.equal(rows[1].count,4);assert.equal(rows[1].amount,2760);assert.equal(rows[4].count,1);assert.equal(rows[4].amount,0);assert.equal($('shard-total').children[1].text,'11760個');
 state.settings.skill=false;vm.runInContext('ShardUI.renderSummary()',ctx);assert.equal($('shard-total').children[1].text,'11760個');assert.equal($('shard-total').children[2].children.length,2);delete state.settings.skill;assert.equal(JSON.stringify(state),before);
 assert.deepEqual(B.read(B.encode(state)),state);assert.deepEqual(B.read(JSON.stringify(state)),state);
-const html=fs.readFileSync(require.resolve('../index.html'),'utf8');assert(!html.includes('shard-pokemon-totals'));assert(!html.includes('analysis-level'));assert(!html.includes('analysis-multiplier'));assert(html.includes('src="analysis-data.js?v=20261006-mew-candy"'));assert(html.indexOf('analysis-data.js')>=0&&html.indexOf('analysis-data.js')<html.indexOf('app.js'));
+const html=fs.readFileSync(require.resolve('../index.html'),'utf8');assert(!html.includes('shard-pokemon-totals'));assert(!html.includes('analysis-level'));assert(!html.includes('analysis-multiplier'));assert(html.includes('src="analysis-data.js?v=20261006-actual-amounts"'));assert(html.indexOf('analysis-data.js')>=0&&html.indexOf('analysis-data.js')<html.indexOf('app.js'));
 console.log('PASS: shared probability denominators, actual amounts, missing positions, zero cells, individual IDs, zero-shard skill count, period filtering, visibility preserves totals, source immutability, CSV/JSON roundtrip');
 // 実際の描画関数で記録日・04:00境界・取得元の0件省略を確認。
 const app=fs.readFileSync(require.resolve('../app.js'),'utf8');ctx.methods={help:'アメ拾い',mew:'ミュウ',delibird:'デリバード',skill:'スキル'};ctx.enabled=()=>true;
@@ -83,7 +83,7 @@ console.log('PASS: same species/evolution ambiguity, missing historical team, co
 const drawn=[],canvas={getContext:()=>({fillRect(){},beginPath(){},moveTo(){},lineTo(){},stroke(){},fillText(value){drawn.push(String(value))}}),toDataURL:()=> 'data:image/png;base64,test'};
 const imageCtx={document:{createElement:()=>canvas}};vm.createContext(imageCtx);vm.runInContext(fs.readFileSync(require.resolve('../mew-image.js'),'utf8'),imageCtx);
 assert.equal(imageCtx.MewImage.png(distribution,'全期間'),'data:image/png;base64,test');
-for(const value of ['ミュウ','アメゲット記録','ゲットした個数','アメゲット場所','すべて','1個の時','2〜4個の時','場所がわかる記録 176回','69.9%','30.1%','21.1%','17.0%'])assert(drawn.includes(value),value);
+for(const value of ['ミュウ','アメゲット記録','ゲットした個数','アメゲット場所','すべて','1個の時','4個の時','場所がわかる記録 176回','69.9%','30.1%','21.1%','17.0%'])assert(drawn.includes(value),value);
 assert.equal(canvas.width,780);assert.equal(JSON.stringify(destinationsFixture),destinationBefore);
 const rangeSource=fs.readFileSync(require.resolve('../range-picker.js'),'utf8');let selectedArgs;
 const todayCtx={items:new Map(),C,select:(...args)=>selectedArgs=args};vm.createContext(todayCtx);vm.runInContext(rangeSource.slice(rangeSource.indexOf(' function today('),rangeSource.indexOf(' function move(')),todayCtx);
@@ -100,3 +100,30 @@ assert.deepEqual(r.destinationGroups[2].rows[0].cells.map(c=>c.candyAmount),[0,2
 assert(drawn.includes('発動した場所 1R'));assert(drawn.includes('アメ合計'));assert(drawn.includes('62個'));
 assert.equal(JSON.stringify(destinationsFixture),destinationBefore);
 console.log('PASS: actual candy amounts 1/2/3/4, per-target totals, ambiguous exclusion, shared image values, immutable source');
+
+// 実在する個数だけを、発動した場所・個体条件ごとに出す。
+for(const amounts of [[1,4],[1,2,4],[1,2,3,4]]){
+ const events=amounts.map(n=>record(n,1,2)),snapshot=JSON.stringify(events),data=A.prepare(events,'mew');
+ assert.deepEqual(data.blocks[0].rates.map(r=>r.amount),amounts);
+ assert.deepEqual(data.blocks[0].distributions.map(r=>r.amount),[null,...amounts]);
+ assert.equal(data.blocks[0].distributions[0].cells[1].candyAmount,amounts.reduce((a,b)=>a+b,0));
+ assert(data.blocks[0].rates.every(r=>r.count===1&&r.percent===100/amounts.length));
+ assert(data.blocks[0].distributions.slice(1).every(r=>r.cells[1].percent===100));
+ assert.equal(JSON.stringify(events),snapshot);
+ drawn.length=0;imageCtx.MewImage.png(data,'全期間');
+ for(const amount of amounts){assert(drawn.includes(amount+'個'));assert(drawn.includes(amount+'個の時'));}
+ for(const absent of [1,2,3,4].filter(n=>!amounts.includes(n)))assert(!drawn.includes(absent+'個の時'));
+ assert(!drawn.includes('2〜4個'));assert(drawn.includes('すべて'));
+}
+const perPlace=A.prepare([record(1,1,2),record(4,1,2),record(2,2,2)],'mew');
+assert.deepEqual(perPlace.blocks.map(b=>b.rates.map(r=>r.amount)),[[1,4],[2]]);
+assert.deepEqual(amb.blocks[0].rates.map(r=>r.count),[3,2]);assert.equal(amb.blocks[0].unknown,4);
+assert(amb.blocks[0].distributions[2].cells.every(c=>c.percent===null));
+const deli=A.prepare([record(0,1,6),record(4,2,2)],'delibird');
+assert.deepEqual(deli.blocks.map(b=>b.rates.map(r=>r.amount)),[[0],[4]]);
+assert.deepEqual(A.prepare([],'mew').blocks,[]);
+console.log('PASS: actual amount rows 1/4, 1/2/4, 1/2/3/4, per-position rows, zero known targets, Delibird zero candy, PNG row parity');
+
+assert.deepEqual(A.prepare([record(1,1,2,'first'),record(4,1,2,'second')],'mew','first').blocks[0].rates.map(r=>r.amount),[1]);
+assert.deepEqual(A.prepare([record(0,1,6),record(4,1,2)],'delibird','','4').blocks[0].rates.map(r=>r.amount),[4]);
+assert.deepEqual(A.prepare(source.filter(r=>C.inRange(r,C.range('day','2026-10-02'))),'mew').blocks,[]);

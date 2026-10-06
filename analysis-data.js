@@ -36,7 +36,21 @@ const AnalysisData=(()=>{
    const xs=targetRecords.filter(r=>r.context.actorSlot===position&&matches(r));
    return {position,count:xs.length,unknown:xs.filter(r=>targets.get(r)===null).length,cells:destinations.map(target=>{const events=xs.filter(r=>targets.get(r)===target),count=events.length;return {target,count,percent:xs.length?100*count/xs.length:null,candyAmount:events.reduce((sum,r)=>sum+r.amount,0)};})};
   })})):[];
-  return {records,excluded:selected.length-valid.length,destinations,groups,destinationGroups,targetRecords,targetExcluded:records.length-targetRecords.length};
+  // 表示する個数は発動場所ごとの実記録から決めます。場所不明も個数の割合には含めます。
+  const blocks=positions.map(position=>{
+   const all=records.filter(r=>r.context.actorSlot===position),known=all.filter(r=>targets.get(r)!==null);
+   const amounts=[...new Set(all.map(r=>r.amount))].sort((a,b)=>a-b);
+   const rates=amounts.map(amount=>{const xs=all.filter(r=>r.amount===amount);return {amount,name:amount+'個',count:xs.length,percent:100*xs.length/all.length};});
+   const distributions=[null,...amounts].map(amount=>{
+    const xs=known.filter(r=>amount===null||r.amount===amount);
+    return {amount,name:amount===null?'すべて':amount+'個の時',count:xs.length,cells:destinations.map(target=>{
+     const events=xs.filter(r=>targets.get(r)===target);
+     return {target,count:events.length,percent:xs.length?100*events.length/xs.length:null,candyAmount:events.reduce((n,r)=>n+r.amount,0)};
+    })};
+   });
+   return {position,denominator:all.length,unknown:all.length-known.length,rates,distributions};
+  });
+  return {records,excluded:selected.length-valid.length,destinations,groups,destinationGroups,targetRecords,targetExcluded:records.length-targetRecords.length,blocks,method};
  }
  return {prepare,targetSlot};
 })();

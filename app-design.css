@@ -121,3 +121,11 @@ body:has(#record[hidden]) .app>header small{grid-column:2;grid-row:2;font-size:1
 
 #summary .mew-distribution td strong{font-size:12px;letter-spacing:-.2px}
 #summary .mew-distribution :is(td,th:not(:first-child)){text-align:center}
+
+#summary .mew-six-targets th:first-child{width:58px}
+#summary .mew-six-targets td strong{font-size:10px}
+#summary .mew-six-targets :is(td small,.quantity-number){font-size:10px}
+#summary .mew-six-targets th:not(:first-child){font-size:10px}
+
+#summary .mew-six-targets tfoot .quantity-number{font-size:10px}
+#summary .mew-six-targets tfoot .quantity-unit{font-size:9px}
