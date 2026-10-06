@@ -15,7 +15,7 @@
  const percent=(n,d)=>d?(100*n/d).toFixed(1)+'%':'—';
  // 画面と同じAnalysisDataの結果を描画。分母・除外判定はここで再定義しない。
  function png(result,period){
-  const count=result.groups[0].rows.length,width=780,block=460;
+  const count=result.groups[0].rows.length,width=780,block=565;
   const canvas=document.createElement('canvas');canvas.width=width;canvas.height=170+Math.max(count,1)*block+48;
   const c=canvas.getContext('2d');if(!c)throw Error('画像描画に対応していません。');
   const ink='#20221c',brand='#695322',muted='#5c6056',line='#d4d1c4';
@@ -24,15 +24,15 @@
   const number=n=>n.toLocaleString('ja-JP');
   function rule(y){c.strokeStyle=line;c.lineWidth=1;c.beginPath();c.moveTo(36,y);c.lineTo(744,y);c.stroke();}
   text('ミュウ',36,48,28,brand,'left',true);
-  text('スキル位置と獲得先',36,94,36,brand,'left',true);
+  text('ミュウのアメ分析',36,94,36,brand,'left',true);
   // 期間は正確さを保って小さく添える。長い期間文字列も枠内に収める。
   c.fillStyle=muted;c.font='18px -apple-system, sans-serif';c.textAlign='left';c.fillText(period,36,134,708);
   if(!count)text('この期間の分析データはありません',36,270,26,muted);
   for(let i=0;i<count;i++){
    const y=170+i*block,base=result.groups[0].rows[i],many=result.groups[1].rows[i];
-   text('獲得個数',36,y+24,26,brand,'left',true);
-   text('スキル位置 '+(base.position===1?'R':base.position),36,y+60,24,ink,'left',true);
-   text(number(base.denominator)+'回',744,y+60,24,muted,'right');
+   text('ミュウの位置 '+(base.position===1?'1R':base.position),36,y+24,28,brand,'left',true);
+   text(number(base.denominator)+'回',744,y+24,24,muted,'right');
+   text('獲得個数',36,y+60,24,brand,'left',true);
    for(const [j,row] of [base,many].entries()){
     const ry=y+108+j*48;
     text(j?'2〜4個':'1個',36,ry,24);
@@ -40,20 +40,24 @@
     text(row.percent.toFixed(1)+'%',744,ry,42,ink,'right',true);
    }
    rule(y+186);
-   text('獲得先の割合',36,y+226,26,brand,'left',true);
+   text('アメゲット場所',36,y+226,26,brand,'left',true);
    const known=result.destinationGroups[0].rows[i].count,unknown=base.unknown+many.unknown;
-   text('分析対象 '+number(known)+'回'+(unknown?'・獲得先不明'+number(unknown)+'回を除外':''),36,y+256,19,muted);
+   text('分析対象 '+number(known)+'回'+(unknown?'・アメゲット場所不明'+number(unknown)+'回を除外':''),36,y+256,19,muted);
    const centers=[242,354,466,578,690];
-   centers.forEach((x,j)=>text(j===0?'R':j+1,x,y+290,22,muted,'center'));
+   centers.forEach((x,j)=>text(j===0?'1R':j+1,x,y+290,22,muted,'center'));
    const labels=['すべて','1個の時','2〜4個の時'];
    for(let j=0;j<3;j++){
-    const row=result.destinationGroups[j].rows[i],ry=y+324+j*48;
+    const row=result.destinationGroups[j].rows[i],ry=y+324+[0,68,116][j];
     text(labels[j],36,ry,20,muted);
     row.cells.forEach((cell,k)=>{
      text(cell.percent===null?'―':cell.percent.toFixed(1)+'%',centers[k],ry,28,ink,'center',true);
      text(number(cell.count)+'回',centers[k],ry+20,18,muted,'center');
+     if(j===2)text(number(cell.candyAmount)+'個',centers[k],ry+42,18,brand,'center');
     });
    }
+   rule(y+494);
+   text('アメ合計',36,y+520,20,brand,'left',true);
+   result.destinationGroups[0].rows[i].cells.forEach((cell,k)=>text(number(cell.candyAmount)+'個',centers[k],y+520,24,ink,'center',true));
   }
   if(result.excluded)text('発動位置・個数不明 '+number(result.excluded)+'回を除外',36,canvas.height-20,17,muted);
   return canvas.toDataURL('image/png');

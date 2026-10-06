@@ -107,3 +107,17 @@ body:has(#record[hidden]) .app>header small{grid-column:2;grid-row:2;font-size:1
 #summary .mew-distribution td small{font-size:11px;font-weight:400}
 #summary .mew-distribution th:first-child{width:42px}
 #summary .mew-distribution :is(th,td){padding:6px 1px}
+
+/* ミュウのアメ分析：割合を主役にし、実個数は補助行で比較する。 */
+#summary .mew-distribution th:first-child{width:68px;white-space:normal;font-size:11px;line-height:1.4}
+#summary .mew-distribution td{white-space:nowrap}
+#summary .mew-distribution td small{display:block;line-height:1.4}
+#summary .mew-distribution td small .quantity-number{font-size:11px;font-weight:400}
+#summary .mew-distribution .mew-cell-amount{color:#695322}
+#summary .mew-distribution tfoot :is(th,td){border-top:1px solid #d4d1c4;border-bottom:0;padding-top:9px}
+#summary .mew-distribution tfoot .quantity-number{font-size:13px;font-weight:600}
+#summary .mew-distribution tfoot .quantity-unit{font-size:10px}
+#summary .mew-distribution caption{font-size:13px;font-weight:600;color:#695322;padding-top:14px}
+
+#summary .mew-distribution td strong{font-size:12px;letter-spacing:-.2px}
+#summary .mew-distribution :is(td,th:not(:first-child)){text-align:center}

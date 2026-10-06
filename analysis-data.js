@@ -34,7 +34,7 @@ const AnalysisData=(()=>{
   // 獲得先の条件付き割合。各分類自身の件数を分母にします。
   const destinationGroups=method==='mew'?[['全体',()=>true],...definitions.slice(0,2)].map(([name,matches])=>({name,rows:positions.map(position=>{
    const xs=targetRecords.filter(r=>r.context.actorSlot===position&&matches(r));
-   return {position,count:xs.length,unknown:xs.filter(r=>targets.get(r)===null).length,cells:destinations.map(target=>{const count=xs.filter(r=>targets.get(r)===target).length;return {target,count,percent:xs.length?100*count/xs.length:null};})};
+   return {position,count:xs.length,unknown:xs.filter(r=>targets.get(r)===null).length,cells:destinations.map(target=>{const events=xs.filter(r=>targets.get(r)===target),count=events.length;return {target,count,percent:xs.length?100*count/xs.length:null,candyAmount:events.reduce((sum,r)=>sum+r.amount,0)};})};
   })})):[];
   return {records,excluded:selected.length-valid.length,destinations,groups,destinationGroups,targetRecords,targetExcluded:records.length-targetRecords.length};
  }

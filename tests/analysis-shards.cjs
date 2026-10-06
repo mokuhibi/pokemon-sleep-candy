@@ -21,7 +21,7 @@ vm.createContext(ctx);vm.runInContext(fs.readFileSync(require.resolve('../shards
 const rows=$('shard-total').children[2].children;assert.deepEqual(rows.map(x=>x.name),['睡眠リサーチ','スキル','ルカリオ（A）','ルカリオ（B）','ヤミカラス','その他']);assert.equal(rows[1].count,4);assert.equal(rows[1].amount,2760);assert.equal(rows[4].count,1);assert.equal(rows[4].amount,0);assert.equal($('shard-total').children[1].text,'11760個');
 state.settings.skill=false;vm.runInContext('ShardUI.renderSummary()',ctx);assert.equal($('shard-total').children[1].text,'11760個');assert.equal($('shard-total').children[2].children.length,2);delete state.settings.skill;assert.equal(JSON.stringify(state),before);
 assert.deepEqual(B.read(B.encode(state)),state);assert.deepEqual(B.read(JSON.stringify(state)),state);
-const html=fs.readFileSync(require.resolve('../index.html'),'utf8');assert(!html.includes('shard-pokemon-totals'));assert(!html.includes('analysis-level'));assert(!html.includes('analysis-multiplier'));assert(html.includes('src="analysis-data.js?v=20261005-unique"'));assert(html.indexOf('analysis-data.js')>=0&&html.indexOf('analysis-data.js')<html.indexOf('app.js'));
+const html=fs.readFileSync(require.resolve('../index.html'),'utf8');assert(!html.includes('shard-pokemon-totals'));assert(!html.includes('analysis-level'));assert(!html.includes('analysis-multiplier'));assert(html.includes('src="analysis-data.js?v=20261006-mew-candy"'));assert(html.indexOf('analysis-data.js')>=0&&html.indexOf('analysis-data.js')<html.indexOf('app.js'));
 console.log('PASS: shared probability denominators, actual amounts, missing positions, zero cells, individual IDs, zero-shard skill count, period filtering, visibility preserves totals, source immutability, CSV/JSON roundtrip');
 // 実際の描画関数で記録日・04:00境界・取得元の0件省略を確認。
 const app=fs.readFileSync(require.resolve('../app.js'),'utf8');ctx.methods={help:'アメ拾い',mew:'ミュウ',delibird:'デリバード',skill:'スキル'};ctx.enabled=()=>true;
@@ -76,14 +76,14 @@ const unknownMember=record(1);unknownMember.context.team[4]={species:'未知の�
 const emptySlots=record(1);emptySlots.context.team[4]=null;assert.equal(rawA.targetSlot(emptySlots,candyMap),1);
 assert.equal(JSON.stringify(ambiguityFixture),ambiguityBefore);assert.deepEqual(B.read(B.encode({...state,records:ambiguityFixture})).records,ambiguityFixture);
 const image=require('../mew-image.js').aggregate(ambiguityFixture,candyMap);assert.equal(image.total,5);assert.equal(image.selected,1);assert.equal(image.excluded,4);assert.deepEqual(image.counts,[0,1,0,0,0]);assert.equal(image.matrix[0][1],1);assert.equal(image.one[1],1);assert.equal(image.four.reduce((n,x)=>n+x,0),0);
-ctx.analysisResult=amb;vm.runInContext('renderMewPositions($("ambiguous"),analysisResult)',ctx);assert($('ambiguous').children[0].children[4].text.includes('獲得先不明 4回を除外'));
+ctx.analysisResult=amb;vm.runInContext('renderMewPositions($("ambiguous"),analysisResult)',ctx);assert($('ambiguous').children[0].children[4].text.includes('アメゲット場所不明 4回を除外'));
 console.log('PASS: same species/evolution ambiguity, missing historical team, conflicting target, unknown member, empty slot, snapshot-only resolution, occurrence ratios unchanged, destination denominators exclude ambiguity, image parity, CSV and source immutability');
 
 // シェア画像も同じAnalysisDataの割合・条件付き分布を使い、元履歴を保持。
 const drawn=[],canvas={getContext:()=>({fillRect(){},beginPath(){},moveTo(){},lineTo(){},stroke(){},fillText(value){drawn.push(String(value))}}),toDataURL:()=> 'data:image/png;base64,test'};
 const imageCtx={document:{createElement:()=>canvas}};vm.createContext(imageCtx);vm.runInContext(fs.readFileSync(require.resolve('../mew-image.js'),'utf8'),imageCtx);
 assert.equal(imageCtx.MewImage.png(distribution,'全期間'),'data:image/png;base64,test');
-for(const value of ['ミュウ','スキル位置と獲得先','獲得個数','獲得先の割合','すべて','1個の時','2〜4個の時','分析対象 176回','69.9%','30.1%','21.1%','17.0%'])assert(drawn.includes(value),value);
+for(const value of ['ミュウ','ミュウのアメ分析','獲得個数','アメゲット場所','すべて','1個の時','2〜4個の時','分析対象 176回','69.9%','30.1%','21.1%','17.0%'])assert(drawn.includes(value),value);
 assert.equal(canvas.width,780);assert.equal(JSON.stringify(destinationsFixture),destinationBefore);
 const rangeSource=fs.readFileSync(require.resolve('../range-picker.js'),'utf8');let selectedArgs;
 const todayCtx={items:new Map(),C,select:(...args)=>selectedArgs=args};vm.createContext(todayCtx);vm.runInContext(rangeSource.slice(rangeSource.indexOf(' function today('),rangeSource.indexOf(' function move(')),todayCtx);
@@ -92,3 +92,11 @@ console.log('PASS: PNG parity, unchanged fixture, today resets day/week/month/al
 
 assert.equal(drawn.filter(x=>x==='分析対象 176回').length,1);
 assert(!drawn.some(x=>x.startsWith('獲得個数：')));
+
+assert.deepEqual(distribution.destinationGroups[0].rows[0].cells.map(c=>c.candyAmount),[62,88,68,58,59]);
+assert.deepEqual(distribution.destinationGroups[2].rows[0].cells.map(c=>c.candyAmount),[36,56,48,32,40]);
+assert.equal(amb.destinationGroups[0].rows[0].cells[1].candyAmount,1);
+assert.deepEqual(r.destinationGroups[2].rows[0].cells.map(c=>c.candyAmount),[0,2,3,0,4]);
+assert(drawn.includes('ミュウの位置 1R'));assert(drawn.includes('アメ合計'));assert(drawn.includes('62個'));
+assert.equal(JSON.stringify(destinationsFixture),destinationBefore);
+console.log('PASS: actual candy amounts 1/2/3/4, per-target totals, ambiguous exclusion, shared image values, immutable source');
