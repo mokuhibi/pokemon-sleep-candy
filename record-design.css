@@ -128,3 +128,6 @@ body:has(#record:not([hidden])) .tabs button:not([aria-current]){color:#725619}
 
 /* 主要見出しは既存のブラウン。カテゴリーの小さな色印は保持する。 */
 #record :is(h2,h3){color:#695322}
+
+/* 日時の値だけを中央へ。枠の高さ・周辺操作は維持。 */
+#record .record-picker-trigger{text-align:center}

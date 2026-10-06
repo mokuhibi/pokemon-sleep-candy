@@ -13,29 +13,44 @@
   return {total:rows.length,selected,located,self,counts,one,four,matrix,excluded:rows.length-selected};
  }
  const percent=(n,d)=>d?(100*n/d).toFixed(1)+'%':'—';
- function png(data,period){
-  const canvas=document.createElement('canvas');canvas.width=1200;canvas.height=1510;
+ // 画面と同じAnalysisDataの結果を描画。分母・除外判定はここで再定義しない。
+ function png(result,period){
+  const count=result.groups[0].rows.length,width=780,block=370;
+  const canvas=document.createElement('canvas');canvas.width=width;canvas.height=220+Math.max(count,1)*block+80;
   const c=canvas.getContext('2d');if(!c)throw Error('画像描画に対応していません。');
-  const ink='#75364f',muted='#996b7e',line='#e8cbd7';
-  c.fillStyle='#fff9fc';c.fillRect(0,0,1200,1510);
-  function text(value,x,y,size=26,color=ink,align='left',bold=false){c.fillStyle=color;c.font=`${bold?'700':'400'} ${size}px -apple-system, BlinkMacSystemFont, "Hiragino Kaku Gothic ProN", sans-serif`;c.textAlign=align;c.fillText(typeof value==='number'?value.toLocaleString('ja-JP'):String(value).replace(/(\d+)(?=回)/g,n=>Number(n).toLocaleString('ja-JP')),x,y);}
-  function heading(value,y){text(value,60,y,32,ink,'left',true);}
-  function cell(value,x,y,w,h,header=false){c.fillStyle=header?'#f6e3ec':'#ffffff';c.fillRect(x,y,w,h);c.strokeStyle=line;c.lineWidth=2;c.strokeRect(x,y,w,h);text(value,x+w/2,y+h/2+9,25,ink,'center',header);}
-  // 上部は期間と記録回数のみ。
-  text(period,60,65,29);text(`記録回数 ${data.total}回`,60,116,34,ink,'left',true);
-  text(`獲得先分析 ${data.selected}回 · 特定できず除外 ${data.excluded}回`,1140,116,24,muted,'right');
-  heading('1〜5枠の選択回数・割合',190);
-  for(let i=0;i<5;i++){const x=60+i*216;c.fillStyle='#f6e3ec';c.fillRect(x,216,200,142);text(`${i+1}枠`,x+100,251,25,muted,'center');text(`${data.counts[i]}回`,x+100,300,38,ink,'center',true);text(percent(data.counts[i],data.selected),x+100,339,26,ink,'center');}
-  heading('ミュウの配置枠 × 選ばれた枠',425);
-  text('選ばれた枠 →',690,472,26,muted,'center');
-  const widths=[180,180,180,180,180,180];const headers=['ミュウ ↓','1枠','2枠','3枠','4枠','5枠'];
-  headers.forEach((v,j)=>cell(v,60+j*180,490,widths[j],64,true));
-  for(let i=0;i<5;i++){cell(`${i+1}枠`,60,554+i*65,180,65,true);for(let j=0;j<5;j++)cell(`${data.matrix[i][j]}回`,240+j*180,554+i*65,180,65);}
-  heading('ミュウ自身が選ばれた割合',950);
-  text(percent(data.self,data.located),60,1014,50,ink,'left',true);text(`${data.self}回 / ${data.located}回`,410,1008,28,muted);
-  heading('各枠の選択回数・+1・+4',1090);
-  ['枠','選択回数','+1回数','+4回数','+4率'].forEach((v,j)=>cell(v,60+j*216,1118,216,55,true));
-  for(let i=0;i<5;i++)[`${i+1}枠`,`${data.counts[i]}回`,`${data.one[i]}回`,`${data.four[i]}回`,percent(data.four[i],data.counts[i])].forEach((v,j)=>cell(v,60+j*216,1173+i*55,216,55));
+  const ink='#20221c',brand='#695322',muted='#5c6056',line='#d4d1c4';
+  c.fillStyle='#fbf8ee';c.fillRect(0,0,width,canvas.height);
+  function text(value,x,y,size=24,color=ink,align='left',bold=false){c.fillStyle=color;c.font=`${bold?'700':'400'} ${size}px -apple-system, BlinkMacSystemFont, "Hiragino Kaku Gothic ProN", sans-serif`;c.textAlign=align;c.fillText(String(value),x,y);}
+  const number=n=>n.toLocaleString('ja-JP');
+  function rule(y){c.strokeStyle=line;c.lineWidth=1;c.beginPath();c.moveTo(36,y);c.lineTo(744,y);c.stroke();}
+  text('ミュウ',36,48,28,brand,'left',true);
+  text('スキル位置と獲得先',36,94,36,brand,'left',true);
+  text('分析対象 '+number(result.records.length)+'回',36,138,26,ink,'left',true);
+  // 期間は正確さを保って小さく添える。長い期間文字列も枠内に収める。
+  c.fillStyle=muted;c.font='18px -apple-system, sans-serif';c.textAlign='left';c.fillText(period,36,176,708);
+  if(!count)text('この期間の分析データはありません',36,270,26,muted);
+  for(let i=0;i<count;i++){
+   const y=210+i*block,base=result.groups[0].rows[i],many=result.groups[1].rows[i];
+   text('スキル位置 '+(base.position===1?'R':base.position),36,y+24,30,brand,'left',true);
+   text(number(base.denominator)+'回',744,y+24,24,muted,'right');
+   for(const [j,row] of [base,many].entries()){
+    const x=36+j*360;text(j?'2〜4個':'1個',x,y+73,24);text(row.percent.toFixed(1)+'%',x+325,y+73,38,ink,'right',true);
+    text(number(row.count)+'回',x,y+101,20,muted);
+   }
+   text('獲得先',36,y+141,22,muted);
+   const centers=[180,306,432,558,684];centers.forEach((x,j)=>text(j===0?'R':j+1,x,y+141,22,muted,'center'));
+   for(let j=0;j<3;j++){
+    const row=result.destinationGroups[j].rows[i],ry=y+178+j*52;
+    text(result.destinationGroups[j].name,36,ry,21,muted);
+    row.cells.forEach((cell,k)=>{text(cell.percent===null?'―':cell.percent.toFixed(1)+'%',centers[k],ry,30,ink,'center',true);text(number(cell.count)+'回',centers[k],ry+22,18,muted,'center');});
+   }
+   const known=result.destinationGroups[0].rows[i].count,unknown=base.unknown+many.unknown;
+   text('分析対象 '+number(known)+'回'+(unknown?'・獲得先不明 '+number(unknown)+'回を除外':''),36,y+335,19,muted);
+   rule(y+354);
+  }
+  const footer=canvas.height-42;
+  text('獲得個数：位置の全記録 ／ 獲得先：各分類の特定可能な記録',36,footer,17,muted);
+  if(result.excluded)text('発動位置・個数不明 '+number(result.excluded)+'回を除外',36,footer+25,17,muted);
   return canvas.toDataURL('image/png');
  }
  const api={aggregate,png};if(typeof module!=='undefined'&&module.exports)module.exports=api;else root.MewImage=api;

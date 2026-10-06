@@ -7,7 +7,7 @@ const RangePicker=(()=>{
  function refresh(id){const item=items.get(id);$(dateId(id)).value=item.anchor;item.sync();item.render();DateUI.update();}
  function select(id,kind,anchor){const item=items.get(id);if(!item)return;item.kind=kind;item.anchor=anchor||item.anchor;const range=C.range(kind,item.anchor);item.start=range?range[0]:item.anchor;item.end=range?C.addDays(range[1],-1):item.anchor;refresh(id);}
  function set(id,start,end=start){bounds(start,end);const item=items.get(id);if(!item)return;Object.assign(item,{kind:'custom',start,end,anchor:start});refresh(id);}
- function today(id){const item=items.get(id);select(id,item.kind==='custom'?'day':item.kind,C.gameDay(new Date()));}
+ function today(id){select(id,'day',C.gameDay(new Date()));}
  function move(id,direction){const item=items.get(id);if(item.kind==='all')return;if(item.kind!=='custom'){select(id,item.kind,PeriodPicker.shift(item.anchor,item.kind,direction));return;}const days=Math.round((Date.parse(item.end)-Date.parse(item.start))/86400000)+1;set(id,C.addDays(item.start,days*direction),C.addDays(item.end,days*direction));}
  function sync(){for(const item of items.values())item.sync();}
  function mount(config){
