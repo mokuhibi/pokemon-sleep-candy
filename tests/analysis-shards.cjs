@@ -76,27 +76,27 @@ const unknownMember=record(1);unknownMember.context.team[4]={species:'未知の�
 const emptySlots=record(1);emptySlots.context.team[4]=null;assert.equal(rawA.targetSlot(emptySlots,candyMap),1);
 assert.equal(JSON.stringify(ambiguityFixture),ambiguityBefore);assert.deepEqual(B.read(B.encode({...state,records:ambiguityFixture})).records,ambiguityFixture);
 const image=require('../mew-image.js').aggregate(ambiguityFixture,candyMap);assert.equal(image.total,5);assert.equal(image.selected,1);assert.equal(image.excluded,4);assert.deepEqual(image.counts,[0,1,0,0,0]);assert.equal(image.matrix[0][1],1);assert.equal(image.one[1],1);assert.equal(image.four.reduce((n,x)=>n+x,0),0);
-ctx.analysisResult=amb;vm.runInContext('renderMewPositions($("ambiguous"),analysisResult)',ctx);assert($('ambiguous').children[0].children[4].text.includes('アメゲット場所不明 4回を除外'));
+ctx.analysisResult=amb;vm.runInContext('renderMewPositions($("ambiguous"),analysisResult)',ctx);assert($('ambiguous').children[0].children[4].text.includes('場所不明 4回'));
 console.log('PASS: same species/evolution ambiguity, missing historical team, conflicting target, unknown member, empty slot, snapshot-only resolution, occurrence ratios unchanged, destination denominators exclude ambiguity, image parity, CSV and source immutability');
 
 // シェア画像も同じAnalysisDataの割合・条件付き分布を使い、元履歴を保持。
 const drawn=[],canvas={getContext:()=>({fillRect(){},beginPath(){},moveTo(){},lineTo(){},stroke(){},fillText(value){drawn.push(String(value))}}),toDataURL:()=> 'data:image/png;base64,test'};
 const imageCtx={document:{createElement:()=>canvas}};vm.createContext(imageCtx);vm.runInContext(fs.readFileSync(require.resolve('../mew-image.js'),'utf8'),imageCtx);
 assert.equal(imageCtx.MewImage.png(distribution,'全期間'),'data:image/png;base64,test');
-for(const value of ['ミュウ','ミュウのアメ分析','獲得個数','アメゲット場所','すべて','1個の時','2〜4個の時','分析対象 176回','69.9%','30.1%','21.1%','17.0%'])assert(drawn.includes(value),value);
+for(const value of ['ミュウ','アメゲット記録','ゲットした個数','アメゲット場所','すべて','1個の時','2〜4個の時','場所がわかる記録 176回','69.9%','30.1%','21.1%','17.0%'])assert(drawn.includes(value),value);
 assert.equal(canvas.width,780);assert.equal(JSON.stringify(destinationsFixture),destinationBefore);
 const rangeSource=fs.readFileSync(require.resolve('../range-picker.js'),'utf8');let selectedArgs;
 const todayCtx={items:new Map(),C,select:(...args)=>selectedArgs=args};vm.createContext(todayCtx);vm.runInContext(rangeSource.slice(rangeSource.indexOf(' function today('),rangeSource.indexOf(' function move(')),todayCtx);
 for(const kind of ['day','week','month','all','custom']){todayCtx.items.set('period',{kind});vm.runInContext('today("period")',todayCtx);assert.equal(selectedArgs[1],'day');assert.equal(selectedArgs[2],C.gameDay(new Date()));}
 console.log('PASS: PNG parity, unchanged fixture, today resets day/week/month/all/custom to day');
 
-assert.equal(drawn.filter(x=>x==='分析対象 176回').length,1);
+assert.equal(drawn.filter(x=>x==='場所がわかる記録 176回').length,1);
 assert(!drawn.some(x=>x.startsWith('獲得個数：')));
 
 assert.deepEqual(distribution.destinationGroups[0].rows[0].cells.map(c=>c.candyAmount),[62,88,68,58,59]);
 assert.deepEqual(distribution.destinationGroups[2].rows[0].cells.map(c=>c.candyAmount),[36,56,48,32,40]);
 assert.equal(amb.destinationGroups[0].rows[0].cells[1].candyAmount,1);
 assert.deepEqual(r.destinationGroups[2].rows[0].cells.map(c=>c.candyAmount),[0,2,3,0,4]);
-assert(drawn.includes('ミュウの位置 1R'));assert(drawn.includes('アメ合計'));assert(drawn.includes('62個'));
+assert(drawn.includes('発動した場所 1R'));assert(drawn.includes('アメ合計'));assert(drawn.includes('62個'));
 assert.equal(JSON.stringify(destinationsFixture),destinationBefore);
 console.log('PASS: actual candy amounts 1/2/3/4, per-target totals, ambiguous exclusion, shared image values, immutable source');

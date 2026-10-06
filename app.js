@@ -152,20 +152,20 @@ function renderAnalysis(){
  const amountSelect=$('analysis-amount');amountSelect.closest('label').hidden=method==='mew';
  for(const option of amountSelect.options)option.hidden=option.value!==''&&!source.some(r=>r.amount===Number(option.value));
  const result=AnalysisData.prepare(source,method,actor,amount,candyMap),rs=result.records;
- const analysisHeading=$('analysis-card').querySelector('h3');analysisHeading.firstChild.textContent=method==='mew'?'ミュウのアメ分析':'スキル位置と獲得先';
+ const analysisHeading=$('analysis-card').querySelector('h3');analysisHeading.firstChild.textContent='アメゲット記録';
  headingTotal('analysis',C.sum(rs));const root=$('analysis');root.className=method;
  root.replaceChildren();
  if(method==='mew'){
   if(rs.length)renderMewPositions(root,result);else root.append(el('p','この条件の記録はありません。'));
-  if(result.excluded)root.append(qel('p','発動位置・個数が不明な記録 '+result.excluded+'回を除外','analysis-note'));
+  if(result.excluded)root.append(qel('p','発動した場所・個数不明 '+result.excluded+'回','analysis-note'));
   return;
  }
- root.append(qel('p',`分析対象 ${rs.length}回 · 位置などが不明な記録 ${result.excluded}回は除外`));
+ root.append(qel('p',`場所がわかる記録 ${rs.length}回${result.excluded?"・場所不明 "+result.excluded+"回":""}`));
  if(!rs.length){root.append(el('p','この条件の記録はありません。'));return;}
  for(const group of result.groups){
   if(method==='mew')root.append(el('h4',group.name));
   const wrap=el('div',undefined,'table-scroll'),table=el('table'),head=el('tr');table.className='position-table'+(method==='mew'?' mew-position-table':'');
-  table.append(el('caption','獲得先 →'));head.append(el('th','位置 ↓'));
+  table.append(el('caption','アメゲット場所 →'));head.append(el('th','発動した場所 ↓'));
   for(const j of result.destinations)head.append(el('th',j===6?'アメなし':String(j)));
   head.append(el('th','回数'));table.append(head);
   for(const rowData of group.rows){
@@ -189,14 +189,14 @@ function renderMewPositions(root,result){
  }
  for(let i=0;i<result.groups[0].rows.length;i++){
   const rows=result.groups.map(g=>({...g.rows[i],name:g.name})),base=rows[0],section=el('div',undefined,'mew-position');
-  const head=el('div',undefined,'mew-position-head');head.append(el('h4','ミュウの位置 '+(base.position===1?'1R':base.position)),qel('span',base.denominator+'回'));section.append(head);
+  const head=el('div',undefined,'mew-position-head');head.append(el('h4','発動した場所 '+(base.position===1?'1R':base.position)),qel('span',base.denominator+'回'));section.append(head);
   const rates=el('div',undefined,'mew-rates');
   for(const data of rows.slice(0,2)){const line=el('div',undefined,'mew-rate');line.append(el('span',data.name),qel('span',data.count+'回'),el('strong',data.percent.toFixed(1)+'%'));rates.append(line);}
-  const distributions=result.destinationGroups.map((g,j)=>({...g.rows[i],name:['すべて','1個の時','2〜4個の時'][j]}));section.append(el('h5','獲得個数'),rates,targets(distributions,true));
-  const unknown=rows[0].unknown+rows[1].unknown;section.append(qel('p','分析対象 '+distributions[0].count+'回'+(unknown?'・アメゲット場所不明 '+unknown+'回を除外':''),'analysis-note'));
+  const distributions=result.destinationGroups.map((g,j)=>({...g.rows[i],name:['すべて','1個の時','2〜4個の時'][j]}));section.append(el('h5','ゲットした個数'),rates,targets(distributions,true));
+  const unknown=rows[0].unknown+rows[1].unknown;section.append(qel('p','場所がわかる記録 '+distributions[0].count+'回'+(unknown?'・場所不明 '+unknown+'回':''),'analysis-note'));
   // 前回追加した1・4個の比較は残し、補足として必要時に開けます。
   const comparison=el('details',undefined,'mew-comparison'),summary=qel('summary',`1個・4個 合計 · ${rows[2].count}回 · ${rows[2].percent.toFixed(1)}%`);
-  comparison.append(summary,targets([{...rows[2],name:"1・4個"}]));if(rows[2].unknown)comparison.append(qel('p','アメゲット場所不明 '+rows[2].unknown+'回'));section.append(comparison);root.append(section);
+  comparison.append(summary,targets([{...rows[2],name:"1・4個"}]));if(rows[2].unknown)comparison.append(qel('p','場所不明 '+rows[2].unknown+'回'));section.append(comparison);root.append(section);
  }
 }
 function historicalPokemon(r){
