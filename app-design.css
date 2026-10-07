@@ -195,3 +195,22 @@ body:has(#record[hidden]) .app>header small{grid-column:2;grid-row:2;font-size:1
 #settings .setting-state{width:26px;font-size:10px;font-weight:600;color:#5c6056;text-align:right}
 #settings .setting-state::after{content:"OFF"}
 #settings input:checked+.setting-state::after{content:"ON";color:#695322}
+
+/* 履歴は方法と個数を先に、アメ・個体・時刻・補足を段階的に読む。 */
+#history #history-list .card{padding:14px 16px;margin-bottom:12px}
+#history .history-head{align-items:baseline;margin-bottom:4px;gap:12px}
+#history .history-head .history-method{font-size:16px;font-weight:600;color:#695322;overflow-wrap:anywhere}
+#history .history-head .history-amount{flex-shrink:0;font-size:24px;font-weight:700;line-height:1.3;white-space:nowrap;font-variant-numeric:tabular-nums;color:#20221c}
+#history .history-amount .quantity-number{font-size:24px;font-weight:700;color:#20221c}
+#history .history-amount .quantity-unit{font-size:12px;font-weight:400}
+#history .history-primary-row{display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:44px}
+#history .history-primary{font-size:15px;font-weight:600;color:#24251f;min-width:0;overflow-wrap:anywhere}
+#history .history-actions{gap:0}
+#history .history-actions button{min-width:44px;min-height:44px;padding:8px 6px;font-size:12px;background:transparent}
+#history #history-list .card>.history-target{margin:0 0 4px;font-size:14px;line-height:1.5;color:#24251f}
+#history #history-list .card>.history-target::first-line{color:inherit}
+#history .history-time{display:block;font-size:12px;color:#5c6056;margin:0 0 8px;font-variant-numeric:tabular-nums}
+#history #history-list .card>.history-supplement{font-size:12px;line-height:1.5;color:#5c6056;margin:3px 0;overflow-wrap:anywhere}
+#history #history-list details{padding:8px 0 0;margin-top:8px;border-top:1px solid #d4d1c4}
+#history #history-list summary{font-size:12px;min-height:44px;display:list-item;line-height:44px;padding:0}
+#history #history-list details p{margin:6px 0;font-size:12px;overflow-wrap:anywhere}
