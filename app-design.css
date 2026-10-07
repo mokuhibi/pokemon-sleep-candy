@@ -214,3 +214,29 @@ body:has(#record[hidden]) .app>header small{grid-column:2;grid-row:2;font-size:1
 #history #history-list details{padding:8px 0 0;margin-top:8px;border-top:1px solid #d4d1c4}
 #history #history-list summary{font-size:12px;min-height:44px;display:list-item;line-height:44px;padding:0}
 #history #history-list details p{margin:6px 0;font-size:12px;overflow-wrap:anywhere}
+
+/* チームの選択は検索付きの一覧。名前と個体IDは既存の登録情報を使う。 */
+#team #team-slots>.team-slot-row{display:grid;grid-template-columns:30px minmax(0,1fr);gap:4px 8px;align-items:center;padding:10px 0;border-bottom:1px solid #d4d1c4;color:#695322;font-weight:600}
+#team #team-slots>.team-slot-row.leader-slot{background:transparent;box-shadow:none;border:0!important;border-bottom:1px solid #d4d1c4!important;border-radius:0}
+#team .team-slot-button{width:100%;min-height:48px;text-align:left;font-size:16px;font-weight:400;background:#fff;border:1px solid #bdbeb0;padding:10px 12px;overflow-wrap:anywhere}
+#team-picker{box-sizing:border-box;width:min(520px,calc(100vw - 24px));height:min(680px,calc(100dvh - 32px));max-height:calc(100dvh - 32px);padding:0;border:1px solid #d4d1c4;border-radius:16px;background:#fffefa;color:#24251f;overflow:hidden}
+#team-picker[open]{display:flex;flex-direction:column}
+#team-picker::backdrop{background:rgb(32 34 28 / 38%)}
+#team-picker .team-picker-header{flex:none;padding:16px;border-bottom:1px solid #d4d1c4;background:#fffefa}
+#team-picker .team-picker-heading{display:flex;align-items:center;justify-content:space-between;gap:8px}
+#team-picker h2{font-size:20px;color:#695322;margin:0;font-weight:600}
+#team-picker-close{min-width:44px;min-height:44px;background:transparent;color:#5c6056;border-color:transparent;font-size:13px;padding:8px}
+#team-picker-context{font-size:13px;line-height:1.5;margin:8px 0 12px;color:#5c6056;overflow-wrap:anywhere}
+#team-picker label{font-size:12px;color:#5c6056;margin:0}
+#team-picker-search{box-sizing:border-box;min-height:48px;margin-top:6px;font-size:16px;border:1px solid #bdbeb0;border-radius:10px;color:#24251f;background:#fff;width:100%}
+#team-picker-error{margin:0;color:#985e52;font-size:12px}
+#team-picker-error:empty{display:none}
+#team-picker-list{overflow-y:auto;min-height:0;flex:1;padding:0 16px 16px;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+#team-picker .team-picker-row{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;min-height:52px;padding:12px 8px;background:transparent;border:0;border-bottom:1px solid #d4d1c4;border-radius:0;font-size:15px;text-align:left;color:#24251f}
+#team-picker .team-picker-name{min-width:0;overflow-wrap:anywhere;line-height:1.5}
+#team-picker .team-picker-status{flex-shrink:0;font-size:12px;color:#5c6056}
+#team-picker .team-picker-row[aria-pressed=true]{background:#eee7d5;color:#695322;font-weight:600}
+#team-picker .team-picker-row[aria-pressed=true] .team-picker-status{color:#695322;font-size:16px}
+#team-picker .team-picker-row:disabled{opacity:1;color:#85887e;cursor:default}
+#team-picker :is(button,input):focus-visible{outline:3px solid #b6a16b;outline-offset:-3px}
+@supports not (height:100dvh){#team-picker{height:calc(100vh - 32px);max-height:calc(100vh - 32px)}}
