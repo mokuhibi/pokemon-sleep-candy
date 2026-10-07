@@ -5,12 +5,12 @@ const SummaryExtras=(()=>{
  const settingKeys={skill:'showShardSkill',research:'showShardResearch',other:'showShardOther'};
  const shardKey=method=>method==='lucky'?'skill':method;
  const shardVisible=(method,settings=state.settings)=>settings[settingKeys[shardKey(method)]]!==false;
- // 記録画面の表示設定にかかわらず、保存済み履歴の内訳を表示します。
- function sourceTotals(root,kind,records){
+ // 表示行だけを絞り、合計計算にはすべての保存済み履歴を使用します。
+ function sourceTotals(root,kind,records,sourceVisible=()=>true){
   root.replaceChildren();root.className='source-totals';
   for(const [key,name] of kind==='candy'?candySources:shardSources){
    const total=C.sum(records.filter(r=>(kind==='candy'?r.method:shardKey(r.method))===key));
-   if(!total||(kind==='candy'&&!enabled(key)))continue;
+   if(!total||!sourceVisible(key)||(kind==='candy'&&!enabled(key)))continue;
    const line=el('div',undefined,'source-total-row'),label=el('span',name);label.dataset.source=kind+'-'+key;
    line.append(label,qel('strong',total.toLocaleString('ja-JP')+'個'));root.append(line);
   }
@@ -34,14 +34,14 @@ const SummaryExtras=(()=>{
  }
  // 表示列だけを分割。集計済みの値・並び順は変更しません。
  function candyColumns(groups){
-  const active=candySources.filter(([key])=>groups.some(g=>g.sources[key]));
+  const active=candySources.filter(([key])=>recordVisible(key)&&groups.some(g=>g.sources[key]));
   const panels=[];for(let i=0;i<active.length;i+=2)panels.push(active.slice(i,i+2));
   return panels.length?panels:[[]];
  }
  const candyName=name=>name.replace(/のアメ$/,'');
  const candyValue=value=>value?value.toLocaleString('ja-JP'):'−';
  function candyList(records){
-  sourceTotals($('candy-source-totals'),'candy',records);
+  sourceTotals($('candy-source-totals'),'candy',records,recordVisible);
   const root=$('candy-list');root.replaceChildren();$('candy-image-preview').replaceChildren();
   const groups=candyGroups(records);
   if(!groups.length){root.append(el('p','まだアメの記録がありません。'));return;}

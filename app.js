@@ -68,7 +68,7 @@ function record(method,slot,amount){const date=recordDate();if(!Number.isFinite(
 // 合計カードだけで使う表示用の表。集計済みの値を列に分けます。
 function totalBreakdown(parent,amountLabel){const table=el('table',undefined,'total-breakdown'),head=el('thead'),tr=el('tr'),body=el('tbody');for(const text of ['', '回数',amountLabel]){const th=el('th',text);th.scope='col';tr.append(th);}head.append(tr);table.append(head,body);parent.append(table);return body;}
 function totalBreakdownRow(body,name,count,amount,cls=''){const tr=el('tr',undefined,cls),nameCell=el('th',name);nameCell.scope='row';tr.append(nameCell,qel('td',count===null?'―':count+'回'),qel('td',amount+'個'));body.append(tr);}
-function totals(parent,records,title,hideEmpty=false){parent.replaceChildren(el('small',title),qel('div',`${C.sum(records)}個`,'total'));const body=totalBreakdown(parent,'アメ');for(const [method,name] of Object.entries(methods)){if(!enabled(method))continue;const rs=records.filter(r=>r.method===method);if((method==='skill'||hideEmpty)&&!rs.length)continue;totalBreakdownRow(body,name,rs.length,C.sum(rs),method);}}
+function totals(parent,records,title,hideEmpty=false,sourceVisible=enabled){parent.replaceChildren(el('small',title),qel('div',`${C.sum(records)}個`,'total'));const body=totalBreakdown(parent,'アメ');for(const [method,name] of Object.entries(methods)){if(!enabled(method)||!sourceVisible(method))continue;const rs=records.filter(r=>r.method===method);if((method==='skill'||hideEmpty)&&!rs.length)continue;totalBreakdownRow(body,name,rs.length,C.sum(rs),method);}}
 
 
 function renderRecord(){
@@ -116,7 +116,7 @@ function summaryTitle(period){if(!period)return '全期間のアメ';const short
 function renderSummary(){
  PeriodPicker.sync();
  $('create-mew-image').hidden=!enabled('mew')&&!enabled('delibird');$('mew-image-preview').hidden=true;
- const rs=filteredRecords(),period=RangePicker.get('period');$('range-label').textContent=period?`${C.displayDate(period[0])} 04:00 〜 ${C.displayDate(period[1])} 04:00`:'全期間';totals($('summary-total'),rs,summaryTitle(period));
+ const rs=filteredRecords(),period=RangePicker.get('period');$('range-label').textContent=period?`${C.displayDate(period[0])} 04:00 〜 ${C.displayDate(period[1])} 04:00`:'全期間';totals($('summary-total'),rs,summaryTitle(period),false,recordVisible);
  const calendarRs=state.records;
  const month=($('summary-date').value||C.gameDay(new Date())).slice(0,7);$('candy-month').textContent=month.replace('-','年')+'月';
  WeeklyChart.render($('candy-weekly-chart'),calendarRs,$('summary-date').value||C.gameDay(new Date()));
