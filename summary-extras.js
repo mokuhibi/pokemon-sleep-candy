@@ -32,13 +32,31 @@ const SummaryExtras=(()=>{
   const groups=new Map();for(const r of records){if(!r.candy||!r.amount)continue;if(!groups.has(r.candy))groups.set(r.candy,{name:r.candy,total:0,sources:{}});const g=groups.get(r.candy);g.total+=r.amount;g.sources[r.method]=(g.sources[r.method]||0)+r.amount;}
   return [...groups.values()].sort((a,b)=>b.total-a.total||a.name.localeCompare(b.name,'ja'));
  }
+ // 表示列だけを分割。集計済みの値・並び順は変更しません。
+ function candyColumns(groups){
+  const active=candySources.filter(([key])=>groups.some(g=>g.sources[key]));
+  const panels=[];for(let i=0;i<active.length;i+=2)panels.push(active.slice(i,i+2));
+  return panels.length?panels:[[]];
+ }
+ const candyName=name=>name.replace(/のアメ$/,'');
+ const candyValue=value=>value?value.toLocaleString('ja-JP'):'−';
  function candyList(records){
   sourceTotals($('candy-source-totals'),'candy',records);
   const root=$('candy-list');root.replaceChildren();$('candy-image-preview').replaceChildren();
-  for(const g of candyGroups(records)){const detail=el('details',undefined,'candy-breakdown'),summary=el('summary');summary.append(el('span',g.name),qel('strong',g.total+'個'));detail.append(summary);
-   for(const [key,name] of candySources)if(g.sources[key])row(detail,name,g.sources[key]+'個','candy-source-row');root.append(detail);
+  const groups=candyGroups(records);
+  if(!groups.length){root.append(el('p','まだアメの記録がありません。'));return;}
+  root.append(el('small','単位：個','candy-table-unit'));
+  for(const sources of candyColumns(groups)){
+   const scroll=el('div',undefined,'candy-table-scroll'),table=el('table',undefined,'candy-totals-table');
+   table.setAttribute('aria-label','アメ種類別合計：'+sources.map(([,name])=>name).join('・'));
+   const head=el('thead'),header=el('tr');
+   for(const label of ['アメ名','合計',...sources.map(([,name])=>name)])header.append(el('th',label));
+   head.append(header);table.append(head);const body=el('tbody');
+   for(const g of groups){const line=el('tr'),name=el('th',candyName(g.name));name.setAttribute('scope','row');line.append(name,el('td',g.total.toLocaleString('ja-JP'),'candy-table-total'));
+    for(const [key] of sources)line.append(el('td',candyValue(g.sources[key])));body.append(line);
+   }
+   table.append(body);scroll.append(table);root.append(scroll);
   }
-  if(!root.children.length)root.append(el('p','まだアメの記録がありません。'));
  }
  function monthly(kind,records,day){
   const candy=kind==='candy',month=day.slice(0,7),root=$(kind+'-calendar'),legend=$(kind+'-month-legend');
@@ -54,10 +72,26 @@ const SummaryExtras=(()=>{
   headingTotal(kind+'-calendar',C.sum(monthlyRecords));sourceTotals($(kind+'-month-totals'),kind,monthlyRecords);
  }
  function imagePages(groups,period){
-  const pages=[];for(let offset=0;offset<Math.max(1,groups.length);offset+=20){const page=groups.slice(offset,offset+20),canvas=document.createElement('canvas');canvas.width=1200;canvas.height=180+page.reduce((n,g)=>n+100+candySources.filter(([key])=>g.sources[key]).length*42,0);const c=canvas.getContext('2d');if(!c)throw Error('画像描画に対応していません。');c.fillStyle='#fbf8ee';c.fillRect(0,0,canvas.width,canvas.height);
-   const text=(value,x,y,size=26,bold=false,right=false)=>{c.fillStyle='#292a26';c.font=`${bold?600:400} ${size}px -apple-system, sans-serif`;c.textAlign=right?'right':'left';c.fillText(String(value),x,y,right?350:760);};
-   text('アメ種類別合計',60,54,32,true);text(period,60,102,23);if(!page.length)text('この期間の記録はありません。',60,154);
-   let y=160;for(const g of page){text(g.name,60,y,28,true);text(g.total.toLocaleString('ja-JP')+'個',1140,y,30,true,true);y+=46;for(const [key,name] of candySources)if(g.sources[key]){text(name,84,y);text(g.sources[key].toLocaleString('ja-JP')+'個',1140,y,26,false,true);y+=42;}c.strokeStyle='#e4e3da';c.beginPath();c.moveTo(60,y-16);c.lineTo(1140,y-16);c.stroke();y+=54;}
+  const pages=[],panels=candyColumns(groups);
+  for(let offset=0;offset<Math.max(1,groups.length);offset+=20){
+   const page=groups.slice(offset,offset+20),canvas=document.createElement('canvas');canvas.width=1200;canvas.height=190+panels.length*(70+page.length*80);
+   const c=canvas.getContext('2d');if(!c)throw Error('画像描画に対応していません。');c.fillStyle='#fbf8ee';c.fillRect(0,0,canvas.width,canvas.height);
+   const text=(value,x,y,size=32,bold=false,right=false,color='#5c6056',width=450)=>{c.fillStyle=color;c.font=`${bold?700:400} ${size}px -apple-system, sans-serif`;c.textAlign=right?'right':'left';c.fillText(String(value),x,y,width);};
+   text('アメ種類別合計',60,60,42,true,false,'#695322');text(period+'・単位：個',60,108,28);
+   if(!page.length)text('この期間の記録はありません。',60,170);
+   let y=180;
+   for(const sources of panels){
+    const ends=sources.length===2?[720,930,1140]:sources.length===1?[850,1140]:[1140];
+    text('アメ名',60,y,32);text('合計',ends[0],y,32,false,true);
+    sources.forEach(([,name],i)=>text(name,ends[i+1],y,32,false,true));y+=24;
+    for(const g of page){
+     c.strokeStyle='#d4d1c4';c.beginPath();c.moveTo(60,y);c.lineTo(1140,y);c.stroke();
+     y+=52;text(candyName(g.name),60,y,42,false,false,'#292b24',sources.length===2?450:600);
+     text(g.total.toLocaleString('ja-JP'),ends[0],y,46,true,true,'#20221c',190);
+     sources.forEach(([key],i)=>text(candyValue(g.sources[key]),ends[i+1],y,40,false,true,'#5c6056',190));y+=28;
+    }
+    y+=46;
+   }
    pages.push(canvas.toDataURL('image/png'));
   }return pages;
  }

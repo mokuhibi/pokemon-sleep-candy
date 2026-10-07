@@ -142,3 +142,16 @@ body:has(#record[hidden]) .app>header small{grid-column:2;grid-row:2;font-size:1
 #summary .mew-six-targets .mew-all td strong{font-size:11px}
 #summary .mew-six-targets tbody tr:not(.mew-all) td strong{font-size:10px}
 #summary .mew-six-targets .mew-totals .quantity-number{font-size:10px}
+
+/* アメ種類別合計：名前と数値を同じ行で比較する。 */
+#summary #candy-list{max-height:none;overflow:visible}
+#summary .candy-table-scroll{max-height:280px;overflow-y:auto;-webkit-overflow-scrolling:touch;margin-top:12px}
+#summary .candy-totals-table{width:100%;min-width:0;table-layout:fixed;border-collapse:separate;border-spacing:0;font-variant-numeric:tabular-nums}
+#summary .candy-totals-table th,#summary .candy-totals-table td{padding:8px 3px;border:0;border-bottom:1px solid #d4d1c4;text-align:right;vertical-align:middle;background:transparent}
+#summary .candy-totals-table thead th{position:sticky;top:0;background:#fff;font-size:11px;font-weight:500;color:#5c6056;height:40px;box-sizing:border-box}
+#summary .candy-totals-table th:first-child{width:40%;text-align:left;padding-left:0}
+#summary .candy-totals-table tbody th{font-size:14px;font-weight:500;color:#292b24;overflow-wrap:anywhere;line-height:1.4}
+#summary .candy-totals-table tbody tr{height:48px}
+#summary .candy-totals-table td{font-size:13px;color:#5c6056;white-space:nowrap;letter-spacing:-.02em}
+#summary .candy-totals-table td.candy-table-total{font-size:15px;font-weight:700;color:#20221c}
+#summary .candy-totals-table th:last-child,#summary .candy-totals-table td:last-child{padding-right:0}
