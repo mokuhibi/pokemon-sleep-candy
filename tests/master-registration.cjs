@@ -2,7 +2,7 @@ const assert=require('node:assert/strict'),fs=require('fs'),vm=require('vm');
 const C=require('../core.js'),B=require('../backup.js'),SK=require('../main-skill-master.js'),A=require('../analysis-data.js');
 const ctx={};vm.createContext(ctx);const data=fs.readFileSync(require.resolve('../pokemon-data.js'),'utf8');vm.runInContext(data+';this.map=candyMap;this.dex=nationalDex',ctx);
 const app=fs.readFileSync(require.resolve('../app.js'),'utf8'),nodes={},$=id=>nodes[id]??={value:'',children:[],replaceChildren(){this.children=[]},append(x){this.children.push(x)}};
-Object.assign(ctx,{C,names:Object.keys(ctx.map),nationalDex:ctx.dex,$,selected:'',state:{pokemon:[]},speciesEnabled:()=>true,button:(text,onclick)=>({text,onclick}),el:(tag,text)=>({text}),SkillUI:{registration(){}}});
+Object.assign(ctx,{C,names:Object.keys(ctx.map),nationalDex:ctx.dex,$,selected:'',state:{pokemon:[]},speciesEnabled:()=>true,button:(text,onclick)=>({text,onclick}),el:(tag,text)=>({text}),SkillUI:{registration(){}},TeamUI:{registration(){}}});
 vm.runInContext(app.slice(app.indexOf('function normalize('),app.indexOf('function openHistoryEditor(')),ctx);
 for(const [query,species,no] of [['タマゲタケ','タマゲタケ',590],['たまげたけ','タマゲタケ',590],['モロバレル','モロバレル',591],['もろばれる','モロバレル',591]]){
  ctx.selected='';$('pokemon-search').value=query;vm.runInContext('renderCatalog()',ctx);assert.equal($('pokemon-search-results').children.length,1);const candidate=$('pokemon-search-results').children[0];assert.equal(candidate.text,'No.'+no+' '+species);candidate.onclick();assert.equal(ctx.selected,species);assert.equal($('pokemon-search').value,species);assert.equal($('pokemon-search-results').hidden,true);

@@ -155,3 +155,26 @@ body:has(#record[hidden]) .app>header small{grid-column:2;grid-row:2;font-size:1
 #summary .candy-totals-table td{font-size:13px;color:#5c6056;white-space:nowrap;letter-spacing:-.02em}
 #summary .candy-totals-table td.candy-table-total{font-size:15px;font-weight:700;color:#20221c}
 #summary .candy-totals-table th:last-child,#summary .candy-totals-table td:last-child{padding-right:0}
+
+/* 編成は目的別に切り替え、普段使う5枠をコンパクトな一覧にする。 */
+#team .team-switch{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px;padding:4px;background:#eee7d5;border-radius:12px;margin-bottom:20px}
+#team .team-switch button{border:0;background:transparent;min-height:44px;padding:8px 4px;font-size:14px;color:#5c6056}
+#team .team-switch button[aria-selected=true]{background:#fff;color:#695322;box-shadow:inset 0 0 0 1px #b6a16b;font-weight:700}
+#team [role=tabpanel]>h2{margin:0 0 12px}
+#team #team-slots>label{display:grid;grid-template-columns:30px minmax(0,1fr);gap:4px 8px;align-items:center;margin:0;padding:10px 0;border:0;border-bottom:1px solid #d4d1c4;border-radius:0;background:transparent;color:#695322;font-weight:600}
+#team #team-slots>.leader-slot{border:0!important;border-bottom:1px solid #d4d1c4!important;border-radius:0;background:transparent;box-shadow:none;padding:10px 0}
+#team #team-slots select{margin:0;width:100%;height:48px}
+#team #team-slots .main-skill-label{grid-column:2;font-weight:400;line-height:1.4}
+#team #roster-panel>.section-head{margin:16px 0 8px}
+#team #roster-search{margin-top:8px}
+#team .registered-row{display:flex;align-items:center;flex-wrap:nowrap;gap:12px;padding:12px 0;border-bottom:1px solid #d4d1c4}
+#team .registered-info{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px;overflow-wrap:anywhere}
+#team .registered-info strong{font-size:15px;line-height:1.5;font-weight:600}
+#team .registered-info small{font-size:12px;line-height:1.5}
+#team .row-actions{flex-shrink:0;display:flex;gap:4px;max-width:144px}
+#team .row-actions button{min-height:44px;min-width:44px}
+#team #individual-editor>h2{margin:20px 0 8px}
+#team #profile-remove{display:block;margin-top:20px;background:transparent;color:#985e52}
+#team #registration-fields{margin-top:20px}
+#team #registration-fields>p{font-size:17px;font-weight:600;color:#292b24}
+#team #register-panel .catalog{max-height:240px;overflow-y:auto;-webkit-overflow-scrolling:touch}
