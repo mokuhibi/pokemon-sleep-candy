@@ -25,8 +25,11 @@ function positionNotice(){const n=$('notice'),card=document.querySelector('.reco
 window.addEventListener('scroll',positionNotice,{passive:true});window.addEventListener('resize',positionNotice);
 
 function notice(s){const n=$('notice');quantityText(n,s);positionNotice();n.classList.remove('shown');void n.offsetWidth;n.classList.add('shown');clearTimeout(noticeTimer);noticeTimer=setTimeout(()=>n.classList.remove('shown'),5000);}
-const enabled=method=>method==='help'||method==='skill'||state.settings[method];
-const speciesEnabled=species=>species!=='ミュウ'&&species!=='デリバード'||state.settings[species==='ミュウ'?'mew':'delibird'];
+// 表示設定は記録入力だけに適用し、保存済み履歴・集計・登録個体は隠さない。
+const enabled=method=>Object.hasOwn(methods,method);
+const recordSettingKeys={help:'showCandyHelp',mew:'mew',delibird:'delibird',skill:'showOtherCandy'};
+const recordVisible=method=>state.settings[recordSettingKeys[method]]!==false;
+const speciesEnabled=()=>true;
 const special=p=>p.species==='ミュウ'||p.species==='デリバード';
 const visibleRecord=r=>enabled(r.method)&&speciesEnabled(r.species);
 const actorOf=c=>c?.actor||c?.team[c.actorSlot-1];
@@ -74,7 +77,7 @@ function renderRecord(){
  SummaryExtras.recordSummary();
  const root=$('record-methods');root.replaceChildren();const team=currentTeam();
  for(const [method,name] of Object.entries(methods)){
-  if(method!=='help'&&!state.settings[method])continue;
+  if(method==='skill'||!recordVisible(method))continue;
   const section=el('div',undefined,method);section.id=method+'-section';section.append(el('h2',name));let context=null;
   if(method!=='help'){
    const candidates=method==='mew'?state.pokemon.filter(p=>p.species==='ミュウ').slice(0,1).map(p=>({id:p.id,text:label(p)})):team.map((p,i)=>p&&p.species===name?{id:p.id,text:`${position(i+1)} · ${label(p)}`} : null).filter(Boolean);
@@ -96,7 +99,7 @@ function renderRecord(){
   if(method==='delibird'){const b=button('',()=>record('delibird',6,0),'help-card');b.append(el('small','6 · アメなし'),el('strong','スキルのみ'));b.disabled=!context;grid.append(b);}
   section.append(grid);root.append(section);
  }
- CopySkills.render(root,'candy');
+ if(recordVisible('skill'))CopySkills.render(root,'candy');
 }
 function headingTotal(id,amount,unit='個'){const body=$(id),heading=body?.parentElement?.querySelector('h3');if(!heading)return;heading.classList.add('heading-with-total');let total=heading.querySelector('.heading-total');if(!total){total=el('span',undefined,'heading-total');heading.append(total);}quantityText(total,'合計 '+amount.toLocaleString('ja-JP')+unit);}
 function historicalActors(method){const species=methods[method],map=new Map();for(const p of state.pokemon)if(p.species===species)map.set(p.id,label(p));for(const r of state.records)if(r.method===method&&r.context?.actorId){const p=actorOf(r.context);if(!map.has(p.id))map.set(p.id,label(p)+'（登録解除済み）');}return [...map].map(([id,text],i)=>({id,text}));}
@@ -194,7 +197,7 @@ function historicalPokemon(r){
 }
 function oldLabel(r){return r.amount===0?'スキルのみ':label(historicalPokemon(r));}
 function profileText(p){if(!p.profile)return '個体情報不明';const v=p.profile;return `Lv.${v.level} · ${v.nature} · スキルLv.${v.skillLevel}\n`+v.subskills.map((s,i)=>`${[10,25,50,70,80][i]}: ${s||'未入力'}${v.level<[10,25,50,70,80][i]?'（未解放）':''}`).join(' / ');}
-function renderHistory(){PeriodPicker.sync();const period=historyRange();$('history-day').textContent=period?C.displayDate(period[0])+' 〜 '+C.displayDate(C.addDays(period[1],-1)):'全期間';const root=$('history-list');root.replaceChildren();for(const r of [...state.records].filter(r=>visibleRecord(r)&&!(r.method==='mew'&&r.amount===0&&r.shardAmount!==undefined&&!SummaryExtras.shardVisible('skill'))&&C.inRange(r,period)).reverse().sort((a,b)=>Date.parse(b.datetime)-Date.parse(a.datetime))){
+function renderHistory(){PeriodPicker.sync();const period=historyRange();$('history-day').textContent=period?C.displayDate(period[0])+' 〜 '+C.displayDate(C.addDays(period[1],-1)):'全期間';const root=$('history-list');root.replaceChildren();for(const r of [...state.records].filter(r=>visibleRecord(r)&&C.inRange(r,period)).reverse().sort((a,b)=>Date.parse(b.datetime)-Date.parse(a.datetime))){
  const card=el('div',undefined,'card '+r.method);card.dataset.datetime=r.datetime;const head=el('div',undefined,'history-head'),actions=el('div',undefined,'history-actions');
  actions.append(button('訂正',()=>openHistoryEditor(r)),button('削除',()=>{if(confirm('この記録を削除しますか？'))commit({...state,records:state.records.filter(x=>x.id!==r.id)},'削除しました。');},'danger'));
  head.append(qel('strong',`${methods[r.method]} · ${r.amount}個`),actions);card.append(head,el('p',`${DateUI.datetime(r.datetime)}\n${r.slot===6?'アメなし':r.slot?position(r.slot):'獲得位置不明'} · ${r.candy||'スキルのみ'}\n${oldLabel(r)}`));const details=el('details');details.append(el('summary',r.method==='help'?'編成':'編成・スキル'));
@@ -212,7 +215,7 @@ function renderCatalog(){const q=normalize($('pokemon-search').value),root=$('po
 const natures='がんばりや さみしがり ゆうかん いじっぱり やんちゃ ずぶとい すなお のんき わんぱく のうてんき おくびょう せっかち まじめ ようき むじゃき ひかえめ おっとり れいせい てれや うっかりや おだやか おとなしい なまいき しんちょう きまぐれ'.split(' ');
 const subskills='きのみの数S おてつだいボーナス スキルレベルアップS スキルレベルアップM スキル確率アップS スキル確率アップM おてつだいスピードS おてつだいスピードM 食材確率アップS 食材確率アップM 最大所持数アップS 最大所持数アップM 最大所持数アップL げんき回復ボーナス 睡眠EXPボーナス リサーチEXPボーナス ゆめのかけらボーナス'.split(' ');
 function editProfile(){const p=state.pokemon.find(p=>p.id===$('profile-select').value);$('profile-form').hidden=!p;if(!p)return;const v=p.profile||C.profileDefault(p.species);nameText($('profile-species'),label(p));SkillUI.editProfile(p);$('profile-form').className=p.species==='ミュウ'?'mew':p.species==='デリバード'?'delibird':'';$('profile-nickname').value=p.nickname;$('profile-level').value=v.level;$('profile-nature').value=p.species==='ミュウ'?'きまぐれ':v.nature;$('profile-nature').disabled=p.species==='ミュウ';$('profile-skill').max=C.skillCap(p.species);$('profile-skill').value=Math.min(v.skillLevel,C.skillCap(p.species));v.subskills.forEach((s,i)=>$('subskill-'+i).value=s);SkillUI.refreshDetails(p);}
-function renderSettings(){ SummaryExtras.settings(); $('show-other-candy').checked=state.settings.showOtherCandy!==false; $('enable-mew').checked=state.settings.mew;$('enable-delibird').checked=state.settings.delibird;const p=$('profile-select'),old=p.value;optionList(p,orderedPokemon().filter(p=>speciesEnabled(p.species)).map((p,i)=>({id:p.id,text:label(p)})),old);editProfile();TeamUI.sync();$('event-month').closest('.card').hidden=!enabled('mew')&&!enabled('delibird');renderEvents();}
+function renderSettings(){ SummaryExtras.settings(); $('enable-help').checked=recordVisible('help'); $('show-other-candy').checked=state.settings.showOtherCandy!==false; $('enable-mew').checked=state.settings.mew;$('enable-delibird').checked=state.settings.delibird;const p=$('profile-select'),old=p.value;optionList(p,orderedPokemon().filter(p=>speciesEnabled(p.species)).map((p,i)=>({id:p.id,text:label(p)})),old);editProfile();TeamUI.sync();$('event-month').closest('.card').hidden=!enabled('mew')&&!enabled('delibird');renderEvents();}
 function selectEvent(e){eventId=e?.id||null;$('event-name').value=e?.name||'';$('event-start').value=e?.start||C.range('week',C.gameDay(new Date()))[0];$('event-end').value=e?.end||C.addDays(C.range('week',C.gameDay(new Date()))[1],-1);$('event-target').value=e?.target||'both';$('event-multiplier').value=e?.multiplier||1;$('event-boost').value=e?.boost||0;$('cancel-event').hidden=!e;}
 function renderEvents(){
 // 設定画面だけを絞る。月をまたぐ開催中のイベントは終了日で判定する。
@@ -288,7 +291,7 @@ for(const id of ['history-period','history-date'])$(id).onchange=()=>{renderHist
 $('roster-other-toggle').onclick=()=>{showOtherPokemon=!showOtherPokemon;renderTeam();};
 $('sort-toggle').onclick=()=>{sorting=!sorting;renderTeam();};$('sort-reset').onclick=()=>commit({...state,pokemon:[...state.pokemon].sort((a,b)=>a.registrationOrder-b.registrationOrder)},'登録順に戻しました。');
 $('analysis-method').onchange=()=>{$('analysis-actor').value='';renderActorFilters();renderSummary();};
-for(const method of ['mew','delibird'])$('enable-'+method).onchange=()=>{selected='';$('selected-name').textContent='';$('add-pokemon').disabled=true;commit({...state,settings:{...state.settings,[method]:$('enable-'+method).checked}},'表示設定を保存しました。');};
+for(const method of ['help','mew','delibird'])$('enable-'+method).onchange=()=>commit({...state,settings:{...state.settings,[recordSettingKeys[method]]:$('enable-'+method).checked}},'表示設定を保存しました。');
 optionList($('profile-nature'),natures.map(n=>({id:n,text:n})),'');for(let i=0;i<5;i++){const l=el('label',`サブスキル · Lv.${[10,25,50,70,80][i]}`),s=el('select');s.id='subskill-'+i;optionList(s,subskills.map(n=>({id:n,text:n})),'','未入力');l.append(s);$('subskill-fields').append(l);}
 $('profile-select').onchange=editProfile;
 $('profile-form').onsubmit=e=>{e.preventDefault();const p=state.pokemon.find(p=>p.id===$('profile-select').value);if(!p)return;let profile;try{profile=$('profile-details').hidden?p.profile:ProfileForm.read('profile-',p.species);}catch(e){notice(e.message);return;}if(commit({...state,pokemon:state.pokemon.map(x=>x.id===p.id?{...p,nickname:$('profile-nickname').value.trim(),profile:$('profile-details').hidden?p.profile:profile,...SkillUI.savedFields(p,$('profile-main-skill').value)}:x)},'個体情報を保存しました。過去の履歴は変更していません。'))TeamUI.show('roster');};

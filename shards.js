@@ -53,7 +53,7 @@ const ShardUI=(()=>{
  function appendBreakdown(body,rs,hideZero=false){
   for(const [key,name] of SummaryExtras.shardSources){
    const xs=rs.filter(r=>key==='skill'?['skill','lucky'].includes(r.method):r.method===key);
-   if(!xs.length||!SummaryExtras.shardVisible(key)||(hideZero&&key!=='skill'&&!C.sum(xs)))continue;
+   if(!xs.length||(hideZero&&key!=='skill'&&!C.sum(xs)))continue;
    totalBreakdownRow(body,name,key==='skill'?xs.length:null,C.sum(xs));
    if(key!=='skill')continue;
    // 同種でも内部IDごとにまとめ、0個のスキル記録も回数に含めます。
@@ -76,7 +76,7 @@ const ShardUI=(()=>{
   SummaryExtras.monthly('shard',summaryRecords(),day);
  }
  function appendHistory(root,period){
-  for(const r of records().filter(r=>C.inRange(r,period)&&SummaryExtras.shardVisible(r.method))){
+  for(const r of records().filter(r=>C.inRange(r,period))){
    const card=el('div',undefined,'card shards'),head=el('div',undefined,'history-head'),actions=el('div',undefined,'history-actions');card.dataset.datetime=r.datetime;
    actions.append(button('訂正',()=>ShardEditor.open(r)),button('削除',()=>{if(confirm('このゆめのかけら記録を削除しますか？'))commit({...state,shardRecords:records().filter(x=>x.id!==r.id)},'ゆめのかけら記録を削除しました。');},'danger'));
    head.append(qel('strong',`ゆめのかけら · ${r.amount}個`),actions);card.append(head,el('p',(r.targetDate?'対象日 '+C.displayDate(r.targetDate):DateUI.datetime(r.datetime))+' · '+methodNames[r.method]));

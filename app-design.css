@@ -178,3 +178,20 @@ body:has(#record[hidden]) .app>header small{grid-column:2;grid-row:2;font-size:1
 #team #registration-fields{margin-top:20px}
 #team #registration-fields>p{font-size:17px;font-weight:600;color:#292b24}
 #team #register-panel .catalog{max-height:240px;overflow-y:auto;-webkit-overflow-scrolling:touch}
+
+/* 設定：記録表示、イベント、データを分け、項目は薄い区切りの1行にする。 */
+#settings .card{padding:16px;margin-bottom:20px}
+#settings .settings-intro{font-size:12px;line-height:1.5;color:#5c6056;margin:4px 0 12px}
+#settings .settings-group+.settings-group{margin-top:20px}
+#settings .settings-group h4{font-size:13px;font-weight:600;color:#695322;margin:0 0 4px}
+#settings .setting-row{display:flex;justify-content:space-between;align-items:center;gap:12px;min-height:48px;margin:0;padding:4px 0;box-sizing:border-box;border:0;border-bottom:1px solid #d4d1c4;background:transparent;border-radius:0;font-size:15px;font-weight:400;color:#24251f;cursor:pointer}
+#settings .setting-row:last-child{border-bottom:0}
+#settings .setting-control{display:flex;align-items:center;gap:8px;flex-shrink:0}
+#settings .setting-control input{appearance:none;-webkit-appearance:none;position:relative;display:block;width:44px;height:26px;min-height:26px;margin:0;padding:0;border:1px solid #bdbeb0;border-radius:13px;background:#eee7d5;cursor:pointer;flex-shrink:0;box-shadow:none}
+#settings .setting-control input::before{content:"";position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:#fff;box-shadow:0 1px 2px rgb(32 34 28 / 12%)}
+#settings .setting-control input:checked{background:#695322;border-color:#695322}
+#settings .setting-control input:checked::before{left:21px}
+#settings .setting-control input:focus-visible{outline:3px solid #b6a16b;outline-offset:3px}
+#settings .setting-state{width:26px;font-size:10px;font-weight:600;color:#5c6056;text-align:right}
+#settings .setting-state::after{content:"OFF"}
+#settings input:checked+.setting-state::after{content:"ON";color:#695322}

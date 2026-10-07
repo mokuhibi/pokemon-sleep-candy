@@ -15,13 +15,13 @@ const WeeklyChart={
   SummaryExtras.sourceTotals($('shard-week-totals'),'shard',records.filter(r=>C.inRange(r,C.range('week',day))));
   root.append(el('p',`${C.displayDate(days[0].date)} 〜 ${C.displayDate(days[6].date)}`,'weekly-range'));
   const legend=el('div',undefined,'shard-chart-legend');
-  for(const [key,name] of sources){if(!SummaryExtras.shardVisible(key))continue;const item=el('span'),swatch=el('i',undefined,'shard-source-'+key);swatch.setAttribute('aria-hidden','true');item.append(swatch,el('span',name));legend.append(item);}root.append(legend);
+  for(const [key,name] of sources){const item=el('span'),swatch=el('i',undefined,'shard-source-'+key);swatch.setAttribute('aria-hidden','true');item.append(swatch,el('span',name));legend.append(item);}root.append(legend);
   const chart=el('div',undefined,'weekly-bars shard-stacked-chart');
   days.forEach((d,i)=>{
    const col=el('div',undefined,'weekly-column'),value=el('span',this.shortAmount(d.amount),'weekly-value'),track=el('div',undefined,'weekly-track'),bar=el('div',undefined,'weekly-bar');
-   const detail=C.displayDate(d.date)+'：合計 '+d.amount.toLocaleString('ja-JP')+'個。'+sources.map(([key,name],j)=>SummaryExtras.shardVisible(key)?name+' '+parts[j][i].amount.toLocaleString('ja-JP')+'個':'').filter(Boolean).join('、');
+   const detail=C.displayDate(d.date)+'：合計 '+d.amount.toLocaleString('ja-JP')+'個。'+sources.map(([key,name],j)=>name+' '+parts[j][i].amount.toLocaleString('ja-JP')+'個').filter(Boolean).join('、');
    col.setAttribute('role','img');col.setAttribute('aria-label',detail);col.title=detail;bar.style.height=(d.amount/max*100)+'%';
-   for(const [j,[key]] of sources.entries()){const segment=el('span',undefined,'shard-source-'+key);segment.style.height=(d.amount?parts[j][i].amount/d.amount*100:0)+'%';this.segmentLabel(segment,parts[j][i].amount,true);if(!SummaryExtras.shardVisible(key)){segment.style.visibility='hidden';segment.replaceChildren();}bar.append(segment);}
+   for(const [j,[key]] of sources.entries()){const segment=el('span',undefined,'shard-source-'+key);segment.style.height=(d.amount?parts[j][i].amount/d.amount*100:0)+'%';this.segmentLabel(segment,parts[j][i].amount,true);bar.append(segment);}
    track.append(bar);col.append(value,track,el('span',['月','火','水','木','金','土','日'][i],'weekly-weekday'));chart.append(col);
   });root.append(chart);this.fitLabels(root);
  },

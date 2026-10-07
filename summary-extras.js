@@ -5,12 +5,12 @@ const SummaryExtras=(()=>{
  const settingKeys={skill:'showShardSkill',research:'showShardResearch',other:'showShardOther'};
  const shardKey=method=>method==='lucky'?'skill':method;
  const shardVisible=(method,settings=state.settings)=>settings[settingKeys[shardKey(method)]]!==false;
- // 表示設定は内訳にだけ適用し、集計元の履歴は減らしません。
+ // 記録画面の表示設定にかかわらず、保存済み履歴の内訳を表示します。
  function sourceTotals(root,kind,records){
   root.replaceChildren();root.className='source-totals';
   for(const [key,name] of kind==='candy'?candySources:shardSources){
    const total=C.sum(records.filter(r=>(kind==='candy'?r.method:shardKey(r.method))===key));
-   if(!total||(kind==='shard'&&!shardVisible(key))||(kind==='candy'&&!enabled(key)))continue;
+   if(!total||(kind==='candy'&&!enabled(key)))continue;
    const line=el('div',undefined,'source-total-row'),label=el('span',name);label.dataset.source=kind+'-'+key;
    line.append(label,qel('strong',total.toLocaleString('ja-JP')+'個'));root.append(line);
   }
@@ -61,7 +61,7 @@ const SummaryExtras=(()=>{
  function monthly(kind,records,day){
   const candy=kind==='candy',month=day.slice(0,7),root=$(kind+'-calendar'),legend=$(kind+'-month-legend');
   $(kind+'-month').textContent=month.replace('-','年')+'月';root.classList.add('resource-calendar');legend.replaceChildren();
-  const sources=(candy?candySources:shardSources).filter(([key])=>candy?enabled(key)&&(key!=='skill'||state.settings.showOtherCandy!==false):shardVisible(key));
+  const sources=(candy?candySources:shardSources).filter(([key])=>candy?enabled(key):true);
   for(const [key,name] of sources){const item=el('span',name,'month-legend-item');item.dataset.source=kind+'-'+key;legend.append(item);}
   const grouped=new Map();for(const r of records){const date=C.gameDay(r.datetime);if(!date.startsWith(month))continue;if(!grouped.has(date))grouped.set(date,{});const key=candy?r.method:shardKey(r.method),g=grouped.get(date);g[key]=(g[key]||0)+r.amount;}
   calendar(root,month,date=>{const amounts=grouped.get(date)||{},b=button('',()=>{RangePicker.set(candy?'period':'shard-period',date);DateUI.update();},'day');b.append(el('strong',Number(date.slice(-2)),'day-number'));const values=el('span',undefined,'candy-values');const description=[];
