@@ -16,7 +16,7 @@
  // 画面と同じAnalysisDataの結果を描画。分母・除外判定はここで再定義しない。
  function png(result,period,methodName='ミュウ'){
   const count=result.blocks.length,width=780;
-  const heights=result.blocks.map(b=>288+b.rates.length*48+b.distributions.reduce((n,r)=>n+(r.amount!==null&&r.amount!==1?70:48),0));
+  const heights=result.blocks.map(b=>310+Math.ceil(b.rates.length/2)*30+b.distributions.slice(1).reduce((n,r)=>n+(r.amount!==1?70:48),0));
   const canvas=document.createElement('canvas');canvas.width=width;canvas.height=170+(count?heights.reduce((n,h)=>n+h,0):220)+48;
   const c=canvas.getContext('2d');if(!c)throw Error('画像描画に対応していません。');
   const ink='#20221c',brand='#695322',muted='#5c6056',line='#d4d1c4';
@@ -33,29 +33,33 @@
   for(const block of result.blocks){
    text('発動した場所 '+(block.position===1?'1R':block.position),36,y+24,28,brand,'left',true);
    text(number(block.denominator)+'回',744,y+24,24,muted,'right');
-   text('ゲットした個数',36,y+60,24,brand,'left',true);
-   for(const [j,row] of block.rates.entries()){
-    const ry=y+108+j*48;text(row.name,36,ry,24);
-    text(number(row.count)+'回',510,ry,24,muted,'right');text(row.percent.toFixed(1)+'%',744,ry,42,ink,'right',true);
-   }
-   const divider=y+90+block.rates.length*48;rule(divider);
-   text('アメゲット場所',36,divider+40,26,brand,'left',true);
-   text('場所がわかる記録 '+number(block.distributions[0].count)+'回'+(block.unknown?'・場所不明 '+number(block.unknown)+'回':''),36,divider+70,19,muted);
-   const centers=result.destinations.map((_,k)=>160+(k+.5)*584/result.destinations.length);
-   centers.forEach((x,j)=>text(j===0?'1R':j===5?'アメなし':j+1,x,divider+104,j===5?18:22,muted,'center'));
-   let ry=divider+138;
-   for(const row of block.distributions){
-    const showAmount=row.amount!==null&&row.amount!==1;text(row.name,36,ry,20,muted);
+   text('アメゲット場所',36,y+60,24,brand,'left',true);
+   const centers=result.destinations.map((_,k)=>160+(k+.5)*584/result.destinations.length),all=block.distributions[0];
+   centers.forEach((x,j)=>text(j===0?'1R':j===5?'アメなし':j+1,x,y+96,j===5?18:22,muted,'center'));
+   text('すべて',36,y+140,22,brand,'left',true);
+   all.cells.forEach((cell,k)=>{
+    text(cell.percent===null?'―':cell.percent.toFixed(1)+'%',centers[k],y+140,result.destinations.length>5?25:32,ink,'center',true);
+    text(number(cell.count)+'回',centers[k],y+164,18,muted,'center');
+   });
+   text('アメ合計',36,y+198,20,brand,'left',true);
+   all.cells.forEach((cell,k)=>text(number(cell.candyAmount)+'個',centers[k],y+198,26,ink,'center',true));rule(y+214);
+   let ry=y+250;
+   for(const row of block.distributions.slice(1)){
+    const showAmount=row.amount!==1;text(row.name,36,ry,20,muted);
     row.cells.forEach((cell,k)=>{
-     text(cell.percent===null?'―':cell.percent.toFixed(1)+'%',centers[k],ry,result.destinations.length>5?24:28,ink,'center',true);
+     text(cell.percent===null?'―':cell.percent.toFixed(1)+'%',centers[k],ry,result.destinations.length>5?22:26,muted,'center',true);
      text(number(cell.count)+'回',centers[k],ry+20,18,muted,'center');
-     if(showAmount)text(number(cell.candyAmount)+'個',centers[k],ry+42,18,brand,'center');
+     if(showAmount)text(number(cell.candyAmount)+'個',centers[k],ry+42,18,muted,'center');
     });
     ry+=showAmount?70:48;
    }
-   rule(ry-6);text('アメ合計',36,ry+20,20,brand,'left',true);
-   block.distributions[0].cells.forEach((cell,k)=>text(number(cell.candyAmount)+'個',centers[k],ry+20,24,ink,'center',true));
-   y=ry+60;
+   text('場所がわかる記録 '+number(all.count)+'回'+(block.unknown?'・場所不明 '+number(block.unknown)+'回':''),36,ry,18,muted);
+   text('ゲットした個数',36,ry+32,20,muted);
+   for(const [j,row] of block.rates.entries()){
+    const x=36+(j%2)*360,baseline=ry+62+Math.floor(j/2)*30;
+    text(row.name,x,baseline,20,muted);text(row.percent.toFixed(1)+'%',x+62,baseline,20,muted);text('（'+number(row.count)+'回）',x+152,baseline,18,muted);
+   }
+   y=ry+60+Math.ceil(block.rates.length/2)*30;
   }
   if(result.excluded)text('発動した場所・個数不明 '+number(result.excluded)+'回',36,canvas.height-20,17,muted);
   return canvas.toDataURL('image/png');

@@ -165,17 +165,17 @@ function renderMewPositions(root,result){
  function targets(rows,distribution=false){
   const table=el('table',undefined,'mew-target-table'),head=el('thead'),tr=el('tr'),body=el('tbody');table.append(el('caption',distribution?'アメゲット場所':'アメゲット場所（回数）'));if(distribution)table.className='mew-target-table mew-distribution'+(result.destinations.length>5?' mew-six-targets':'');
   tr.append(el('th',distribution?'分類':'アメ'));for(const j of result.destinations){const th=el('th',j===1?'1R':j===6?'アメなし':String(j));th.scope='col';tr.append(th);}head.append(tr);table.append(head,body);
-  for(const data of rows){const line=el('tr'),name=el('th',data.name);name.scope='row';line.append(name);for(const cell of data.cells){const td=el('td');if(distribution){td.append(el('strong',cell.percent===null?'―':cell.percent.toFixed(1)+'%'),qel('small',cell.count+'回'));if(data.amount!==null&&data.amount!==1)td.append(qel('small',cell.candyAmount+'個','mew-cell-amount'));}else td.textContent=cell.count.toLocaleString('ja-JP');line.append(td);}body.append(line);}
-  if(distribution){const foot=el('tfoot'),line=el('tr');line.append(el('th','アメ合計'));for(const cell of rows[0].cells)line.append(qel('td',cell.candyAmount+'個'));foot.append(line);table.append(foot);}
+  for(const data of rows){const line=el('tr',undefined,data.amount===null?'mew-all':''),name=el('th',data.name);name.scope='row';line.append(name);for(const cell of data.cells){const td=el('td');if(distribution){td.append(el('strong',cell.percent===null?'―':cell.percent.toFixed(1)+'%'),qel('small',cell.count+'回'));if(data.amount!==null&&data.amount!==1)td.append(qel('small',cell.candyAmount+'個','mew-cell-amount'));}else td.textContent=cell.count.toLocaleString('ja-JP');line.append(td);}body.append(line);if(distribution&&data.amount===null){const totals=el('tr',undefined,'mew-totals');totals.append(el('th','アメ合計'));for(const cell of data.cells)totals.append(qel('td',cell.candyAmount+'個'));body.append(totals);}}
   return table;
  }
  for(const block of result.blocks){
   const section=el('div',undefined,'mew-position'),head=el('div',undefined,'mew-position-head');
   head.append(el('h4','発動した場所 '+(block.position===1?'1R':block.position)),qel('span',block.denominator+'回'));section.append(head);
-  const rates=el('div',undefined,'mew-rates');
-  for(const data of block.rates){const line=el('div',undefined,'mew-rate');line.append(el('span',data.name),qel('span',data.count+'回'),el('strong',data.percent.toFixed(1)+'%'));rates.append(line);}
-  section.append(el('h5','ゲットした個数'),rates,targets(block.distributions,true));
+  section.append(targets(block.distributions,true));
+  const rates=el('div',undefined,'mew-amount-note');
+  for(const data of block.rates)rates.append(el('span',`${data.name} ${data.percent.toFixed(1)}%（${data.count.toLocaleString('ja-JP')}回）`));
   section.append(qel('p','場所がわかる記録 '+block.distributions[0].count+'回'+(block.unknown?'・場所不明 '+block.unknown+'回':''),'analysis-note'));
+  section.append(el('h5','ゲットした個数'),rates);
   // 従来の1・4個の補足比較はミュウのみ保持します。
   if(result.method==='mew'){
    const row=result.groups[2].rows.find(r=>r.position===block.position);

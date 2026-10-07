@@ -49,7 +49,7 @@ console.log('PASS: 12/20=60%, 8/20=40%, unknown destination remains in denominat
 
 vm.runInContext(app.slice(app.indexOf('function renderMewPositions('),app.indexOf('function historicalPokemon(')),ctx);
 ctx.analysisResult=twentyResult;vm.runInContext('renderMewPositions($("test-analysis"),analysisResult)',ctx);
-const position=$('test-analysis').children[0];assert.equal(position.children[0].children[1].text,'20回');assert.deepEqual(position.children[2].children.map(r=>r.children[2].text),['60.0%','40.0%']);assert.equal(position.children[3].children[2].children[0].children[1].children[0].text,'60.0%');assert.equal(position.children[5].children[0].text,'1個・4個 合計 · 20回 · 100.0%');
+const position=$('test-analysis').children[0];assert.equal(position.children[0].children[1].text,'20回');assert.deepEqual(position.children[4].children.map(r=>r.text),['1個 60.0%（12回）','4個 40.0%（8回）']);assert.equal(position.children[1].children[2].children[0].children[1].children[0].text,'60.0%');assert.equal(position.children[5].children[0].text,'1個・4個 合計 · 20回 · 100.0%');
 const noID=record(1);delete noID.context.actorId;assert.equal(A.prepare([noID],'mew').records.length,1);assert.equal(A.prepare([noID],'mew','m').records.length,0);
 console.log('PASS: rendered group probabilities and destination counts, supplemental comparison, unknown individual does not remove valid position data');
 
@@ -63,7 +63,7 @@ for(const group of distribution.destinationGroups){const row=group.rows[0];asser
 assert.equal(JSON.stringify(destinationsFixture),destinationBefore);
 const zeroGroup=A.prepare([record(1)],'mew').destinationGroups[2].rows[0];assert.equal(zeroGroup.count,0);assert(zeroGroup.cells.every(c=>c.percent===null&&c.count===0));
 assert.equal(unknownTarget.destinationGroups[1].rows[0].count,0);assert(unknownTarget.destinationGroups[1].rows[0].cells.every(c=>c.percent===null));assert.equal(unknownTarget.targetExcluded,1);
-ctx.analysisResult=distribution;vm.runInContext('renderMewPositions($("distribution"),analysisResult)',ctx);const distributionTable=$('distribution').children[0].children[3];assert.equal(distributionTable.className,'mew-target-table mew-distribution');assert.equal(distributionTable.children[2].children.length,3);assert.equal(distributionTable.children[2].children[1].children[1].children[0].text,'21.1%');assert.equal(distributionTable.children[2].children[1].children[1].children[1].text,'26回');
+ctx.analysisResult=distribution;vm.runInContext('renderMewPositions($("distribution"),analysisResult)',ctx);const distributionTable=$('distribution').children[0].children[1];assert.equal(distributionTable.className,'mew-target-table mew-distribution');assert.equal(distributionTable.children[2].children.length,4);assert.equal(distributionTable.children[2].children[2].children[1].children[0].text,'21.1%');assert.equal(distributionTable.children[2].children[2].children[1].children[1].text,'26回');
 console.log('PASS: separate destination denominators 176/123/53, per-row unrounded total100%, zero denominator, unknown destination, immutable history, rendered percentages and counts');
 
 // 同種・進化系の重複は枠分析だけ除外。現在編成や保存された選択枠を信用して補完しない。
@@ -76,7 +76,7 @@ const unknownMember=record(1);unknownMember.context.team[4]={species:'未知の�
 const emptySlots=record(1);emptySlots.context.team[4]=null;assert.equal(rawA.targetSlot(emptySlots,candyMap),1);
 assert.equal(JSON.stringify(ambiguityFixture),ambiguityBefore);assert.deepEqual(B.read(B.encode({...state,records:ambiguityFixture})).records,ambiguityFixture);
 const image=require('../mew-image.js').aggregate(ambiguityFixture,candyMap);assert.equal(image.total,5);assert.equal(image.selected,1);assert.equal(image.excluded,4);assert.deepEqual(image.counts,[0,1,0,0,0]);assert.equal(image.matrix[0][1],1);assert.equal(image.one[1],1);assert.equal(image.four.reduce((n,x)=>n+x,0),0);
-ctx.analysisResult=amb;vm.runInContext('renderMewPositions($("ambiguous"),analysisResult)',ctx);assert($('ambiguous').children[0].children[4].text.includes('場所不明 4回'));
+ctx.analysisResult=amb;vm.runInContext('renderMewPositions($("ambiguous"),analysisResult)',ctx);assert($('ambiguous').children[0].children[2].text.includes('場所不明 4回'));
 console.log('PASS: same species/evolution ambiguity, missing historical team, conflicting target, unknown member, empty slot, snapshot-only resolution, occurrence ratios unchanged, destination denominators exclude ambiguity, image parity, CSV and source immutability');
 
 // シェア画像も同じAnalysisDataの割合・条件付き分布を使い、元履歴を保持。
@@ -127,3 +127,9 @@ console.log('PASS: actual amount rows 1/4, 1/2/4, 1/2/3/4, per-position rows, ze
 assert.deepEqual(A.prepare([record(1,1,2,'first'),record(4,1,2,'second')],'mew','first').blocks[0].rates.map(r=>r.amount),[1]);
 assert.deepEqual(A.prepare([record(0,1,6),record(4,1,2)],'delibird','','4').blocks[0].rates.map(r=>r.amount),[4]);
 assert.deepEqual(A.prepare(source.filter(r=>C.inRange(r,C.range('day','2026-10-02'))),'mew').blocks,[]);
+
+assert.equal(distributionTable.children[2].children[0].cls,'mew-all');
+assert.equal(distributionTable.children[2].children[1].cls,'mew-totals');
+assert.equal(distributionTable.children[2].children[1].children[1].text,'62個');
+assert.equal(position.children[1].tag,'table');
+console.log('PASS: location distribution first, all percentages then candy totals, compact amount note last, values unchanged');
