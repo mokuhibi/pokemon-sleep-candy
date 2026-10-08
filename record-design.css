@@ -21,7 +21,6 @@
 #record .record-slots{gap:8px;margin-bottom:24px}
 #record .help-card{background:#fff;border:1px solid var(--edge);border-radius:10px;padding:12px;min-height:88px;gap:6px;color:#292a26}
 #record .help-card strong{font-size:15px;font-weight:600;line-height:1.5}
-#record .leader-slot{border:1px solid #a89461!important;box-shadow:none;background:#fffdf7}
 #record :is(button,input,select){border-radius:10px}
 #record button{min-height:44px;font-weight:600}
 #record button:disabled{opacity:1;color:#8a8d84;background:#f1f1eb;border-color:#e8e8e0}
@@ -71,7 +70,6 @@
 #record .record-date-card .check{color:#53492f}
 #record .record-date-card .check:has(input:checked){color:#695322}
 #record .help-card{color:#24251f;border-color:#c9c8bc}
-#record .leader-slot{border-color:#8c763f!important;background:#fffdf7}
 #record :is(input:not([type=checkbox]),select),#record .formatted-date-field{color:#24251f;border-color:#bdbeb0}
 #record input::placeholder{color:#73766d;opacity:1}
 #record .mew-actions button,#record .shard-amount-buttons button{background:#eee7d5;border-color:#c9bc94;color:#51401b}
@@ -158,12 +156,13 @@ body:has(#record:not([hidden])) .tabs button:not([aria-current]){color:#725619}
 #record #help-section>h2{color:#276242}
 #record #mew-section>h2{color:#963b68}
 #record #delibird-section>h2{color:#ad3d39}
-#record #record-methods .help-card:not(.leader-slot){border-color:var(--record-candy);background:var(--record-candy-bg)}
-#record #record-methods .card:not(.leader-slot){box-shadow:inset 0 0 0 1px var(--record-candy);background:var(--record-candy-bg)}
-#record #shard-records .card:not(.leader-slot){box-shadow:inset 0 0 0 1px var(--record-shard);background:var(--record-shard-bg)}
+#record #record-methods .help-card{border-color:var(--record-candy);background:var(--record-candy-bg)}
+#record #record-methods .card{box-shadow:inset 0 0 0 1px var(--record-candy);background:var(--record-candy-bg)}
+#record #shard-records .card{box-shadow:inset 0 0 0 1px var(--record-shard);background:var(--record-shard-bg)}
 #record #record-methods .help-card:not(:disabled),#record #record-methods .help-card:not(:disabled) strong,#record :is(#record-methods,#shard-records) .card{color:#51401b}
-/* 既存の強調枠はカテゴリの通常枠より優先。太さ・寸法は維持。 */
-#record :is(#record-methods,#shard-records) .leader-slot{border-color:#8c763f!important;box-shadow:none;background:#fffdf7}
+/* リーダーは通常枠と同じカテゴリ配色。操作上の選択状態とは分離する。 */
+#record #record-methods .help-card.leader-slot{border:1px solid var(--record-candy)!important;box-shadow:none}
+#record :is(#record-methods,#shard-records) .card.leader-slot{border:0!important}
 
 /* コピーによるアメ・かけらの見出しにもカテゴリの色印。位置・寸法は維持。 */
 #record #record-methods .copy-skill-card>h3,#record #shard-records :is(h2,h3,summary){position:relative}

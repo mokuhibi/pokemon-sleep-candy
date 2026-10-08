@@ -18,6 +18,8 @@ function nameText(node,text){
 const mainSkillText=(p,skill=SK.forPokemon(p))=>p?.species==='ミュウ'?'オールマイティー（'+SK.name(skill)+'）':SK.name(skill);
 function openIndividualEditor(p){showTab('team');$('profile-select').value=p.id;editProfile();TeamUI.edit();}
 const position=n=>n===1?'1 R':String(n);
+// 記録入力だけの枠表記。保存値・履歴・分析の位置表記には使用しない。
+const recordPosition=n=>n===1?'1リーダー':String(n);
 const fresh=()=>({version:2,pokemon:[],team:[null,null,null,null,null],records:[],shardRecords:[],events:[],settings:{mew:true,delibird:true}});
 let state=fresh(),blocked=false,selected='',eventId=null,activeTab='record',actors={mew:'',delibird:''};
 let noticeTimer;
@@ -80,7 +82,7 @@ function renderRecord(){
   if(method==='skill'||!recordVisible(method))continue;
   const section=el('div',undefined,method);section.id=method+'-section';section.append(el('h2',name));let context=null;
   if(method!=='help'){
-   const candidates=method==='mew'?state.pokemon.filter(p=>p.species==='ミュウ').slice(0,1).map(p=>({id:p.id,text:label(p)})):team.map((p,i)=>p&&p.species===name?{id:p.id,text:`${position(i+1)} · ${label(p)}`} : null).filter(Boolean);
+   const candidates=method==='mew'?state.pokemon.filter(p=>p.species==='ミュウ').slice(0,1).map(p=>({id:p.id,text:label(p)})):team.map((p,i)=>p&&p.species===name?{id:p.id,text:`${recordPosition(i+1)} · ${label(p)}`} : null).filter(Boolean);
    if(!candidates.some(p=>p.id===actors[method]))actors[method]=candidates.length===1?candidates[0].id:'';
    const l=el('label','スキル個体'),s=el('select');s.id=method+'-actor';optionList(s,candidates,actors[method]);s.onchange=()=>{actors[method]=s.value;renderRecord();};l.append(s);if(method!=='mew')section.append(l);
    context=skillContext(method);
@@ -91,7 +93,7 @@ function renderRecord(){
   const grid=el('div',undefined,'record-slots');grid.id=method+'-slots';
   team.forEach((p,i)=>{
    if(p&&!speciesEnabled(p.species))return;
-   const box=el(method==='mew'?'div':'button',undefined,'help-card'+(i===0?' leader-slot':''));box.append(el('small',position(i+1)),el('strong',p?(method==='help'?label(p):candyMap[p.species]):'未設定'));
+   const box=el(method==='mew'?'div':'button',undefined,'help-card'+(i===0?' leader-slot':''));box.append(el('small',recordPosition(i+1)),el('strong',p?(method==='help'?label(p):candyMap[p.species]):'未設定'));
    if(method==='mew'){const actions=el('div',undefined,'mew-actions');for(const amount of context?C.mewAmounts(actorOf(context).profile.skillLevel):[1]){const b=button('',()=>record(method,i+1,amount));quantityText(b,'+'+amount+'個');b.disabled=!p||!context;actions.append(b);}box.append(actions);}
    else{box.type='button';box.disabled=!p||(method!=='help'&&!context);box.onclick=()=>record(method,i+1,method==='help'?2:4);}
    grid.append(box);

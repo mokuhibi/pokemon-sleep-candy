@@ -26,11 +26,11 @@ const CopySkills=(()=>{
   for(const p of currentTeam().filter(Boolean)){
    if(!speciesEnabled(p.species))continue;const choices=sources(p,kind);if(!choices.length)continue;
    const slot=currentTeam().findIndex(x=>x?.id===p.id)+1,key=kind+'-'+p.id,card=el('div',undefined,'card copy-skill-card'+(slot===1?' leader-slot':''));
-   card.append(el('h3',position(slot)+' · '+label(p)),el('p',mainSkillText(p)+(kind==='candy'?' · アメ':' · ゆめのかけら')));
+   card.append(el('h3',recordPosition(slot)+' · '+label(p)),el('p',mainSkillText(p)+(kind==='candy'?' · アメ':' · ゆめのかけら')));
    const form=el('form'),source=el('select'),target=el('select'),input=el('input');input.type='number';input.inputMode='numeric';input.min='0';input.max='1000000000';input.required=true;input.step='1';
    const draft=drafts.get(key)||{};input.value=draft.amount||'';input.oninput=()=>remember();
    optionList(source,choices.map(q=>({id:q.id,text:label(q)+' · '+mainSkillText(q)})),draft.source||choices[0].id);const sl=el('label','参照するポケモン');sl.append(source);if(isCopy(p))form.append(sl);
-   if(kind==='candy'){optionList(target,currentTeam().map((q,i)=>q?{id:String(i+1),text:position(i+1)+' · '+label(q)}:null).filter(Boolean),draft.target||'1');const tl=el('label','アメの獲得先');tl.append(target);form.append(tl);}
+   if(kind==='candy'){optionList(target,currentTeam().map((q,i)=>q?{id:String(i+1),text:recordPosition(i+1)+' · '+label(q)}:null).filter(Boolean),draft.target||'1');const tl=el('label','アメの獲得先');tl.append(target);form.append(tl);}
    const l=el('label',kind==='candy'?'獲得したアメの個数':undefined);if(kind!=='candy')input.setAttribute('aria-label',label(p)+'のゆめのかけら');l.append(input);form.append(l);const b=button('記録',()=>{});b.type='submit';form.append(b);
    function remember(){drafts.set(key,{amount:input.value,source:source.value,target:target.value});}
    function updateMin(){input.min=kind==='shards'&&SK.id(SK.forPokemon(choices.find(q=>q.id===source.value)))==='super_luck'?'0':'1';remember();}source.onchange=updateMin;target.onchange=remember;updateMin();

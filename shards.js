@@ -34,7 +34,7 @@ const ShardUI=(()=>{
   root.replaceChildren();const members=currentTeam().map((p,i)=>p&&speciesEnabled(p.species)&&isTarget(p)?{p,slot:i+1}:null).filter(Boolean);root.hidden=!members.length;
   if(members.length||currentTeam().some(p=>p&&CopySkills.handlesShards(p)))root.append(el('h2','ゆめのかけら'));
   for(const {p,slot} of members){
-   const type=typeOf(p),level=C.recordProfile(p).skillLevel,card=el('div',undefined,'card'+(slot===1?' leader-slot':''));card.append(el('h3',`${position(slot)} · ${individual(p)}`),el('p',(p.species==='ミュウ'?mainSkillText(p):skillName(type))+(level?` · スキルLv.${level}`:'')));
+   const type=typeOf(p),level=C.recordProfile(p).skillLevel,card=el('div',undefined,'card'+(slot===1?' leader-slot':''));card.append(el('h3',`${recordPosition(slot)} · ${individual(p)}`),el('p',(p.species==='ミュウ'?mainSkillText(p):skillName(type))+(level?` · スキルLv.${level}`:'')));
    const saveSkill=amount=>p.species==='ミュウ'?MewUI.saveShard(p,amount):save({method:type==='lucky'?'lucky':'skill',skillType:type,skillId:SK.id(SK.forPokemon(p)),skillName:SK.value(SK.forPokemon(p)),...(level?{skillLevel:level}:{}),amount,pokemonId:p.id,pokemon:storedLabel(p),species:p.species,slot,pokemonSnapshot:clone(p)});
    if(p.species==='ミュウ'||type==='random'){
     const form=el('form',undefined,'shard-skill-form'),l=el('label'),input=amountInput('shard-amount-'+slot,1);input.setAttribute('aria-label',individual(p)+'のゆめのかけら');input.dataset.pokemon=p.id;input.value=drafts.get(p.id)||'';l.append(input);const b=el('button','記録');b.type='submit';form.append(l,b);
