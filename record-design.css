@@ -151,3 +151,16 @@ body:has(#record:not([hidden])) .tabs button:not([aria-current]){color:#725619}
 #record #today-total.hero .daily-resource .total-breakdown .shard-member th{padding-left:8px}
 #record #today-total.hero .daily-resource .total-breakdown thead th{padding-top:0;padding-bottom:5px}
 @media(max-width:360px){#record #today-total.hero .daily-resource{padding-left:12px;padding-right:12px;column-gap:8px}#record #today-total.hero .daily-resource>small{font-size:14px}#record #today-total.hero .daily-resource>.total{font-size:22px}}
+
+/* 記録入力：カテゴリは縦棒・枠、方法は見出し文字。数量ボタンは変更しない。 */
+#record :is(#help-section,#mew-section,#delibird-section)>h2::before{background:var(--record-candy)}
+/* style.css の従来の獲得方法色を見出しに再利用。 */
+#record #help-section>h2{color:#276242}
+#record #mew-section>h2{color:#963b68}
+#record #delibird-section>h2{color:#ad3d39}
+#record #record-methods .help-card:not(.leader-slot){border-color:var(--record-candy)}
+#record #record-methods .card:not(.leader-slot){box-shadow:inset 0 0 0 1px var(--record-candy)}
+#record #shard-records .card:not(.leader-slot){box-shadow:inset 0 0 0 1px var(--record-shard)}
+#record #record-methods .help-card:not(:disabled),#record #record-methods .help-card:not(:disabled) strong,#record :is(#record-methods,#shard-records) .card{color:#51401b}
+/* 既存の強調枠はカテゴリの通常枠より優先。太さ・寸法は維持。 */
+#record :is(#record-methods,#shard-records) .leader-slot{border-color:#8c763f!important;box-shadow:none;background:#fffdf7}
