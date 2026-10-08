@@ -89,7 +89,7 @@ const ShardUI=(()=>{
    }
    if(r.method==='research'){if(r.baseAmount!==undefined)details.append(qel('p',`リサーチ ${r.baseAmount}個`));if(r.researchExp!==undefined)details.append(el('p','リサーチEXP '+r.researchExp.toLocaleString('ja-JP')));if(r.researchLevel!==undefined)details.append(el('p','リサーチレベル '+r.researchLevel));}
    if(r.method==='other'&&r.memo)card.append(el('p',r.memo,'history-supplement'));
-   card.append(details);root.append(card);
+   finishHistoryCard(card,details);root.append(card);
   }
   // アメ・ゆめのかけらを日時順に混在させ、既存の訂正・削除ボタンは保持。
   [...root.children].sort((a,b)=>Date.parse(b.dataset.datetime)-Date.parse(a.dataset.datetime)).forEach(card=>root.append(card));

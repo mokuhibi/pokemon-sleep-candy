@@ -202,16 +202,27 @@ function historyTime(value){const text=DateUI.datetime(value);return $('history-
 function historyPlace(slot){return slot===1?'1R':slot>=2&&slot<=5?slot+'番':slot===6?'アメなし':'獲得位置不明';}
 function historyCard(card,r,method,primary,target,actions){
  const head=el('div',undefined,'history-head');head.append(el('strong',method,'history-method'),qel('strong',r.amount+'個','history-amount'));
- const meta=el('div',undefined,'history-meta');meta.append(el('time',historyTime(r.datetime),'history-time'),actions);
- card.append(head,meta,el('strong',primary,'history-primary'));
- if(target)card.append(el('p',target,'history-target'));
+ const meta=el('div',undefined,'history-meta'),name=el('strong',primary,'history-primary');name.title=primary;
+ meta.append(el('time',historyTime(r.datetime),'history-time'),name);card.append(head,meta);
+ if(target){const line=el('p',target,'history-target');line.title=target;card.append(line);}
+ card.historyActions=actions;
 }
+// 省略した名称・補足を詳細に残し、既存操作をカード下部へ移します。
+function finishHistoryCard(card,details){
+ for(const node of [...card.children]){
+  if(node.classList.contains('history-target'))details.append(el('p',node.textContent));
+  if(node.classList.contains('history-meta'))details.append(el('p',[...node.children].map(child=>child.textContent).join('　')));
+  if(node.classList.contains('history-supplement'))details.append(node);
+ }
+ const footer=el('div',undefined,'history-footer');footer.append(details,card.historyActions);card.append(footer);
+}
+
 function renderHistory(){PeriodPicker.sync();const period=historyRange();$('history-day').textContent=period?C.displayDate(period[0])+' 〜 '+C.displayDate(C.addDays(period[1],-1)):'全期間';const root=$('history-list');root.replaceChildren();for(const r of [...state.records].filter(r=>visibleRecord(r)&&C.inRange(r,period)).reverse().sort((a,b)=>Date.parse(b.datetime)-Date.parse(a.datetime))){
  const card=el('div',undefined,'card '+r.method);card.dataset.datetime=r.datetime;const actions=el('div',undefined,'history-actions');
  actions.append(button('訂正',()=>openHistoryEditor(r)),button('削除',()=>{if(confirm('この記録を削除しますか？'))commit({...state,records:state.records.filter(x=>x.id!==r.id)},'削除しました。');},'danger'));
  historyCard(card,r,methods[r.method],r.amount===0?'スキルのみ':r.candy||'アメ',r.amount===0?historyPlace(r.slot):historyPlace(r.slot)+'　'+oldLabel(r),actions);const details=el('details');details.append(el('summary','詳細'));
  if(!r.context)details.append(el('p',r.method==='help'?'編成不明':'編成・スキル個体不明'));
- else{const c=r.context;if(r.method!=='help'){const p=actorOf(c);details.append(el('p',`スキル：${actorPosition(c)} · ${label(p)}\nLv.${c.effectiveLevel} · ${c.event.multiplier}倍 · レベル+${c.event.boost} · ${c.event.name}`));}c.team.forEach((p,i)=>{if(p&&!speciesEnabled(p.species))return;details.append(el('p',`${position(i+1)} · ${p?label(p):'未設定'}${p&&!(r.method==='mew'&&p.species==='ミュウ')?'\n'+mainSkillText(p):''}${p&&special(p)?'\n'+profileText(p):''}`));});}if(r.method==='mew')details.append(el('p','記録時のスキル：'+mainSkillText({species:'ミュウ'},r.mainSkillId||r.registeredMainSkill||SK.forPokemon(actorOf(r.context)))));if(r.method==='skill')card.append(el('p',mainSkillText(r.sourcePokemon||actorOf(r.context),r.sourceSkillId||r.skillId),'history-supplement'));if(r.method==='mew')MewUI.appendHistory(card,r);else if(r.method==='delibird'){const actor=actorOf(r.context);card.append(el('p',SK.name(r.mainSkillId||r.registeredMainSkill||SK.forPokemon(actor)),'history-supplement'));}card.append(details);root.append(card);
+ else{const c=r.context;if(r.method!=='help'){const p=actorOf(c);details.append(el('p',`スキル：${actorPosition(c)} · ${label(p)}\nLv.${c.effectiveLevel} · ${c.event.multiplier}倍 · レベル+${c.event.boost} · ${c.event.name}`));}c.team.forEach((p,i)=>{if(p&&!speciesEnabled(p.species))return;details.append(el('p',`${position(i+1)} · ${p?label(p):'未設定'}${p&&!(r.method==='mew'&&p.species==='ミュウ')?'\n'+mainSkillText(p):''}${p&&special(p)?'\n'+profileText(p):''}`));});}if(r.method==='mew')details.append(el('p','記録時のスキル：'+mainSkillText({species:'ミュウ'},r.mainSkillId||r.registeredMainSkill||SK.forPokemon(actorOf(r.context)))));if(r.method==='skill')card.append(el('p',mainSkillText(r.sourcePokemon||actorOf(r.context),r.sourceSkillId||r.skillId),'history-supplement'));if(r.method==='mew')MewUI.appendHistory(card,r);else if(r.method==='delibird'){const actor=actorOf(r.context);card.append(el('p',SK.name(r.mainSkillId||r.registeredMainSkill||SK.forPokemon(actor)),'history-supplement'));}finishHistoryCard(card,details);root.append(card);
  }ShardUI.appendHistory(root,period);if(!root.children.length)root.append(el('p','履歴なし'));}
 function movePokemon(id,delta){const xs=state.pokemon.filter(p=>!special(p)),i=xs.findIndex(p=>p.id===id);if(i<0||i+delta<0||i+delta>=xs.length)return;[xs[i],xs[i+delta]]=[xs[i+delta],xs[i]];commit({...state,pokemon:[...state.pokemon.filter(special),...xs]},'並べ替えました。');}
 function renderTeam(){const root=$('team-slots');root.replaceChildren();state.team.forEach((id,i)=>{const l=el('div',undefined,'team-slot-row'),current=state.pokemon.find(p=>p.id===id);l.append(el('span',i===0?'1R':String(i+1)));if(i===0)l.classList.add('leader-slot');const b=button(current?label(current):'未設定',()=>TeamPicker.open(i),'team-slot-button');b.id='team-slot-'+i;b.setAttribute('aria-label','チーム位置'+(i===0?'1R':i+1)+'のポケモンを選択');b.setAttribute('aria-haspopup','dialog');l.append(b);if(current)l.append(el('small',mainSkillText(current),'main-skill-label'));root.append(l);});TeamPicker.refresh();

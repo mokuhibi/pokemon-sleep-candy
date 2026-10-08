@@ -240,3 +240,22 @@ body:has(#record[hidden]) .app>header small{grid-column:2;grid-row:2;font-size:1
 #team-picker .team-picker-row:disabled{opacity:1;color:#85887e;cursor:default}
 #team-picker :is(button,input):focus-visible{outline:3px solid #b6a16b;outline-offset:-3px}
 @supports not (height:100dvh){#team-picker{height:calc(100vh - 32px);max-height:calc(100vh - 32px)}}
+
+/* 履歴は2列。通常表示を4段にまとめ、詳しい情報は下部から開く。 */
+#history #history-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;align-items:start}
+#history #history-list .card{min-width:0;margin:0;padding:10px;border-left-width:1px}
+#history .history-head{gap:4px;margin-bottom:5px;align-items:center;flex-wrap:wrap}
+#history .history-head .history-method{font-size:14px;line-height:1.4}
+#history .history-head .history-amount,#history .history-amount .quantity-number{font-size:22px}
+#history .history-meta{display:flex;flex-wrap:wrap;justify-content:flex-start;gap:2px 6px;min-height:0;margin-bottom:5px;align-items:baseline}
+#history .history-primary{font-size:13px;line-height:1.5;margin:0;flex:1 1 70px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;overflow-wrap:normal}
+#history .history-time{font-size:12px;white-space:nowrap}
+#history #history-list .card>.history-target{font-size:13px;margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#history .history-footer{position:relative;margin-top:8px;border-top:1px solid #d4d1c4}
+#history #history-list .history-footer details{margin:0;padding:0;border:0}
+#history #history-list .history-footer summary{width:calc(100% - 88px);min-width:44px;min-height:44px;line-height:44px;list-style:none;cursor:pointer;color:#695322}
+#history .history-footer .history-actions{position:absolute;right:0;top:0;gap:0}
+#history .history-footer .history-actions button{width:44px;min-width:44px;padding:8px 0}
+#history #history-list details p{white-space:pre-line;line-height:1.5;font-size:13px}
+#history #history-list details .history-supplement{margin:6px 0;color:#5c6056}
+@media(max-width:359px){#history #history-list{grid-template-columns:minmax(0,1fr)}}
