@@ -259,3 +259,34 @@ body:has(#record[hidden]) .app>header small{grid-column:2;grid-row:2;font-size:1
 #history #history-list details p{white-space:pre-line;line-height:1.5;font-size:13px}
 #history #history-list details .history-supplement{margin:6px 0;color:#5c6056}
 @media(max-width:359px){#history #history-list{grid-template-columns:minmax(0,1fr)}}
+
+/* 確定カテゴリ配色。共通UI・系列色・危険操作とは分離する。 */
+:root{--resource-candy:#A66B83;--resource-candy-bg:#F8EDF1;--resource-shard:#B58A37;--resource-shard-bg:#FBF4E4}
+#summary{--resource-color:var(--resource-candy);--resource-bg:var(--resource-candy-bg)}
+#shards{--resource-color:var(--resource-shard);--resource-bg:var(--resource-shard-bg)}
+:is(#summary,#shards) :is(.card,.hero,.overview-header){background:var(--resource-bg);box-shadow:inset 0 0 0 1px var(--resource-color)}
+/* 上部は既存の一つの面を維持し、内部に枠を重ねない。 */
+:is(#summary,#shards) .overview-header :is(.hero,.period-picker){background:transparent;box-shadow:none}
+:is(#summary,#shards) h3::before{background:var(--resource-color)}
+#summary .candy-totals-table thead th{background:var(--resource-candy-bg)}
+/* カテゴリ操作は白面。選択状態は従来のゴールドを優先する。 */
+:is(#summary,#shards) button:not(:disabled){background:#fff;border-color:var(--resource-color);color:#51401b}
+:is(#summary,#shards) .period-picker-top>button{background:#fff;border-color:var(--resource-color)}
+:is(#summary,#shards) .period-quick-buttons button{background:#fff;border-color:var(--resource-color)}
+:is(#summary,#shards) .period-quick-buttons [aria-pressed=true]{background:#e8d9ae;border-color:#ad9254;color:#51401b;font-weight:600}
+:is(#summary,#shards) button:active:not(:disabled){background:#e3dac0}
+#record #record-methods{--resource-color:var(--resource-candy)}
+#record #shard-records{--resource-color:var(--resource-shard)}
+#record :is(#record-methods,#shard-records) button:not(.help-card):not(:disabled){background:#fff;border-color:var(--resource-color);color:#51401b}
+#record :is(#record-methods,#shard-records) button:not(.help-card):active:not(:disabled){background:#e3dac0}
+#record :is(#record-methods,#shard-records) button[aria-pressed=true]{background:#e8d9ae;border-color:#ad9254}
+/* 履歴の種別は既存クラスで判別。本文・個数・警告色は変えない。 */
+#history #history-list .card{--resource-color:var(--resource-candy);background:var(--resource-candy-bg);box-shadow:inset 0 0 0 1px var(--resource-color)}
+#history #history-list .card.shards{--resource-color:var(--resource-shard);background:var(--resource-shard-bg)}
+#history .card.help .history-head .history-method{color:#276242}
+#history .card.mew .history-head .history-method{color:#963b68}
+#history .card.delibird .history-head .history-method{color:#ad3d39}
+#history #history-list .history-actions button:not(.danger){background:#fff;border-color:var(--resource-color)}
+/* 設定は見出しだけ。スイッチ・イベント・データ管理は共通の暖色。 */
+#settings .settings-group:first-of-type h4{color:color-mix(in srgb,#A66B83 75%,#24251f)}
+#settings .settings-group:nth-of-type(2) h4{color:color-mix(in srgb,#B58A37 70%,#24251f)}
