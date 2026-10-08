@@ -131,3 +131,22 @@ body:has(#record:not([hidden])) .tabs button:not([aria-current]){color:#725619}
 
 /* 日時の値だけを中央へ。枠の高さ・周辺操作は維持。 */
 #record .record-picker-trigger{text-align:center}
+
+/* 記録タブ限定のカテゴリ配色試験。寸法・操作・他タブの配色は維持。 */
+#record{--record-candy:#A66B83;--record-candy-bg:#F8EDF1;--record-shard:#B58A37;--record-shard-bg:#FBF4E4;--record-candy-heading:color-mix(in srgb,#A66B83 75%,#24251f);--record-shard-heading:color-mix(in srgb,#B58A37 70%,#24251f)}
+#record #record-methods :is(h2,h3){color:var(--record-candy-heading)}
+#record #record-methods :is(.help-card,.card){background:var(--record-candy-bg);border-color:var(--record-candy)}
+#record #record-methods .leader-slot{background:var(--record-candy-bg);border-color:var(--record-candy)!important}
+#record :is(#help-section,#mew-section,#delibird-section)>h2::before{background:var(--record-candy)}
+#record #record-methods .mew-actions button{background:#fff;border-color:var(--record-candy);color:#24251f}
+#record #shard-records :is(h2,h3,summary){color:var(--record-shard-heading)}
+#record #shard-records .card{background:var(--record-shard-bg)}
+#record #shard-records .leader-slot{background:var(--record-shard-bg);border-color:var(--record-shard)!important}
+#record #shard-records .shard-amount-buttons button{background:#fff;border-color:var(--record-shard);color:#24251f}
+#record #today-total .daily-resource{background:var(--record-candy-bg);border-radius:10px;box-shadow:0 0 0 1px var(--record-candy)}
+#record #today-total .daily-resource>small{color:var(--record-candy-heading)}
+#record #today-total .daily-resource+.daily-resource{background:var(--record-shard-bg);box-shadow:0 0 0 1px var(--record-shard)}
+#record #today-total .daily-resource+.daily-resource>small{color:var(--record-shard-heading)}
+/* 小さい見出しは同系の濃い色、指定のメイン色は境界・色印に使用。 */
+#record #record-methods .help-card:disabled{background:#f1f1eb;border-color:#e0e0d6;color:#85887e}
+#record #record-methods .mew-actions button:disabled,#record #shard-records button:disabled{background:#f1f1eb;border-color:#e0e0d6;color:#85887e}
