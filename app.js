@@ -20,6 +20,8 @@ function openIndividualEditor(p){showTab('team');$('profile-select').value=p.id;
 const position=n=>n===1?'1 R':String(n);
 // 記録入力だけの枠表記。保存値・履歴・分析の位置表記には使用しない。
 const recordPosition=n=>n===1?'1リーダー':String(n);
+// 位置と個体名の見た目だけを分け、並び順と記録値は維持する。
+function recordCardTitle(p,slot){const title=el('h3',undefined,'record-card-title');title.append(el('span',recordPosition(slot),'record-slot-number'),document.createTextNode(' · '),el('span',label(p),'record-card-name'));return title;}
 const fresh=()=>({version:2,pokemon:[],team:[null,null,null,null,null],records:[],shardRecords:[],events:[],settings:{mew:true,delibird:true}});
 let state=fresh(),blocked=false,selected='',eventId=null,activeTab='record',actors={mew:'',delibird:''};
 let noticeTimer;

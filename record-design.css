@@ -169,3 +169,9 @@ body:has(#record:not([hidden])) .tabs button:not([aria-current]){color:#725619}
 #record #record-methods .copy-skill-card>h3::before,#record #shard-records :is(h2,h3,summary)::before{content:'';position:absolute;left:-8px;top:.3em;width:4px;height:14px;border-radius:2px;background:var(--record-shard)}
 #record #record-methods .copy-skill-card>h3::before{background:var(--record-candy)}
 #record #shard-records summary::before{top:calc(16px + .3em)}
+
+
+/* 記録カードの文字階層。リーダーも他枠と同じ太さ。 */
+#record .help-card>small,#record .record-card-title .record-slot-number{font-size:12px;font-weight:500}
+#record .help-card>strong,#record .record-card-title,#record .record-card-title .record-card-name{font-size:15px;font-weight:600}
+#record :is(.help-card,.record-card-title) .pokemon-nickname{font-size:.82em;font-weight:500}

@@ -26,7 +26,7 @@ const CopySkills=(()=>{
   for(const p of currentTeam().filter(Boolean)){
    if(!speciesEnabled(p.species))continue;const choices=sources(p,kind);if(!choices.length)continue;
    const slot=currentTeam().findIndex(x=>x?.id===p.id)+1,key=kind+'-'+p.id,card=el('div',undefined,'card copy-skill-card'+(slot===1?' leader-slot':''));
-   card.append(el('h3',recordPosition(slot)+' · '+label(p)),el('p',mainSkillText(p)+(kind==='candy'?' · アメ':' · ゆめのかけら')));
+   card.append(recordCardTitle(p,slot),el('p',mainSkillText(p)+(kind==='candy'?' · アメ':' · ゆめのかけら')));
    const form=el('form'),source=el('select'),target=el('select'),input=el('input');input.type='number';input.inputMode='numeric';input.min='0';input.max='1000000000';input.required=true;input.step='1';
    const draft=drafts.get(key)||{};input.value=draft.amount||'';input.oninput=()=>remember();
    optionList(source,choices.map(q=>({id:q.id,text:label(q)+' · '+mainSkillText(q)})),draft.source||choices[0].id);const sl=el('label','参照するポケモン');sl.append(source);if(isCopy(p))form.append(sl);
