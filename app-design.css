@@ -333,3 +333,26 @@ body:has(#record:not([hidden])) #notice.record-error:not(:empty),#notice.record-
 #history .history-footer .history-actions{width:66.667%;display:flex}
 #history #history-list .history-footer .history-actions button{flex:1;width:50%;min-width:44px;min-height:44px;margin:0;padding:8px 0;background:none;border:0;box-shadow:none;color:#695322;font-size:12px;font-weight:500}
 #history #history-list .history-footer .history-actions button.danger{color:#985e52}
+
+/* 履歴の詳細はカード内で展開せず、下部の全幅パネルで表示。 */
+#history #history-list .history-footer>.history-detail-button{width:33.333%;min-height:44px;padding:8px 0;margin:0;background:none;border:0;box-shadow:none;color:#695322;font-size:12px;font-weight:500;white-space:nowrap}
+#history-details-panel{--detail-color:#A66B83;--detail-bg:#F8EDF1;position:fixed;inset:auto 0 var(--history-nav-height,80px);margin:0 auto;width:100%;max-width:640px;max-height:calc(100dvh - var(--history-nav-height,80px) - 12px);padding:0;border:1px solid var(--detail-color);border-radius:16px 16px 0 0;background:#fffdf7;color:#51401b;overflow:hidden;box-sizing:border-box}
+#history-details-panel[open]{display:flex;flex-direction:column;animation:history-panel-in 160ms ease-out}
+#history-details-panel[data-category=shards]{--detail-color:#B58A37;--detail-bg:#FBF4E4}
+#history-details-panel::backdrop{background:#342b204d}
+#history-details-panel .history-detail-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 16px;background:var(--detail-bg);border-bottom:1px solid var(--detail-color);flex:none}
+#history-details-panel h2{margin:0;font-size:18px;color:#51401b}
+#history-details-panel .history-detail-heading button{min-height:44px;min-width:64px;background:#fff;border:1px solid var(--detail-color);border-radius:10px;color:#695322;margin:0}
+#history-details-panel .history-detail-content{overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;padding:0 16px 16px;min-height:0}
+#history-details-panel section+section{border-top:1px solid #d4d1c4;margin-top:16px}
+#history-details-panel h3{font-size:13px;font-weight:600;color:#695322;margin:16px 0 10px}
+#history-details-panel .history-detail-row{display:grid;grid-template-columns:110px minmax(0,1fr);gap:12px;margin:8px 0;font-size:14px;line-height:1.5;overflow-wrap:anywhere}
+#history-details-panel .history-detail-row>span{font-size:12px;color:#706653}
+#history-details-panel strong{font-weight:600;white-space:pre-line}
+#history-details-panel .history-detail-pokemon{padding:8px 0;overflow-wrap:anywhere}
+#history-details-panel .history-detail-pokemon strong{display:block;font-size:15px}
+#history-details-panel small{display:block;font-size:12px;line-height:1.6;color:#706653;white-space:pre-line;margin-top:3px}
+#history-details-panel.closing{animation:history-panel-out 160ms ease-in forwards}
+@keyframes history-panel-in{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+@keyframes history-panel-out{to{opacity:0;transform:translateY(20px)}}
+@media(prefers-reduced-motion:reduce){#history-details-panel[open],#history-details-panel.closing{animation:none}}

@@ -81,15 +81,7 @@ const ShardUI=(()=>{
    actions.append(button('訂正',()=>ShardEditor.open(r)),button('削除',()=>{if(confirm('このゆめのかけら記録を削除しますか？'))commit({...state,shardRecords:records().filter(x=>x.id!==r.id)},'ゆめのかけら記録を削除しました。');},'danger'));
    const skill=['skill','lucky'].includes(r.method),pokemon=r.pokemonSnapshot?individual(r.pokemonSnapshot):label(historicalPokemon(r));
    historyCard(card,r,r.method==='research'?'睡眠リサーチ':methodNames[r.method],'ゆめのかけら',skill?historyPlace(r.slot)+'　'+pokemon:r.targetDate?'リサーチ日 '+C.displayDate(r.targetDate):'',actions);
-   const details=el('details');details.append(el('summary','詳細'));
-   if(skill){
-    card.append(el('p',(r.method==='lucky'?SK.name(r.skillId||r.skillName||'super_luck'):mainSkillText(r.pokemonSnapshot||{species:r.species},r.pokemonSnapshot?.mainSkillId||r.pokemonSnapshot?.mainSkill||r.skillId||r.skillName||'dream_shard_s'))+(r.skillLevel?'・Lv.'+r.skillLevel:'')+(r.amount===0?'・スキルのみ':''),'history-supplement'));
-    if(r.pokemonSnapshot)details.append(el('p','記録時の個体：'+individual(r.pokemonSnapshot)));
-    if(r.sourcePokemon)details.append(el('p','参照するポケモン：'+individual(r.sourcePokemon)+'\n'+mainSkillText(r.sourcePokemon,r.sourceSkillId)));
-   }
-   if(r.method==='research'){if(r.baseAmount!==undefined)details.append(qel('p',`リサーチ ${r.baseAmount}個`));if(r.researchExp!==undefined)details.append(el('p','リサーチEXP '+r.researchExp.toLocaleString('ja-JP')));if(r.researchLevel!==undefined)details.append(el('p','リサーチレベル '+r.researchLevel));}
-   if(r.method==='other'&&r.memo)card.append(el('p',r.memo,'history-supplement'));
-   finishHistoryCard(card,details);root.append(card);
+   finishHistoryCard(card);root.append(card);
   }
   // アメ・ゆめのかけらを日時順に混在させ、既存の訂正・削除ボタンは保持。
   [...root.children].sort((a,b)=>Date.parse(b.dataset.datetime)-Date.parse(a.dataset.datetime)).forEach(card=>root.append(card));
