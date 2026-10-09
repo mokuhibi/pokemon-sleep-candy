@@ -17,9 +17,17 @@ function rail(){return body.children[0]}
 // 実際の記録・commit・migrateを使用し、同一日時/個体/個数を別IDで保存。
 tap(0,"record('mew',1,4)");advance(200);tap(0,"record('mew',1,4)");
 assert(ctx.saved,notices.join(" / "));assert.equal(ctx.saved.records.length,2);assert.equal(C.sum(ctx.saved.records),8);assert.notEqual(ctx.saved.records[0].id,ctx.saved.records[1].id);assert.equal(ctx.saved.records[0].datetime,ctx.saved.records[1].datetime);assert.equal(rail().children.length,2);assert.equal(buttons[0].disabled,false);assert(buttons[0].classes.has('record-saved'));
+assert(rail().children.every(t=>t.dataset.category==='candy'&&t.children[0].textContent==='✓'&&t.children[1].textContent==='ミュウのアメ4個を記録しました'));
 advance(550);assert(buttons[0].classes.has('record-saved'),'second success refreshes pulse');advance(151);assert(!buttons[0].classes.has('record-saved'));advance(100);assert.equal(rail().children.length,1,'first toast expires independently');advance(200);assert.equal(rail().children.length,0);
 tap(0,"record('mew',1,1)");tap(1,"save({method:'skill',amount:240,pokemonId:'m',pokemon:'ミュウ',species:'ミュウ',slot:1})");tap(1,"save({method:'skill',amount:240,pokemonId:'m',pokemon:'ミュウ',species:'ミュウ',slot:1})");tap(0,"record('mew',1,4)");assert.equal(rail().children.length,3,notices.join(" / "));assert.equal(ctx.saved.records.length,4);assert.equal(ctx.saved.shardRecords.length,2);assert.equal(C.sum(ctx.saved.shardRecords),480);assert.equal(new Set([...ctx.saved.records,...ctx.saved.shardRecords].map(r=>r.id)).size,6);assert.equal(writes,6);assert.deepEqual(B.read(B.encode(ctx.saved)),ctx.saved);
 advance(1001);const before=JSON.stringify(ctx.saved);fail=true;tap(0,"record('mew',1,4)");assert.equal(JSON.stringify(ctx.saved),before);assert.equal(rail().children.length,0);assert(!buttons[0].classes.has('record-saved'));assert(notices.at(-1).includes('保存できませんでした'));fail=false;
 // 記録以外の成功や、失敗した操作の後続タスクを誤通知しない。
 advance(1);vm.runInContext("commit(state,'表示設定を保存しました。')",ctx);assert.equal(rail().children.length,0);assert.equal(notices.at(-1),'表示設定を保存しました。');
-console.log('PASS: same-time Mew +4 twice -> unique IDs / 8 candies / 2 records; shard rapid taps; refreshed pulse; independent 1s toasts / max3; no disabled buttons; storage failure no success; CSV roundtrip unchanged');
+// 保存済み差分から通知する：カンマ、コピーのかけら、0個のスキル、研究の0個、訂正。
+function message(saved,previous,expected,category){advance(1001);listeners.click({target:{closest:()=>buttons[0]}});ctx.fixture=saved;ctx.previous=previous;assert(vm.runInContext('RecordFeedback.success(fixture,previous)',ctx));assert.equal(rail().children[0].children[1].textContent,expected);assert.equal(rail().children[0].dataset.category,category)}
+message({shardRecords:[{id:'a',method:'skill',amount:3427}]},{},'ゆめのかけら3,427個を記録しました','shards');
+message({records:[{id:'b',method:'mew',amount:0,shardAmount:18308}]},{},'ゆめのかけら18,308個を記録しました','shards');
+message({records:[{id:'c',method:'copy',amount:0}]},{},'スキル発動を記録しました','candy');
+message({shardRecords:[{id:'d',method:'research',amount:0}]},{},'ゆめのかけら0個を記録しました','shards');
+message({shardRecords:[{id:'d',method:'research',amount:1234}]},{shardRecords:[{id:'d',method:'research',amount:0}]},'ゆめのかけら1,234個を記録しました','shards');
+console.log('PASS: saved content / category / commas / zero skill / research correction; same-time Mew +4 twice -> unique IDs / 8 candies / 2 records; shard rapid taps; refreshed pulse; independent 1s toasts / max3; no disabled buttons; storage failure no success; CSV roundtrip unchanged');

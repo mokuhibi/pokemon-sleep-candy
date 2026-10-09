@@ -311,3 +311,11 @@ body:has(#record[hidden]) .app>header small{grid-column:2;grid-row:2;font-size:1
 #record-save-notices{position:fixed;right:12px;display:flex;flex-direction:column;gap:4px;z-index:41;pointer-events:none}
 .record-save-toast{background:#fffdf7;color:#51401b;border:1px solid #c9bc94;border-radius:10px;padding:5px 10px;font-size:12px;line-height:1.4;box-shadow:0 1px 4px #51401b15}
 @media(prefers-reduced-motion:reduce){#record :is(#record-methods,#shard-records) .record-save-button{transition:none}#record :is(#record-methods,#shard-records) .record-save-button[data-record-category]:active:not(:disabled){transform:none}}
+
+/* 保存内容の通知：カテゴリ面とチェックだけに色を使う。 */
+#record-save-notices{max-width:calc(100vw - 24px)}
+.record-save-toast{display:flex;align-items:flex-start;gap:5px;overflow-wrap:anywhere;background:#F8EDF1;border-color:#A66B83}
+.record-save-toast[data-category="shards"]{background:#FBF4E4;border-color:#B58A37}
+.record-toast-check{color:#A66B83;flex:none;font-weight:600}
+[data-category="shards"]>.record-toast-check{color:#B58A37}
+body:has(#record:not([hidden])) #notice.record-error:not(:empty),#notice.record-error:not(:empty){background:#fff1ee;color:#985e52;border:1px solid #985e52}

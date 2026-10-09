@@ -28,13 +28,33 @@ const RecordFeedback=(()=>{
   for(let y=12;y+height<=nav.top-6;y+=4){if(!controls.some(r=>r.left<right&&r.right>left&&r.top<y+height&&r.bottom>y)){top=y;break;}}
   rail.style.top=top+'px';
  }
- function success(){
+ function content(saved,previous){
+  // 保存済みの差分を読むだけ。クリック表示や現在の編成から内容を推測しない。
+  for(const field of ['records','shardRecords']){
+   const old=new Map((previous[field]||[]).map(r=>[r.id,r]));
+   const records=saved[field]||[];
+   for(let i=records.length-1;i>=0;i--){const r=records[i];
+    if(old.has(r.id)&&JSON.stringify(old.get(r.id))===JSON.stringify(r))continue;
+    const shards=field==='shardRecords'||r.shardAmount!==undefined;
+    const amount=shards?(r.shardAmount??r.amount):r.amount;
+    const category=shards?'shards':'candy';
+    if(!amount&&!['research','other'].includes(r.method))return {category,message:'スキル発動を記録しました'};
+    const name=shards?'ゆめのかけら':r.candy;
+    if(name)return {category,message:name+amount.toLocaleString('ja-JP')+'個を記録しました'};
+   }
+  }
+  return null;
+ }
+ function success(saved,previous){
   const token=pending;if(!token)return false;pending=null;
+  const result=content(saved,previous);if(!result)return false;
   clearTimeout(pulses.get(token.key));
   pulses.set(token.key,setTimeout(()=>{pulses.delete(token.key);for(const b of document.querySelectorAll('[data-record-feedback]'))if(b.dataset.recordFeedback===token.key)b.classList.remove('record-saved');},700));
   decorate();
   if(!rail){rail=document.createElement('div');rail.id='record-save-notices';rail.setAttribute('role','status');rail.setAttribute('aria-live','polite');rail.setAttribute('aria-relevant','additions');document.body.append(rail);}
-  const toast=document.createElement('div');toast.className='record-save-toast';toast.textContent='✓ 保存しました';rail.append(toast);
+  const toast=document.createElement('div');toast.className='record-save-toast';toast.dataset.category=result.category;
+  const check=document.createElement('span');check.className='record-toast-check';check.textContent='✓';check.setAttribute('aria-hidden','true');
+  const text=document.createElement('span');text.textContent=result.message;toast.append(check);toast.append(text);rail.append(toast);
   while(rail.children.length>3)rail.firstElementChild.remove();
   place();setTimeout(()=>{toast.remove();place();},1000);
   return true;

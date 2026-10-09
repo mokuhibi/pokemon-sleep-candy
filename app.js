@@ -28,7 +28,7 @@ let noticeTimer;
 function positionNotice(){const n=$('notice'),card=document.querySelector('.record-date-card');let top=12;if(activeTab==='record'&&card){const box=card.getBoundingClientRect(),stickyTop=parseFloat(getComputedStyle(card).top)||0;if(box.top<=stickyTop+1&&box.bottom>0)top=box.bottom+6;}n.style.top=top+'px';}
 window.addEventListener('scroll',positionNotice,{passive:true});window.addEventListener('resize',positionNotice);
 
-function notice(s){const n=$('notice');quantityText(n,s);positionNotice();n.classList.remove('shown');void n.offsetWidth;n.classList.add('shown');clearTimeout(noticeTimer);noticeTimer=setTimeout(()=>n.classList.remove('shown'),5000);}
+function notice(s,error=false){const n=$('notice');n.classList.toggle('record-error',error);quantityText(n,s);positionNotice();n.classList.remove('shown');void n.offsetWidth;n.classList.add('shown');clearTimeout(noticeTimer);noticeTimer=setTimeout(()=>n.classList.remove('shown'),5000);}
 // 表示設定は記録入力だけに適用し、保存済み履歴・集計・登録個体は隠さない。
 const enabled=method=>Object.hasOwn(methods,method);
 const recordSettingKeys={help:'showCandyHelp',mew:'mew',delibird:'delibird',skill:'showOtherCandy'};
@@ -46,7 +46,7 @@ let sorting=false,editingId=null,editPool=[];
 
 function load(){try{const raw=localStorage.getItem(KEY);if(raw){const old=JSON.parse(raw);state=C.migrate(old,candyMap);const cleaned=C.cleanMewActivations(state);if(cleaned.records.length!==state.records.length){localStorage.setItem(KEY+'-before-mew-activation-cleanup',raw);state=cleaned;localStorage.setItem(KEY,JSON.stringify(state));}if(old.version===1){localStorage.setItem(KEY+'-before-v2',raw);localStorage.setItem(KEY,JSON.stringify(state));}}else{for(let i=0;i<5;i++){const species=localStorage.getItem('pokemon-slot-'+i);if(names.includes(species)){const p={id:uid(),species,nickname:'',profile:null};state.pokemon.push(p);state.team[i]=p.id;}}localStorage.setItem(KEY,JSON.stringify(state));}}catch(e){blocked=true;notice('保存データを読み込めません。上書きを停止しました。設定からバックアップを書き出してください。');}}
 // 履歴と編成をまとめて保存。保存できた時だけ画面の状態を確定します。
-function commit(next,message){if(blocked){notice('保存を停止しています。設定からバックアップの復元が必要です。');return false;}try{const checked=C.cleanMewActivations(C.migrate(next,candyMap));localStorage.setItem(KEY,JSON.stringify(checked));state=checked;render();if(typeof RecordFeedback==='undefined'||!RecordFeedback.success())notice(message);return true;}catch(e){notice('保存できませんでした：'+e.message);return false;}}
+function commit(next,message){if(blocked){notice('保存を停止しています。設定からバックアップの復元が必要です。',true);return false;}try{const checked=C.cleanMewActivations(C.migrate(next,candyMap));localStorage.setItem(KEY,JSON.stringify(checked));const previous=state;state=checked;render();if(typeof RecordFeedback==='undefined'||!RecordFeedback.success(checked,previous))notice(message);return true;}catch(e){notice('保存できませんでした：'+e.message,true);return false;}}
 function button(text,action,cls){const b=el('button',text,cls);b.type='button';b.onclick=action;return b;}
 function row(parent,name,value,cls){const r=el('div',undefined,'row '+(cls||''));r.append(el('span',name),qel('strong',value));parent.append(r);}
 function quantityText(node,text){
