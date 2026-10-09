@@ -300,3 +300,14 @@ body:has(#record[hidden]) .app>header small{grid-column:2;grid-row:2;font-size:1
 :is(#summary,#shards) .overview-header .total-breakdown :is(th,td){box-sizing:border-box;text-align:right;white-space:nowrap}
 :is(#summary,#shards) .overview-header .total-breakdown th:first-child{padding-left:0;text-align:left;white-space:normal;overflow-wrap:anywhere}
 #shards .overview-header .total-breakdown .shard-member th{padding-left:0;color:#5c6056;font-weight:400}
+
+/* 保存の反応は記録操作だけ。元の寸法・内容・連続タップを維持。 */
+#record :is(#record-methods,#shard-records) .record-save-button{position:relative;transition:background-color .15s,transform .15s}
+#record :is(#record-methods,#shard-records) .record-save-button[data-record-category="candy"]:not(:disabled){background:#fff;border-color:#A66B83}
+#record :is(#record-methods,#shard-records) .record-save-button[data-record-category="shards"]:not(:disabled){background:#fff;border-color:#B58A37}
+#record :is(#record-methods,#shard-records) .record-save-button[data-record-category="candy"]:active:not(:disabled){background:#F4DCE5;transform:translateY(1px)}
+#record :is(#record-methods,#shard-records) .record-save-button[data-record-category="shards"]:active:not(:disabled){background:#FBF4E4;transform:translateY(1px)}
+#record :is(#record-methods,#shard-records) .record-save-button.record-saved::after{content:"✓";position:absolute;right:3px;top:3px;width:18px;height:18px;display:grid;place-items:center;background:#fff;color:#695322;border:1px solid currentColor;border-radius:50%;font-size:13px;line-height:1;pointer-events:none}
+#record-save-notices{position:fixed;right:12px;display:flex;flex-direction:column;gap:4px;z-index:41;pointer-events:none}
+.record-save-toast{background:#fffdf7;color:#51401b;border:1px solid #c9bc94;border-radius:10px;padding:5px 10px;font-size:12px;line-height:1.4;box-shadow:0 1px 4px #51401b15}
+@media(prefers-reduced-motion:reduce){#record :is(#record-methods,#shard-records) .record-save-button{transition:none}#record :is(#record-methods,#shard-records) .record-save-button[data-record-category]:active:not(:disabled){transform:none}}
