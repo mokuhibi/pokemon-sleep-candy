@@ -319,3 +319,17 @@ body:has(#record[hidden]) .app>header small{grid-column:2;grid-row:2;font-size:1
 .record-toast-check{color:#A66B83;flex:none;font-weight:600}
 [data-category="shards"]>.record-toast-check{color:#B58A37}
 body:has(#record:not([hidden])) #notice.record-error:not(:empty),#notice.record-error:not(:empty){background:#fff1ee;color:#985e52;border:1px solid #985e52}
+
+/* 履歴2列：日時と方法 → 種類と個数 → 個体。操作は均等な文字ボタン。 */
+#history #history-list .card{container-type:inline-size}
+#history .history-head{display:flex;flex-wrap:nowrap;align-items:baseline;justify-content:space-between}
+#history .history-head .history-time{min-width:0;white-space:normal;line-height:1.4}
+#history .history-head .history-method{min-width:0;max-width:55%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:right}
+#history .history-meta{flex-wrap:nowrap;align-items:baseline;justify-content:space-between;gap:4px}
+#history .history-primary{min-width:0;flex:1 1 0}
+#history .history-meta .history-amount{flex:none;white-space:nowrap;font-size:20px}
+#history .history-meta .history-amount .quantity-number{font-size:clamp(14px,12cqi,20px)}
+#history #history-list .history-footer summary{width:33.333%;text-align:center;font-size:12px;font-weight:500;background:none;border:0;color:#695322}
+#history .history-footer .history-actions{width:66.667%;display:flex}
+#history #history-list .history-footer .history-actions button{flex:1;width:50%;min-width:44px;min-height:44px;margin:0;padding:8px 0;background:none;border:0;box-shadow:none;color:#695322;font-size:12px;font-weight:500}
+#history #history-list .history-footer .history-actions button.danger{color:#985e52}

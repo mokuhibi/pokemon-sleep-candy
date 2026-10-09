@@ -206,9 +206,9 @@ function profileText(p){if(!p.profile)return '個体情報不明';const v=p.prof
 function historyTime(value){const text=DateUI.datetime(value);return $('history-period').value==='day'?text.split(' ').pop():text.slice(5);}
 function historyPlace(slot){return slot===1?'1R':slot>=2&&slot<=5?slot+'番':slot===6?'アメなし':'獲得位置不明';}
 function historyCard(card,r,method,primary,target,actions){
- const head=el('div',undefined,'history-head');head.append(el('strong',method,'history-method'),qel('strong',r.amount+'個','history-amount'));
+ const head=el('div',undefined,'history-head');head.append(el('time',historyTime(r.datetime),'history-time'),el('strong',method,'history-method'));
  const meta=el('div',undefined,'history-meta'),name=el('strong',primary,'history-primary');name.title=primary;
- meta.append(el('time',historyTime(r.datetime),'history-time'),name);card.append(head,meta);
+ meta.append(name,qel('strong',r.amount+'個','history-amount'));card.append(head,meta);
  if(target){const line=el('p',target,'history-target');line.title=target;card.append(line);}
  card.historyActions=actions;
 }
@@ -219,6 +219,7 @@ function finishHistoryCard(card,details){
   if(node.classList.contains('history-meta'))details.append(el('p',[...node.children].map(child=>child.textContent).join('　')));
   if(node.classList.contains('history-supplement'))details.append(node);
  }
+ details.append(el('p',DateUI.datetime(card.dataset.datetime)+'　'+card.children[0].children[1].textContent));
  const footer=el('div',undefined,'history-footer');footer.append(details,card.historyActions);card.append(footer);
 }
 
