@@ -290,3 +290,13 @@ body:has(#record[hidden]) .app>header small{grid-column:2;grid-row:2;font-size:1
 /* 設定は見出しだけ。スイッチ・イベント・データ管理は共通の暖色。 */
 #settings .settings-group:first-of-type h4{color:color-mix(in srgb,#A66B83 75%,#24251f)}
 #settings .settings-group:nth-of-type(2) h4{color:color-mix(in srgb,#B58A37 70%,#24251f)}
+
+
+/* 上部集計とスキル内訳は共通の3列。長い名前は左列内で折り返す。 */
+:is(#summary,#shards) .overview-header .total-breakdown{table-layout:fixed}
+:is(#summary,#shards) .overview-header .total-breakdown thead th:nth-child(1){width:44%}
+:is(#summary,#shards) .overview-header .total-breakdown thead th:nth-child(2){width:20%}
+:is(#summary,#shards) .overview-header .total-breakdown thead th:nth-child(3){width:36%}
+:is(#summary,#shards) .overview-header .total-breakdown :is(th,td){box-sizing:border-box;text-align:right;white-space:nowrap}
+:is(#summary,#shards) .overview-header .total-breakdown th:first-child{padding-left:0;text-align:left;white-space:normal;overflow-wrap:anywhere}
+#shards .overview-header .total-breakdown .shard-member th{padding-left:0;color:#5c6056;font-weight:400}
