@@ -8,7 +8,7 @@ const WeeklyChart={
  segmentLabel(segment,amount,shards){if(amount){const label=el('span',shards?this.shortAmount(amount):amount.toLocaleString('ja-JP'),'stack-label');segment.append(label);}},
  shortAmount(n){return n>=10000?(n/10000).toFixed(1)+'万':n.toLocaleString('ja-JP');},
  renderShards(root,records,day){
-  const sources=[['research','睡眠リサーチ'],['skill','スキル'],['other','その他']];
+  const sources=SummaryExtras.shardSources;
   const days=C.weeklyTotals(records,day),max=Math.max(1,...days.map(d=>d.amount));
   const parts=sources.map(([key])=>C.weeklyTotals(records.filter(r=>key==='skill'?['skill','lucky'].includes(r.method):r.method===key),day));
   root.replaceChildren();headingTotal(root.id,days.reduce((n,d)=>n+d.amount,0));

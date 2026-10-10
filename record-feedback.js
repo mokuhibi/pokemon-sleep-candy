@@ -1,7 +1,7 @@
 'use strict';
 // 記録操作の表示だけを担当。保存・ID生成・連続タップの制御は行わない。
 const RecordFeedback=(()=>{
- const selector='#record-methods .record-slots button, #record .copy-skill-card button[type="submit"], #record .shard-skill-form button[type="submit"], #record .shard-amount-buttons button, #research-save, #shard-other-form button[type="submit"]';
+ const selector='#record-methods .record-slots button, #record .copy-skill-card button[type="submit"], #record .shard-skill-form button[type="submit"], #record .shard-amount-buttons button, #research-save, #shard-other-form button[type="submit"], #shard-cluster-form button[type="submit"]';
  const pulses=new Map();let pending=null,rail;
  function decorate(){
   for(const b of document.querySelectorAll(selector)){

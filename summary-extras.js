@@ -1,8 +1,8 @@
 // 表示用の集計は履歴から都度作り、localStorageには保存しません。
 const SummaryExtras=(()=>{
  const candySources=[['help','アメ拾い'],['mew','ミュウ'],['delibird','デリバード'],['skill','その他']];
- const shardSources=[['research','睡眠リサーチ'],['skill','スキル'],['other','その他']];
- const settingKeys={skill:'showShardSkill',research:'showShardResearch',other:'showShardOther'};
+ const shardSources=[['research','睡眠リサーチ'],['skill','スキル'],['cluster','ゆめのかたまり'],['other','その他']];
+ const settingKeys={skill:'showShardSkill',research:'showShardResearch',cluster:'showShardCluster',other:'showShardOther'};
  const shardKey=method=>method==='lucky'?'skill':method;
  const shardVisible=(method,settings=state.settings)=>settings[settingKeys[shardKey(method)]]!==false;
  // 表示行だけを絞り、合計計算にはすべての保存済み履歴を使用します。
@@ -12,7 +12,9 @@ const SummaryExtras=(()=>{
    const total=C.sum(records.filter(r=>(kind==='candy'?r.method:shardKey(r.method))===key));
    if(!total||!sourceVisible(key)||(kind==='candy'&&!enabled(key)))continue;
    const line=el('div',undefined,'source-total-row'),label=el('span',name);label.dataset.source=kind+'-'+key;
+   if(kind==='shard')label.append(el('small',' '+records.filter(r=>shardKey(r.method)===key).length+'回','source-count'));
    line.append(label,qel('strong',total.toLocaleString('ja-JP')+'個'));root.append(line);
+   if(kind==='shard'&&key==='other')for(const [otherKind,name] of Object.entries(DreamClusters.otherKinds)){const xs=records.filter(r=>r.method==='other'&&DreamClusters.otherKind(r)===otherKind);if(!xs.length)continue;const row=el('div',undefined,'source-total-row source-subtotal');row.append(el('span',name+' '+xs.length+'回'),qel('strong',C.sum(xs).toLocaleString('ja-JP')+'個'));root.append(row);}
   }
   root.hidden=!root.children.length;
  }

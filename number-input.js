@@ -7,7 +7,7 @@ const NumberInput=(()=>{
   const display=document.createElement('input');display.type='text';display.inputMode='numeric';display.autocomplete='off';display.className='comma-input';
   for(const name of ['aria-label','aria-labelledby','placeholder'])if(input.hasAttribute(name))display.setAttribute(name,input.getAttribute(name));
   let typing=false;
-  function sync(){if(!typing)display.value=format(input.value);display.required=input.required;display.disabled=input.disabled;display.hidden=input.hidden;display.setCustomValidity(input.validationMessage);}
+  function sync(){if(!typing)display.value=format(input.value);display.required=input.required;display.readOnly=input.readOnly;display.disabled=input.disabled;display.hidden=input.hidden;display.setCustomValidity(input.validationMessage);}
   // プログラムによる既存記録の読み込みや入力のクリアにも追従します。
   const originallyHidden=input.hidden;input.after(display);input.hidden=true;
   function refresh(){const hidden=input.hidden;input.hidden=originallyHidden;sync();input.hidden=hidden;}
@@ -24,7 +24,7 @@ const NumberInput=(()=>{
   input.addEventListener('invalid',e=>{e.preventDefault();display.setCustomValidity(input.validationMessage);display.reportValidity();});
   input.addEventListener('input',refresh);input.addEventListener('change',refresh);
   input.form?.addEventListener('reset',()=>setTimeout(refresh,0));
-  new MutationObserver(refresh).observe(input,{attributes:true,attributeFilter:['required','disabled','min','max','step']});refresh();
+  new MutationObserver(refresh).observe(input,{attributes:true,attributeFilter:['required','disabled','readonly','min','max','step']});refresh();
  }
  function init(){const scan=()=>document.querySelectorAll('input[type=number]').forEach(attach);scan();new MutationObserver(scan).observe(document.body,{childList:true,subtree:true});}
  return {init,format};

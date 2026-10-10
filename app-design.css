@@ -362,3 +362,17 @@ body:has(#record:not([hidden])) #notice.record-error:not(:empty),#notice.record-
 @keyframes record-toast-in{from{opacity:0}to{opacity:1}}
 @keyframes record-toast-out{to{opacity:0}}
 @media(prefers-reduced-motion:reduce){.record-save-toast,.record-save-toast.record-toast-leaving{animation:none}}
+
+/* ゆめのかたまり：既存のかけら入力面・44px操作を継承。 */
+#record #cluster-panel{background:#FBF4E4;border:1px solid #B58A37;border-radius:12px}
+#record #cluster-panel input,#record #cluster-panel select{background:#fff}
+#record #cluster-panel button{background:#fff;border:1px solid #B58A37;min-height:44px}
+#record #cluster-amount{font-weight:600;color:#51401b}
+.rank-hint{font-size:13px;color:#695322;margin-block:8px}
+#research-rank-form{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:end;gap:12px}
+#research-rank-form label{min-width:0}#research-rank-form button{min-height:44px}
+#shards #shard-weekly-chart .shard-source-cluster{background:#B58A37}
+[data-source="shard-cluster"]{color:#B58A37}
+
+.rank-hint button{font-size:13px;min-height:44px;background:#fff;border:1px solid #B58A37;margin-left:4px}
+.source-count{font-size:12px;font-weight:400;color:#695322}.source-subtotal{font-size:12px;color:#695322;padding-left:12px}

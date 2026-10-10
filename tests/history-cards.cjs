@@ -23,7 +23,7 @@ const detailSource=fs.readFileSync(require.resolve('../history-details.js'),'utf
 vm.runInContext(detailSource.slice(detailSource.indexOf(' function content('),detailSource.indexOf(' function finish(')),ctx);
 ctx.info=card.children.at(-1).children[0].info;
 let detail=vm.runInContext('content(info)',ctx);assert(detail.textContent.includes('プクリン（ぷっくり）'));assert(!detail.textContent.includes('現在の名前'));assert(detail.textContent.includes('記録時の編成'));assert(detail.textContent.includes('スキルLv8'));assert(!card.children.some(n=>n.tag==='details'));
-ctx.info=$('history-list').children[0].children.at(-1).children[0].info;detail=vm.runInContext('content(info)',ctx);assert(detail.textContent.includes('リサーチレベル65'));assert(!detail.textContent.includes('スキル情報'));assert(!detail.textContent.includes('記録時の編成'));assert.equal(JSON.stringify(state),shardBefore);
+ctx.info=$('history-list').children[0].children.at(-1).children[0].info;detail=vm.runInContext('content(info)',ctx);assert(detail.textContent.includes('記録時のリサーチランク65'));assert(!detail.textContent.includes('スキル情報'));assert(!detail.textContent.includes('記録時の編成'));assert.equal(JSON.stringify(state),shardBefore);
 console.log('PASS: source/amount hierarchy, recorded candy and individual snapshot, old events, four time modes, compact Mew supplement, research details, edit/cancel-delete delegation, immutable data and CSV');
 if(process.argv[2]){
  const esc=s=>String(s??'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('"','&quot;');
