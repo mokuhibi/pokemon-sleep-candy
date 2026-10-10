@@ -19,13 +19,18 @@ const RecordFeedback=(()=>{
  }
  function place(){
   if(!rail?.children.length)return;
-  const height=rail.getBoundingClientRect().height,width=rail.getBoundingClientRect().width;
-  const nav=document.querySelector('.tabs').getBoundingClientRect();
-  const controls=[...document.querySelectorAll('#record button,#record input,#record select,#record summary')].filter(b=>b.getClientRects().length).map(b=>b.getBoundingClientRect());
-  const right=innerWidth-12,left=right-width;
-  // 操作部品と重ならない右側の空き領域を使う。通知自体はタップを捕捉しない。
-  let top=nav.top;
-  for(let y=12;y+height<=nav.top-6;y+=4){if(!controls.some(r=>r.left<right&&r.right>left&&r.top<y+height&&r.bottom>y)){top=y;break;}}
+  const date=document.querySelector('#record .record-datetime-field'),box=date?.getBoundingClientRect();
+  const safe=parseFloat(getComputedStyle(rail).getPropertyValue('--toast-safe-top'))||0;
+  // 固定表示のため記録画面の配置は動かさない。日付が見える間だけ、その直下へ追従。
+  const visible=box&&box.bottom>safe&&box.top<innerHeight;
+  const preferred=visible?Math.max(safe+8,box.bottom+6):safe+8;
+  const height=rail.getBoundingClientRect().height;
+  const controls=[...document.querySelectorAll('#record button,#record input,#record select,#record summary')].filter(e=>e.getClientRects().length).map(e=>e.getBoundingClientRect());
+  const nav=document.querySelector('.tabs')?.getBoundingClientRect().top??innerHeight;
+  const free=y=>!controls.some(r=>r.top<y+height&&r.bottom>y);
+  // スクロール位置や2行文面によって直下にボタンがある場合だけ、次の空き領域へ逃がす。
+  let top=preferred;
+  if(!free(top))for(let y=preferred+4;y+height<nav-6;y+=4){if(free(y)){top=y;break;}}
   rail.style.top=top+'px';
  }
  function content(saved,previous){
@@ -54,9 +59,9 @@ const RecordFeedback=(()=>{
   if(!rail){rail=document.createElement('div');rail.id='record-save-notices';rail.setAttribute('role','status');rail.setAttribute('aria-live','polite');rail.setAttribute('aria-relevant','additions');document.body.append(rail);}
   const toast=document.createElement('div');toast.className='record-save-toast';toast.dataset.category=result.category;
   const check=document.createElement('span');check.className='record-toast-check';check.textContent='✓';check.setAttribute('aria-hidden','true');
-  const text=document.createElement('span');text.textContent=result.message;toast.append(check);toast.append(text);rail.append(toast);
-  while(rail.children.length>3)rail.firstElementChild.remove();
-  place();setTimeout(()=>{toast.remove();place();},1000);
+  const text=document.createElement('span');text.className='record-toast-message';text.textContent=result.message;toast.append(check);toast.append(text);rail.append(toast);
+  while(rail.children.length>2)rail.firstElementChild.remove();
+  place();setTimeout(()=>toast.classList.add('record-toast-leaving'),1340);setTimeout(()=>{toast.remove();place();},1500);
   return true;
  }
  document.addEventListener('click',e=>capture(e.target.closest('button')),true);

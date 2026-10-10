@@ -308,13 +308,13 @@ body:has(#record[hidden]) .app>header small{grid-column:2;grid-row:2;font-size:1
 #record :is(#record-methods,#shard-records) .record-save-button[data-record-category="candy"]:active:not(:disabled){background:#F4DCE5;transform:translateY(1px)}
 #record :is(#record-methods,#shard-records) .record-save-button[data-record-category="shards"]:active:not(:disabled){background:#FBF4E4;transform:translateY(1px)}
 #record :is(#record-methods,#shard-records) .record-save-button.record-saved::after{content:"✓";position:absolute;right:3px;top:3px;width:18px;height:18px;display:grid;place-items:center;background:#fff;color:#695322;border:1px solid currentColor;border-radius:50%;font-size:13px;line-height:1;pointer-events:none}
-#record-save-notices{position:fixed;right:12px;display:flex;flex-direction:column;gap:4px;z-index:41;pointer-events:none}
-.record-save-toast{background:#fffdf7;color:#51401b;border:1px solid #c9bc94;border-radius:10px;padding:5px 10px;font-size:12px;line-height:1.4;box-shadow:0 1px 4px #51401b15}
+#record-save-notices{--toast-safe-top:env(safe-area-inset-top,0px);position:fixed;left:16px;right:16px;display:flex;flex-direction:column;gap:4px;z-index:41;pointer-events:none}
+.record-save-toast{background:#fffdf7;color:#51401b;border:1px solid #c9bc94;border-radius:10px;padding:5px 12px;font-size:16px;line-height:1.35;box-shadow:0 1px 4px #51401b15;animation:record-toast-in 120ms ease-out}
 @media(prefers-reduced-motion:reduce){#record :is(#record-methods,#shard-records) .record-save-button{transition:none}#record :is(#record-methods,#shard-records) .record-save-button[data-record-category]:active:not(:disabled){transform:none}}
 
 /* 保存内容の通知：カテゴリ面とチェックだけに色を使う。 */
-#record-save-notices{max-width:calc(100vw - 24px)}
-.record-save-toast{display:flex;align-items:flex-start;gap:5px;overflow-wrap:anywhere;background:#F8EDF1;border-color:#A66B83}
+#record-save-notices{max-width:608px;margin-inline:auto}
+.record-save-toast{display:flex;align-items:flex-start;gap:8px;overflow-wrap:anywhere;background:#F8EDF1;border-color:#A66B83}
 .record-save-toast[data-category="shards"]{background:#FBF4E4;border-color:#B58A37}
 .record-toast-check{color:#A66B83;flex:none;font-weight:600}
 [data-category="shards"]>.record-toast-check{color:#B58A37}
@@ -356,3 +356,9 @@ body:has(#record:not([hidden])) #notice.record-error:not(:empty),#notice.record-
 @keyframes history-panel-in{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
 @keyframes history-panel-out{to{opacity:0;transform:translateY(20px)}}
 @media(prefers-reduced-motion:reduce){#history-details-panel[open],#history-details-panel.closing{animation:none}}
+
+.record-toast-message{min-width:0;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden}
+.record-save-toast.record-toast-leaving{animation:record-toast-out 160ms ease-in forwards}
+@keyframes record-toast-in{from{opacity:0}to{opacity:1}}
+@keyframes record-toast-out{to{opacity:0}}
+@media(prefers-reduced-motion:reduce){.record-save-toast,.record-save-toast.record-toast-leaving{animation:none}}
