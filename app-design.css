@@ -364,9 +364,7 @@ body:has(#record:not([hidden])) #notice.record-error:not(:empty),#notice.record-
 @media(prefers-reduced-motion:reduce){.record-save-toast,.record-save-toast.record-toast-leaving{animation:none}}
 
 /* ゆめのかたまり：既存のかけら入力面・44px操作を継承。 */
-#record #cluster-panel{background:#FBF4E4;border:1px solid #B58A37;border-radius:12px}
 #record #cluster-panel input,#record #cluster-panel select{background:#fff}
-#record #cluster-panel button{background:#fff;border:1px solid #B58A37;min-height:44px}
 #record #cluster-amount{font-weight:600;color:#51401b}
 .rank-hint{font-size:13px;color:#695322;margin-block:8px}
 #research-rank-form{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:end;gap:12px}
@@ -376,3 +374,11 @@ body:has(#record:not([hidden])) #notice.record-error:not(:empty),#notice.record-
 
 .rank-hint button{font-size:13px;min-height:44px;background:#fff;border:1px solid #B58A37;margin-left:4px}
 .source-count{font-size:12px;font-weight:400;color:#695322}.source-subtotal{font-size:12px;color:#695322;padding-left:12px}
+
+/* 外枠は睡眠リサーチ・その他と同じ .card を継承し、二重の境界を作らない。 */
+#record #shard-cluster-form>.filters{grid-template-columns:repeat(2,minmax(0,1fr));gap:0 12px}
+#record #shard-cluster-form>.filters :is(input,select){height:48px;min-height:48px;box-sizing:border-box}
+#record #shard-cluster-form>.cluster-result-label{margin:12px 0 6px}
+#record #shard-cluster-form .cluster-result-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:center;margin-bottom:12px}
+#record #shard-cluster-form .cluster-result-row :is(input,button){height:48px;min-height:48px;margin:0;box-sizing:border-box}
+#record #cluster-amount{font-size:16px;min-width:0}
